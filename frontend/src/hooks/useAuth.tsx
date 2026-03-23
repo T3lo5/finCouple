@@ -1,0 +1,96 @@
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
+import { authApi, type User } from '../lib/api'
+
+interface AuthState {
+  user:      User | null
+  loading:   boolean
+  isInCouple: boolean
+}
+
+interface AuthActions {
+  login:       (email: string, password: string) => Promise<void>
+  register:    (email: string, name: string, password: string) => Promise<void>
+  logout:      () => Promise<void>
+  createCouple: () => Promise<string> 
+  joinCouple:  (code: string) => Promise<void>
+  refreshUser: () => Promise<void>
+}
+
+type AuthContext = AuthState & AuthActions
+
+const AuthCtx = createContext<AuthContext | null>(null)
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const refreshUser = useCallback(async () => {
+    try {
+      const { user } = await authApi.me()
+      setUser(user)
+    } catch {
+      setUser(null)
+      localStorage.removeItem('session_token')
+    }
+  }, [])
+
+  useEffect(() => {
+    const token = localStorage.getItem('session_token')
+    if (token) {
+      refreshUser().finally(() => setLoading(false))
+    } else {
+      setLoading(false)
+    }
+  }, [refreshUser])
+
+  const login = async (email: string, password: string) => {
+    const { user, token } = await authApi.login({ email, password })
+    localStorage.setItem('session_token', token)
+    setUser(user)
+  }
+
+  const register = async (email: string, name: string, password: string) => {
+    const { user, token } = await authApi.register({ email, name, password })
+    localStorage.setItem('session_token', token)
+    setUser(user)
+  }
+
+  const logout = async () => {
+    await authApi.logout().catch(() => {})
+    localStorage.removeItem('session_token')
+    setUser(null)
+  }
+
+  const createCouple = async (): Promise<string> => {
+    const { couple } = await authApi.createCouple()
+    await refreshUser()
+    return couple.inviteCode!
+  }
+
+  const joinCouple = async (code: string) => {
+    await authApi.joinCouple(code)
+    await refreshUser()
+  }
+
+  return (
+    <AuthCtx.Provider value={{
+      user,
+      loading,
+      isInCouple: !!user?.coupleId,
+      login,
+      register,
+      logout,
+      createCouple,
+      joinCouple,
+      refreshUser,
+    }}>
+      {children}
+    </AuthCtx.Provider>
+  )
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthCtx)
+  if (!ctx) throw new Error('useAuth must be used inside AuthProvider')
+  return ctx
+}

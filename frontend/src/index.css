@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-headings: "Playfair Display", serif;
+  --font-body: "DM Sans", sans-serif;
+
+  --color-primary: #D4AF37;
+  --color-background: #08080A;
+  --color-surface: #141417;
+  --color-text: #F9FAFB;
+  --color-muted: #82828C;
+  --color-individual: #6366F1;
+  --color-positive: #10B981;
+  --color-negative: #F43F5E;
+
+  --radius-card: 24px;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-text font-body antialiased;
+  }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type=number] { -moz-appearance: textfield; }
+}
+
+.glass {
+  @apply backdrop-blur-xl bg-surface/80 border border-white/10;
+}
+
+.ambient-glow-indigo {
+  background: radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 70%),
+              #08080A;
+}
+
+.ambient-glow-gold {
+  background: radial-gradient(circle at 50% 30%, rgba(212, 175, 55, 0.15) 0%, transparent 70%),
+              #08080A;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
