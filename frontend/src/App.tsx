@@ -87,35 +87,67 @@ const CATEGORIES: { id: Category; label: string; icon: React.ReactNode }[] = [
   { id: 'salary',     label: 'Salário',     icon: <ArrowDownLeft size={18} /> },
 ]
 
-const ActionModal = ({ isOpen, onClose, context, onCreated }: {
+const ActionModal = ({ isOpen, onClose, context, onCreated, transactionToEdit }: {
   isOpen: boolean
   onClose: () => void
   context: Context
   onCreated?: () => void
+  transactionToEdit?: Transaction | null
 }) => {
-  const { create } = useTransactions({ autoFetch: false })
+  const { create, edit } = useTransactions({ autoFetch: false })
   const [amount, setAmount] = useState('')
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState<Category>('other')
   const [txContext, setTxContext] = useState<Context>(context)
   const [type, setType] = useState<TransactionType>('expense')
   const [loading, setLoading] = useState(false)
+  const [date, setDate] = useState('')
+
+  // Load transaction data when editing
+  React.useEffect(() => {
+    if (transactionToEdit) {
+      const amt = Math.abs(parseFloat(transactionToEdit.amount))
+      setAmount(amt.toString())
+      setTitle(transactionToEdit.title)
+      setCategory(transactionToEdit.category)
+      setTxContext(transactionToEdit.context)
+      setType(transactionToEdit.type)
+      setDate(transactionToEdit.date.split('T')[0])
+    } else {
+      // Reset for new transaction
+      setAmount('')
+      setTitle('')
+      setCategory('other')
+      setTxContext(context)
+      setType('expense')
+      setDate('')
+    }
+  }, [transactionToEdit, context])
 
   const handleConfirm = async () => {
     if (!amount || !title) return
     setLoading(true)
     try {
-      await create({
-        title,
-        amount: type === 'expense' ? -Math.abs(parseFloat(amount)) : Math.abs(parseFloat(amount)),
-        type,
-        category,
-        context: txContext,
-      })
+      if (transactionToEdit) {
+        await edit(transactionToEdit.id, {
+          title,
+          amount: type === 'expense' ? -Math.abs(parseFloat(amount)) : Math.abs(parseFloat(amount)),
+          type,
+          category,
+          context: txContext,
+          date: date ? new Date(date).toISOString() : undefined,
+        })
+      } else {
+        await create({
+          title,
+          amount: type === 'expense' ? -Math.abs(parseFloat(amount)) : Math.abs(parseFloat(amount)),
+          type,
+          category,
+          context: txContext,
+        })
+      }
       onCreated?.()
       onClose()
-      setAmount('')
-      setTitle('')
     } catch (e) {
       console.error(e)
     } finally {
@@ -140,7 +172,9 @@ const ActionModal = ({ isOpen, onClose, context, onCreated }: {
             <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-8" />
 
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-headings font-semibold">Nova Transação</h2>
+              <h2 className="text-2xl font-headings font-semibold">
+                {transactionToEdit ? 'Editar Transação' : 'Nova Transação'}
+              </h2>
               <button onClick={onClose} className="p-2 bg-white/5 rounded-full text-muted">
                 <X size={20} />
               </button>
@@ -185,6 +219,18 @@ const ActionModal = ({ isOpen, onClose, context, onCreated }: {
                 onChange={e => setTitle(e.target.value)}
                 className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-5 focus:outline-none focus:border-primary/30 placeholder:text-muted/40 text-sm"
               />
+
+              {transactionToEdit && (
+                <div>
+                  <label className="text-muted text-xs uppercase tracking-widest block mb-2">Data</label>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={e => setDate(e.target.value)}
+                    className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-5 focus:outline-none focus:border-primary/30 placeholder:text-muted/40 text-sm text-white"
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <span className="text-muted text-xs uppercase tracking-widest block">Contexto</span>
@@ -370,7 +416,11 @@ const Dashboard = ({ context, isIndividualVisibleToPartner }: {
             {transactions.slice(0, 10).map(tx => {
               const amount = parseFloat(tx.amount)
               return (
-                <div key={tx.id} className="flex items-center justify-between p-4 bg-surface/40 rounded-2xl border border-white/5">
+                <div
+                  key={tx.id}
+                  onClick={() => openEditModal(tx)}
+                  className="flex items-center justify-between p-4 bg-surface/40 rounded-2xl border border-white/5 cursor-pointer hover:bg-surface/60 transition-all active:scale-[0.98]"
+                >
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-muted text-xs uppercase">
                       {tx.category.slice(0, 2)}
@@ -580,10 +630,21 @@ export default function App() {
   const [context, setContext] = useState<Context>('individual')
   const [activeScreen, setActiveScreen] = useState<Screen>('dashboard')
   const [isActionModalOpen, setIsActionModalOpen] = useState(false)
+  const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null)
   const [isIndividualVisibleToPartner, setIsIndividualVisibleToPartner] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
   const handleCreated = useCallback(() => setRefreshKey(k => k + 1), [])
+
+  const openEditModal = useCallback((tx: Transaction) => {
+    setTransactionToEdit(tx)
+    setIsActionModalOpen(true)
+  }, [])
+
+  const openNewTransactionModal = useCallback(() => {
+    setTransactionToEdit(null)
+    setIsActionModalOpen(true)
+  }, [])
 
   if (loading) {
     return (
@@ -674,7 +735,7 @@ export default function App() {
 
           <div className="absolute left-1/2 -translate-x-1/2 -top-8">
             <button
-              onClick={() => setIsActionModalOpen(true)}
+              onClick={openNewTransactionModal}
               className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all active:scale-90 ${
                 context === 'individual'
                   ? 'bg-individual text-white shadow-individual/40'
@@ -703,9 +764,13 @@ export default function App() {
 
       <ActionModal
         isOpen={isActionModalOpen}
-        onClose={() => setIsActionModalOpen(false)}
+        onClose={() => {
+          setIsActionModalOpen(false)
+          setTransactionToEdit(null)
+        }}
         context={context}
         onCreated={handleCreated}
+        transactionToEdit={transactionToEdit}
       />
     </div>
   )

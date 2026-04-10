@@ -56,7 +56,24 @@ export function useTransactions({ context, category, autoFetch = true }: UseTran
     transactionsApi.monthlySummary(context).then(setSummary).catch(() => {})
   }
 
-  return { transactions, loading, error, summary, refetch: fetch, create, remove }
+  const edit = async (id: string, body: Partial<{
+    title: string
+    amount: number
+    type: TransactionType
+    category: Category
+    context: Context
+    notes?: string
+    date?: string
+    isRecurring?: boolean
+    accountId?: string
+  }>) => {
+    const { data } = await transactionsApi.update(id, body)
+    setTransactions(prev => prev.map(t => t.id === id ? data : t))
+    transactionsApi.monthlySummary(context).then(setSummary).catch(() => {})
+    return data
+  }
+
+  return { transactions, loading, error, summary, refetch: fetch, create, remove, edit }
 }
 
 import { savingsApi, type SavingsGoal } from '../lib/api'
