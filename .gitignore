@@ -1,15 +1,3 @@
-# Node
-node_modules/
-dist/
-build/
+```ts
 
-# Env
-.env
-.env.*
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
+```

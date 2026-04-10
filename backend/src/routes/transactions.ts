@@ -174,6 +174,50 @@ router.patch('/:id',
     if (body.context !== undefined) updateData.context = body.context
     if (body.notes !== undefined) updateData.notes = body.notes
     if (body.date !== undefined) updateData.date = new Date(body.date)
+    if (body.isRecurring !== undefined) updateData.isRecurring = body.isRecurring
+    if (body.accountId !== undefined) updateData.accountId = body.accountId
+
+    // Handle account balance update if amount or accountId changed
+    if (body.amount !== undefined && existing.accountId) {
+      const oldAmount = parseFloat(existing.amount)
+      const newAmount = body.amount
+      const balanceChange = newAmount - oldAmount
+      
+      await db
+        .update(accounts)
+        .set({
+          balance: sql`${accounts.balance} + ${balanceChange}`,
+          updatedAt: new Date(),
+        })
+        .where(eq(accounts.id, existing.accountId))
+    }
+
+    // Handle accountId change (transfer between accounts)
+    if (body.accountId !== undefined && body.accountId !== existing.accountId) {
+      // Remove from old account
+      if (existing.accountId) {
+        const oldAmount = parseFloat(existing.amount)
+        await db
+          .update(accounts)
+          .set({
+            balance: sql`${accounts.balance} - ${oldAmount}`,
+            updatedAt: new Date(),
+          })
+          .where(eq(accounts.id, existing.accountId))
+      }
+      
+      // Add to new account
+      if (body.accountId) {
+        const newAmount = body.amount !== undefined ? body.amount : parseFloat(existing.amount)
+        await db
+          .update(accounts)
+          .set({
+            balance: sql`${accounts.balance} + ${newAmount}`,
+            updatedAt: new Date(),
+          })
+          .where(eq(accounts.id, body.accountId))
+      }
+    }
 
     const [updated] = await db
       .update(transactions)
