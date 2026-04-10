@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from './hooks/useAuth'
 import { useTransactions, useSavingsGoals } from './hooks/useTransactions'
-import { type Context, type Category, type TransactionType } from './lib/api'
+import { type Context, type Category, type TransactionType, type Transaction } from './lib/api'
 import AuthScreen from './components/screens/AuthScreen'
 import OnboardingCouple from './components/screens/OnboardingCouple'
 
@@ -287,11 +287,12 @@ const ActionModal = ({ isOpen, onClose, context, onCreated, transactionToEdit }:
   )
 }
 
-const Dashboard = ({ context, isIndividualVisibleToPartner }: {
+const Dashboard = ({ context, isIndividualVisibleToPartner, openEditModal }: {
   context: Context
   isIndividualVisibleToPartner: boolean
+  openEditModal: (tx: Transaction) => void
 }) => {
-  const { transactions, loading, summary } = useTransactions({ context })
+  const { transactions, loading, summary, categorySummary } = useTransactions({ context })
   const accentColor = context === 'individual' ? 'var(--color-individual)' : 'var(--color-primary)'
 
   const totalBalance = summary
@@ -300,6 +301,21 @@ const Dashboard = ({ context, isIndividualVisibleToPartner }: {
 
   const fmt = (n: number) =>
     n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+  const CATEGORIES_META: { id: Category; label: string; icon: React.ReactNode }[] = [
+    { id: 'dining',     label: 'Alimentação', icon: <Utensils size={16} /> },
+    { id: 'home',       label: 'Casa',        icon: <LayoutDashboard size={16} /> },
+    { id: 'transport',  label: 'Transporte',  icon: <Car size={16} /> },
+    { id: 'shopping',   label: 'Compras',     icon: <Receipt size={16} /> },
+    { id: 'health',     label: 'Saúde',       icon: <ShieldCheck size={16} /> },
+    { id: 'travel',     label: 'Viagem',      icon: <TrendingUp size={16} /> },
+    { id: 'bills',      label: 'Contas',      icon: <CreditCard size={16} /> },
+    { id: 'salary',     label: 'Salário',     icon: <ArrowDownLeft size={16} /> },
+    { id: 'investment', label: 'Investimento', icon: <TrendingUp size={16} /> },
+    { id: 'other',      label: 'Outros',      icon: <Settings size={16} /> },
+  ]
+
+  const getCategoryMeta = (catId: Category) => CATEGORIES_META.find(c => c.id === catId) || { label: catId, icon: <Settings size={16} /> }
 
   return (
     <motion.div
@@ -389,6 +405,57 @@ const Dashboard = ({ context, isIndividualVisibleToPartner }: {
           <button className="flex items-center justify-center gap-3 py-4 bg-surface border border-white/5 rounded-2xl text-white font-medium transition-transform active:scale-95">
             <Receipt size={20} /> Dividir
           </button>
+        </div>
+      )}
+
+      {categorySummary && categorySummary.byCategory.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-muted text-xs uppercase tracking-widest font-semibold">
+              Gastos por Categoria
+            </h3>
+            <span className="text-[10px] text-muted">Este mês</span>
+          </div>
+
+          <div className="space-y-3">
+            {categorySummary.byCategory.slice(0, 6).map(item => {
+              const meta = getCategoryMeta(item.category)
+              return (
+                <div key={item.category} className="p-4 bg-surface/40 rounded-2xl border border-white/5">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${context === 'individual' ? 'bg-individual/10 text-individual' : 'bg-primary/10 text-primary'}`}>
+                        {meta.icon}
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{meta.label}</p>
+                        <p className="text-[10px] text-muted">{item.count} transação{item.count !== 1 ? 'ões' : ''}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-headings font-medium text-sm">R${item.amount.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}</p>
+                      <p className="text-[10px] text-muted">{Math.round(item.percentage)}%</p>
+                    </div>
+                  </div>
+                  <div className="relative h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${item.percentage}%` }}
+                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: accentColor }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {categorySummary.byCategory.length > 6 && (
+            <button className="w-full py-3 text-xs text-muted hover:text-white transition-colors flex items-center justify-center gap-2">
+              Ver todas as categorias <ChevronRight size={14} />
+            </button>
+          )}
         </div>
       )}
 
@@ -694,6 +761,7 @@ export default function App() {
               key={`dashboard-${refreshKey}`}
               context={context}
               isIndividualVisibleToPartner={isIndividualVisibleToPartner}
+              openEditModal={openEditModal}
             />
           )}
           {activeScreen === 'savings' && (
