@@ -303,4 +303,64 @@ router.get('/summary/monthly', async (c) => {
   })
 })
 
+router.get('/summary/by-category', async (c) => {
+  const user = c.get('user')
+  const { context } = c.req.query()
+
+  const now = new Date()
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+
+  const conditions = []
+
+  if (context === 'joint' && user.coupleId) {
+    conditions.push(
+      and(
+        eq(transactions.coupleId, user.coupleId),
+        eq(transactions.context, 'joint')
+      )
+    )
+  } else {
+    conditions.push(
+      and(
+        eq(transactions.userId, user.id),
+        eq(transactions.context, 'individual')
+      )
+    )
+  }
+
+  conditions.push(gte(transactions.date, startOfMonth))
+  conditions.push(lte(transactions.date, endOfMonth))
+  conditions.push(eq(transactions.type, 'expense'))
+
+  const rows = await db
+    .select({
+      category: transactions.category,
+      total: sql<number>`sum(${transactions.amount}::numeric)`,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(transactions)
+    .where(and(...conditions))
+    .groupBy(transactions.category)
+    .orderBy(sql`sum(${transactions.amount}::numeric) DESC`)
+
+  const totalExpenses = rows.reduce((sum, r) => sum + Math.abs(Number(r.total)), 0)
+
+  const byCategory = rows.map(r => ({
+    category: r.category,
+    amount: Math.abs(Number(r.total)),
+    count: Number(r.count),
+    percentage: totalExpenses > 0 ? (Math.abs(Number(r.total)) / totalExpenses) * 100 : 0,
+  }))
+
+  return c.json({
+    totalExpenses,
+    byCategory,
+    period: {
+      from: startOfMonth.toISOString(),
+      to: endOfMonth.toISOString(),
+    },
+  })
+})
+
 export default router

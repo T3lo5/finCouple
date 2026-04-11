@@ -178,6 +178,11 @@ export const transactionsApi = {
     const qs = context ? `?context=${context}` : ''
     return request<{ income: number; expenses: number; balance: number }>(`/api/transactions/summary/monthly${qs}`)
   },
+
+  byCategorySummary: (context?: Context) => {
+    const qs = context ? `?context=${context}` : ''
+    return request<{ totalExpenses: number; byCategory: { category: Category; amount: number; count: number; percentage: number }[]; period: { from: string; to: string } }>(`/api/transactions/summary/by-category${qs}`)
+  },
 }
 
 export const savingsApi = {

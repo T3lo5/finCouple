@@ -12,17 +12,20 @@ export function useTransactions({ context, category, autoFetch = true }: UseTran
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [summary, setSummary] = useState<{ income: number; expenses: number; balance: number } | null>(null)
+  const [categorySummary, setCategorySummary] = useState<{ totalExpenses: number; byCategory: { category: Category; amount: number; count: number; percentage: number }[] } | null>(null)
 
   const fetch = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const [txRes, summaryRes] = await Promise.all([
+      const [txRes, summaryRes, categoryRes] = await Promise.all([
         transactionsApi.list({ context, category, limit: 50 }),
         transactionsApi.monthlySummary(context),
+        transactionsApi.byCategorySummary(context),
       ])
       setTransactions(txRes.data)
       setSummary(summaryRes)
+      setCategorySummary(categoryRes)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -73,7 +76,7 @@ export function useTransactions({ context, category, autoFetch = true }: UseTran
     return data
   }
 
-  return { transactions, loading, error, summary, refetch: fetch, create, remove, edit }
+  return { transactions, loading, error, summary, categorySummary, refetch: fetch, create, remove, edit }
 }
 
 import { savingsApi, type SavingsGoal } from '../lib/api'
