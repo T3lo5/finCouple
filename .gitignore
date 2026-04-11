@@ -30,3 +30,6 @@ frontend/tsconfig.app.tsbuildinfo
 # Package lock files
 package-lock.json
 ```
+
+*.openclaude
+.openclaude-profile.json
