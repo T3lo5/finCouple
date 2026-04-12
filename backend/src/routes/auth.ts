@@ -353,10 +353,27 @@ auth.patch('/profile',
     name: z.string().min(2).max(80).optional(),
     email: z.string().email().optional(),
     avatarUrl: z.string().url().optional().or(z.literal('')),
+    password: z.string().min(8).optional(), // Required for critical changes
   })),
   async (c) => {
     const user = c.get('user')
     const updates = c.req.valid('json')
+
+    // Check if critical changes require password confirmation
+    const isCriticalChange = updates.email || updates.password
+    if (isCriticalChange && !updates.password) {
+      return c.json({ error: 'Password confirmation required for critical changes' }, 403)
+    }
+
+    // Verify password for critical changes
+    if (isCriticalChange && updates.password) {
+      const hash = await hashPassword(updates.password)
+      if (hash !== user.passwordHash) {
+        return c.json({ error: 'Invalid password' }, 401)
+      }
+      // Remove password from updates (it's only for confirmation)
+      delete updates.password
+    }
 
     // Check if email is being changed and if it's already in use
     if (updates.email && updates.email !== user.email) {
@@ -402,6 +419,35 @@ auth.patch('/profile',
       .limit(1)
 
     return c.json({ data: { user: updatedUser } })
+  }
+)
+
+// Delete user account
+auth.delete('/account',
+  requireAuth,
+  zValidator('json', z.object({
+    password: z.string().min(8),
+  })),
+  async (c) => {
+    const user = c.get('user')
+    const { password } = c.req.valid('json')
+
+    // Verify password before deletion
+    const hash = await hashPassword(password)
+    if (hash !== user.passwordHash) {
+      return c.json({ error: 'Invalid password' }, 401)
+    }
+
+    // Soft delete - mark sessions for cleanup and delete user
+    // First, invalidate all sessions
+    await db.delete(sessions).where(eq(sessions.userId, user.id))
+
+    // Delete user (cascade will handle related data)
+    await db.delete(users).where(eq(users.id, user.id))
+
+    c.header('Set-Cookie', 'session_token=; HttpOnly; Path=/; Max-Age=0')
+
+    return c.json({ message: 'Account deleted successfully' })
   }
 )
 

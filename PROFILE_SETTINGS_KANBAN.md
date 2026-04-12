@@ -18,7 +18,7 @@
 
 - [x] **TASK 2.1:** Criar endpoint `PATCH /auth/profile` para atualizar dados do perfil (nome, email, avatar)
 - [ ] **TASK 2.2:** Criar endpoint `GET /auth/profile` para buscar dados completos do perfil (já existe /me)
-- [ ] **TASK 2.3:** Criar endpoint `DELETE /auth/account` para deletar conta (soft delete)
+- [x] **TASK 2.3:** Criar endpoint `DELETE /auth/account` para deletar conta (soft delete)
 - [ ] **TASK 2.4:** Criar endpoint `PATCH /auth/preferences` para atualizar preferências
 - [x] **TASK 2.5:** Validação Zod implementada no endpoint PATCH /profile
 - [ ] **TASK 2.6:** Implementar upload de avatar (opcional - usar URL externa)
@@ -29,7 +29,7 @@
 - [x] **TASK 3.2:** Criar formulário de edição de nome com validação inline
 - [x] **TASK 3.3:** Criar formulário de edição de email com validação inline
 - [x] **TASK 3.4:** Componente de display de avatar (inicial ou URL)
-- [ ] **TASK 3.5:** Criar modal de confirmação para mudanças críticas (email, deletar conta)
+- [x] **TASK 3.5:** Criar modal de confirmação para mudanças críticas (email, deletar conta)
 - [ ] **TASK 3.6:** Adicionar feedback visual (toasts) - usar error states por enquanto
 
 ### Frontend - Integração
@@ -41,7 +41,7 @@
 
 ### Segurança & Validação
 
-- [ ] **TASK 5.1:** Implementar confirmação de senha para mudanças críticas
+- [x] **TASK 5.1:** Implementar confirmação de senha para mudanças críticas
 - [x] **TASK 5.2:** Validar unicidade de email no backend
 - [ ] **TASK 5.3:** Rate limiting nos endpoints de perfil
 - [ ] **TASK 5.4:** Logging de auditoria para mudanças de perfil
@@ -68,15 +68,18 @@
 - [x] **TASK 0.3:** Revisar SettingsScreen existente no frontend
 - [x] **TASK 0.4:** Criar documento Kanban para organização das tasks
 - [x] **TASK 2.1:** Endpoint PATCH /auth/profile implementado no backend
+- [x] **TASK 2.3:** Endpoint DELETE /auth/account implementado no backend
 - [x] **TASK 2.5:** Validação Zod no endpoint de perfil
 - [x] **TASK 3.1:** Edição de perfil integrada ao SettingsScreen
 - [x] **TASK 3.2:** Formulário de edição de nome
 - [x] **TASK 3.3:** Formulário de edição de email
 - [x] **TASK 3.4:** Display de avatar (suporte a URL ou inicial)
+- [x] **TASK 3.5:** Modal de confirmação para email e deletar conta
 - [x] **TASK 4.1:** Integração frontend-backend do updateProfile
 - [x] **TASK 4.2:** Contexto de auth atualizado após mudança
 - [x] **TASK 4.3:** Refresh automático do user context
 - [x] **TASK 4.4:** Tratamento de erros na UI
+- [x] **TASK 5.1:** Confirmação de senha para mudanças críticas (email, delete)
 - [x] **TASK 5.2:** Validação de unicidade de email no backend
 
 ---
@@ -91,9 +94,9 @@
    - ~~TASK 4.1: Integração frontend-backend~~ ✅ CONCLUÍDO
 
 2. **Média Prioridade:**
-   - TASK 5.1: Confirmação de senha para email
-   - TASK 3.5: Modal de confirmação
-   - TASK 2.3: Deletar conta
+   - ~~TASK 5.1: Confirmação de senha para email~~ ✅ CONCLUÍDO
+   - ~~TASK 3.5: Modal de confirmação~~ ✅ CONCLUÍDO
+   - ~~TASK 2.3: Deletar conta~~ ✅ CONCLUÍDO
 
 3. **Baixa Prioridade:**
    - TASK 1.2: Preferências do usuário
@@ -129,15 +132,15 @@ TASK 1.x (Schema) → TASK 2.x (API) → TASK 4.x (Integração)
 | Categoria | Total | Feito | Em Progresso | Pendente |
 |-----------|-------|-------|--------------|----------|
 | Backend - Schema | 3 | 1 | 0 | 2 |
-| Backend - API | 6 | 3 | 0 | 3 |
-| Frontend - UI | 6 | 4 | 0 | 2 |
+| Backend - API | 6 | 4 | 0 | 2 |
+| Frontend - UI | 6 | 5 | 0 | 1 |
 | Frontend - Integração | 4 | 4 | 0 | 0 |
-| Segurança | 4 | 1 | 0 | 3 |
+| Segurança | 4 | 2 | 0 | 2 |
 | UX | 4 | 1 | 0 | 3 |
-| **Total** | **27** | **14** | **0** | **13** |
+| **Total** | **27** | **17** | **0** | **10** |
 
-**Progresso Geral:** ~52% (14/27 tasks)
+**Progresso Geral:** ~63% (17/27 tasks)
 
 ---
 
-*Última atualização: Dezembro 2024*
+*Última atualização: Dezembro 2024 - TASKs 2.3, 3.5, 5.1 concluídas*
