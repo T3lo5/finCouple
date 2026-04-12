@@ -183,6 +183,42 @@ export const transactionsApi = {
     const qs = context ? `?context=${context}` : ''
     return request<{ totalExpenses: number; byCategory: { category: Category; amount: number; count: number; percentage: number }[]; period: { from: string; to: string } }>(`/api/transactions/summary/by-category${qs}`)
   },
+
+  export: async (params?: {
+    context?: Context
+    category?: Category
+    from?: string
+    to?: string
+  }) => {
+    const token = localStorage.getItem('session_token')
+    const qs = params ? new URLSearchParams(params as any).toString() : ''
+    const url = `${BASE_URL}/api/transactions/export${qs ? `?${qs}` : ''}`
+    
+    const res = await fetch(url, {
+      credentials: 'include',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    })
+    
+    if (!res.ok) {
+      const data = await res.json()
+      throw new ApiError(res.status, data.error || 'Unknown error')
+    }
+    
+    // Download the CSV file
+    const blob = await res.blob()
+    const downloadUrl = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = downloadUrl
+    a.download = `transactions_export_${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    window.URL.revokeObjectURL(downloadUrl)
+    
+    return { ok: true }
+  },
 }
 
 export const savingsApi = {

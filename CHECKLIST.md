@@ -47,7 +47,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Anexos/comprovantes | ❌ | Não implementado |
 | Tags personalizadas | ❌ | Não implementado |
 | Busca textual | ❌ | Não implementado |
-| Exportar transações | ❌ | CSV, PDF não implementados |
+| Exportar transações | ✅ | CSV implementado (backend + frontend) |
 
 ### Metas de Economia
 
@@ -174,7 +174,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | **Edição de transações** | Alto | Baixo | UI para editar/deletar transações existentes |
 | **Dashboard por categoria** | Alto | Médio | Gráficos de pizza/barras por categoria |
 | ~~**Notificações push**~~ | ~~Alto~~ | ~~Médio~~ | ~~Lembretes de bills, metas atingidas~~ |
-| **Exportar dados (CSV)** | Alto | Baixo | Backup e análise externa |
+| ~~**Exportar dados (CSV)**~~ | ~~Alto~~ | ~~Baixo~~ | ~~Backup e análise externa~~ |
 | **Recuperação de senha** | Alto | Médio | Flow completo com email |
 | **Edição de metas** | Médio | Baixo | UI para editar/deletar metas |
 | **Configurações do perfil** | Médio | Baixo | Mudar nome, email, avatar |
