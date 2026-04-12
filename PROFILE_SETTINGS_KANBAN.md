@@ -2,7 +2,7 @@
 
 **Objetivo:** Implementar configurações completas do perfil do usuário conforme SPEC.md e CHECKLIST.md
 
-**Status Geral:** 🟢 Em Progresso (TASK 1.3 Concluída)
+**Status Geral:** 🟢 Em Progresso (TASK 2.6 Concluída)
 
 ---
 
@@ -76,7 +76,11 @@
 - [x] **TASK 2.3:** Endpoint DELETE /auth/account implementado no backend
 - [x] **TASK 2.4:** Endpoint PATCH /auth/preferences implementado no backend
 - [x] **TASK 2.5:** Validação Zod no endpoint de perfil
-- [x] **TASK 2.6:** Upload de avatar via URL externa implementado no frontend
+- [x] **TASK 2.6:** Upload de avatar via URL externa implementado ✅
+  - Backend: Validação Zod (`z.string().url().optional().or(z.literal(''))`) no endpoint PATCH /profile
+  - Frontend: UI com botão de câmera, input de URL, confirmar/cancelar
+  - Integração: updateProfile hook atualiza contexto automaticamente
+  - Schema: Campo `avatar_url` já existe na tabela users (migration 0001)
 - [x] **TASK 3.1:** Edição de perfil integrada ao SettingsScreen
 - [x] **TASK 3.2:** Formulário de edição de nome
 - [x] **TASK 3.3:** Formulário de edição de email
@@ -110,7 +114,7 @@
 
 3. **Baixa Prioridade:**
    - ~~TASK 1.2: Preferências do usuário~~ ✅ CONCLUÍDO
-   - ~~TASK 2.6: Upload de avatar~~ ✅ CONCLUÍDO
+   - ~~TASK 2.6: Upload de avatar~~ ✅ CONCLUÍDO - Implementado com URL externa no frontend e backend
    - TASK 6.2: Skeleton screens
 
 ### Dependências
@@ -153,4 +157,4 @@ TASK 1.x (Schema) → TASK 2.x (API) → TASK 4.x (Integração)
 
 ---
 
-*Última atualização: Dezembro 2024 - TASK 2.6 concluída (upload de avatar via URL externa implementado)*
+*Última atualização: Dezembro 2024 - TASK 2.6 concluída (upload de avatar via URL externa implementado no frontend e backend com validação Zod)*
