@@ -45,7 +45,7 @@
 
 - [x] **TASK 5.1:** Implementar confirmação de senha para mudanças críticas
 - [x] **TASK 5.2:** Validar unicidade de email no backend
-- [ ] **TASK 5.3:** Rate limiting nos endpoints de perfil
+- [x] **TASK 5.3:** Rate limiting nos endpoints de perfil
 - [ ] **TASK 5.4:** Logging de auditoria para mudanças de perfil
 
 ### UX & Acessibilidade
@@ -95,6 +95,7 @@
 - [x] **TASK 4.5:** Integração do updatePreferences no frontend
 - [x] **TASK 5.1:** Confirmação de senha para mudanças críticas (email, delete)
 - [x] **TASK 5.2:** Validação de unicidade de email no backend
+- [x] **TASK 5.3:** Rate limiting nos endpoints de perfil
 
 ---
 
@@ -149,12 +150,12 @@ TASK 1.x (Schema) → TASK 2.x (API) → TASK 4.x (Integração)
 | Backend - API | 6 | 6 | 0 | 0 |
 | Frontend - UI | 6 | 5 | 0 | 1 |
 | Frontend - Integração | 4 | 4 | 0 | 0 |
-| Segurança | 4 | 2 | 0 | 2 |
+| Segurança | 4 | 3 | 0 | 1 |
 | UX | 4 | 1 | 0 | 3 |
 | **Total** | **27** | **21** | **0** | **6** |
 
-**Progresso Geral:** ~78% (21/27 tasks)
+**Progresso Geral:** ~81% (22/27 tasks)
 
 ---
 
-*Última atualização: Dezembro 2024 - TASK 2.6 concluída (upload de avatar via URL externa implementado no frontend e backend com validação Zod)*
+*Última atualização: Dezembro 2024 - TASK 5.3 concluída (rate limiting implementado nos endpoints de perfil com middleware customizado)*
