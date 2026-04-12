@@ -177,7 +177,7 @@ const ActionModal = ({ isOpen, onClose, context, onCreated, transactionToEdit }:
             <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-8" />
 
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-headings font-semibold">
+              <h2 className="text-xl sm:text-2xl font-headings font-semibold">
                 {transactionToEdit ? 'Editar Transação' : 'Nova Transação'}
               </h2>
               <button onClick={onClose} className="p-2 bg-white/5 rounded-full text-muted">
@@ -211,7 +211,7 @@ const ActionModal = ({ isOpen, onClose, context, onCreated, transactionToEdit }:
                     placeholder="0,00"
                     value={amount}
                     onChange={e => setAmount(e.target.value)}
-                    className="bg-transparent text-5xl font-headings text-center w-full focus:outline-none placeholder:text-white/10"
+                    className="bg-transparent text-4xl sm:text-5xl font-headings text-center w-full focus:outline-none placeholder:text-white/10"
                     autoFocus
                   />
                 </div>
@@ -326,7 +326,7 @@ const Dashboard = ({ context, isIndividualVisibleToPartner, openEditModal }: {
     <motion.div
       initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="pt-32 pb-32 px-6 space-y-12"
+      className="pt-28 pb-28 px-4 sm:px-6 space-y-8 sm:space-y-10"
     >
       <div className="text-center space-y-2">
         <span className="text-muted text-xs uppercase tracking-widest font-medium">
@@ -334,14 +334,14 @@ const Dashboard = ({ context, isIndividualVisibleToPartner, openEditModal }: {
         </span>
         {loading ? (
           <div className="h-14 flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
           </div>
         ) : (
           <div className="flex items-baseline justify-center gap-1">
-            <span className="text-5xl font-headings font-medium tracking-tight">
+            <span className="text-4xl sm:text-5xl font-headings font-medium tracking-tight">
               R${fmt(totalBalance).split(',')[0]}
             </span>
-            <span className="text-2xl font-headings text-muted">
+            <span className="text-xl sm:text-2xl font-headings text-muted">
               ,{fmt(totalBalance).split(',')[1]}
             </span>
           </div>
@@ -365,7 +365,7 @@ const Dashboard = ({ context, isIndividualVisibleToPartner, openEditModal }: {
       {context === 'joint' && isIndividualVisibleToPartner && (
         <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-individual/20 flex items-center justify-center text-individual">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-individual/20 flex items-center justify-center text-individual">
               <Users size={16} />
             </div>
             <p className="text-xs text-muted">Saldo individual visível ao parceiro</p>
@@ -538,10 +538,10 @@ const SavingsScreen = ({ context }: { context: Context }) => {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-      className="pt-32 pb-32 px-6 space-y-12"
+      className="pt-28 pb-28 px-4 sm:px-6 space-y-8 sm:space-y-10"
     >
       <div className="text-center space-y-4">
-        <h2 className="text-3xl font-headings font-semibold">Metas de Poupança</h2>
+        <h2 className="text-2xl sm:text-3xl font-headings font-semibold">Metas de Poupança</h2>
         <p className="text-muted text-sm">
           {context === 'individual' ? 'Seus objetivos financeiros pessoais.' : 'Construindo o futuro juntos.'}
         </p>
@@ -646,7 +646,7 @@ const SavingsScreen = ({ context }: { context: Context }) => {
               <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-8" />
               
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-headings font-semibold">Editar Meta</h2>
+                <h2 className="text-xl sm:text-2xl font-headings font-semibold">Editar Meta</h2>
                 <button onClick={() => setIsModalOpen(false)} className="p-2 bg-white/5 rounded-full text-muted">
                   <X size={20} />
                 </button>
@@ -712,13 +712,13 @@ const EditGoalForm = ({ goal, onSave, onClose }: {
       <div>
         <label className="text-muted text-xs uppercase tracking-widest block mb-2">Valor Alvo</label>
         <div className="flex items-center gap-2">
-          <span className="text-2xl font-headings text-muted">R$</span>
+          <span className="text-xl sm:text-2xl font-headings text-muted">R$</span>
           <input
             type="number"
             value={targetAmount}
             onChange={e => setTargetAmount(e.target.value)}
             placeholder="0,00"
-            className="bg-transparent text-3xl font-headings w-full focus:outline-none placeholder:text-white/10"
+            className="bg-transparent text-2xl sm:text-3xl font-headings w-full focus:outline-none placeholder:text-white/10"
           />
         </div>
       </div>
@@ -877,14 +877,14 @@ const SettingsScreen = ({
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-      className="pt-32 pb-32 px-6 space-y-8"
+      className="pt-28 pb-28 px-4 sm:px-6 space-y-6 sm:space-y-8"
       role="main"
       aria-label="Configurações do Perfil"
     >
       {/* Profile Header */}
       <div className="p-6 bg-surface rounded-[32px] border border-white/5 space-y-6">
         <div className="text-center space-y-4">
-          <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-individual/20 flex items-center justify-center mx-auto text-3xl font-headings font-medium border border-white/10">
+          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-primary/20 to-individual/20 flex items-center justify-center mx-auto text-2xl sm:text-3xl font-headings font-medium border border-white/10">
             {user?.avatarUrl ? (
               <img src={user.avatarUrl} alt={`Avatar de ${user.name}`} className="w-full h-full rounded-full object-cover" />
             ) : (
@@ -908,7 +908,7 @@ const SettingsScreen = ({
                 value={editAvatarUrl}
                 onChange={(e) => setEditAvatarUrl(e.target.value)}
                 placeholder="URL do avatar"
-                className="bg-white/5 border border-white/10 rounded-xl px-3 py-1 text-sm text-center focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/50 w-64"
+                className="bg-white/5 border border-white/10 rounded-xl px-3 py-1 text-sm text-center focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/50 w-full max-w-[280px]"
                 autoFocus
                 aria-describedby="avatar-url-hint"
               />
@@ -963,7 +963,7 @@ const SettingsScreen = ({
             ) : (
               <button
                 onClick={() => setIsEditingName(true)}
-                className="text-2xl font-headings font-semibold hover:text-primary/80 transition-colors focus:outline-none focus:underline focus:text-primary/80"
+                className="text-xl sm:text-2xl font-headings font-semibold hover:text-primary/80 transition-colors focus:outline-none focus:underline focus:text-primary/80"
                 aria-label={`Editar nome. Nome atual: ${user?.name}`}
               >
                 {user?.name}
@@ -1023,13 +1023,13 @@ const SettingsScreen = ({
         )}
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-6 sm:space-y-8">
         {isInCouple && (
           <div className="p-6 bg-surface rounded-[32px] border border-white/5 space-y-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <p id="privacy-mode-label" className="font-medium">Modo Privacidade Compartilhado</p>
-                <p className="text-xs text-muted max-w-[200px]" aria-describedby="privacy-mode-label">
+                <p className="text-xs text-muted max-w-xs" aria-describedby="privacy-mode-label">
                   Permite que seu parceiro(a) veja seu saldo individual.
                 </p>
               </div>
@@ -1415,7 +1415,7 @@ export default function App() {
               className="fixed top-0 right-0 h-full w-full max-w-sm bg-surface border-l border-white/10 z-[70] p-6 overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-headings font-semibold">Notificações</h2>
+                <h2 className="text-xl sm:text-2xl font-headings font-semibold">Notificações</h2>
                 <div className="flex gap-2">
                   {unreadCount > 0 && (
                     <button
@@ -1503,9 +1503,9 @@ export default function App() {
 =          {activeScreen === 'accounts' && (
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="pt-32 pb-32 px-6 text-center text-muted"
+              className="pt-28 pb-28 px-4 sm:px-6 text-center text-muted"
             >
-              <p className="text-3xl font-headings mb-4">Contas</p>
+              <p className="text-2xl sm:text-3xl font-headings mb-4">Contas</p>
               <p className="text-sm">Em breve — conecte suas contas bancárias.</p>
             </motion.div>
           )}
