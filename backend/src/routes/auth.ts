@@ -422,6 +422,48 @@ auth.patch('/profile',
   }
 )
 
+// Update user preferences
+auth.patch('/preferences',
+  requireAuth,
+  zValidator('json', z.object({
+    theme: z.enum(['dark', 'light']).optional(),
+    language: z.string().optional(),
+    notifications: z.boolean().optional(),
+  })),
+  async (c) => {
+    const user = c.get('user')
+    const updates = c.req.valid('json')
+
+    // Update preferences if there are any changes
+    if (Object.keys(updates).length > 0) {
+      await db
+        .update(users)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(users.id, user.id))
+    }
+
+    // Fetch updated user data
+    const [updatedUser] = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        avatarUrl: users.avatarUrl,
+        coupleId: users.coupleId,
+        theme: users.theme,
+        language: users.language,
+        notifications: users.notifications,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+      })
+      .from(users)
+      .where(eq(users.id, user.id))
+      .limit(1)
+
+    return c.json({ data: { user: updatedUser } })
+  }
+)
+
 // Delete user account
 auth.delete('/account',
   requireAuth,

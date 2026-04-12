@@ -5,11 +5,14 @@ export type AccountType = 'checking' | 'savings' | 'credit' | 'investment' | 'be
 export type GoalStatus = 'active' | 'completed' | 'paused'
 
 export interface User {
-  id:         string
-  email:      string
-  name:       string
-  avatarUrl?: string | null
-  coupleId:   string | null
+  id:            string
+  email:         string
+  name:          string
+  avatarUrl?:    string | null
+  coupleId:      string | null
+  theme?:        string
+  language?:     string
+  notifications?: boolean
 }
 
 export interface Account {
@@ -140,6 +143,12 @@ export const authApi = {
 
   updateProfile: (body: Partial<{ name: string; email: string; avatarUrl: string; password: string }>) =>
     request<{ data: { user: User } }>('/api/auth/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  updatePreferences: (body: Partial<{ theme: string; language: string; notifications: boolean }>) =>
+    request<{ data: { user: User } }>('/api/auth/preferences', {
       method: 'PATCH',
       body: JSON.stringify(body),
     }),
