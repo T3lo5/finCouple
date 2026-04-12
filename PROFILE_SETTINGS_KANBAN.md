@@ -17,7 +17,7 @@
 ### Backend - API Endpoints
 
 - [x] **TASK 2.1:** Criar endpoint `PATCH /auth/profile` para atualizar dados do perfil (nome, email, avatar)
-- [ ] **TASK 2.2:** Criar endpoint `GET /auth/profile` para buscar dados completos do perfil (já existe /me)
+- [x] **TASK 2.2:** Criar endpoint `GET /auth/profile` para buscar dados completos do perfil (já existe /me)
 - [x] **TASK 2.3:** Criar endpoint `DELETE /auth/account` para deletar conta (soft delete)
 - [x] **TASK 2.4:** Criar endpoint `PATCH /auth/preferences` para atualizar preferências
 - [x] **TASK 2.5:** Validação Zod implementada no endpoint PATCH /profile
@@ -72,6 +72,7 @@
 - [x] **TASK 1.2:** Campos de preferências adicionados ao schema (theme, language, notifications)
 - [x] **TASK 1.3:** Criar migration para novas colunas de perfil - Migrations 0001 e 0002 criadas
 - [x] **TASK 2.1:** Endpoint PATCH /auth/profile implementado no backend
+- [x] **TASK 2.2:** Endpoint GET /auth/profile implementado no backend
 - [x] **TASK 2.3:** Endpoint DELETE /auth/account implementado no backend
 - [x] **TASK 2.4:** Endpoint PATCH /auth/preferences implementado no backend
 - [x] **TASK 2.5:** Validação Zod no endpoint de perfil
@@ -140,15 +141,15 @@ TASK 1.x (Schema) → TASK 2.x (API) → TASK 4.x (Integração)
 | Categoria | Total | Feito | Em Progresso | Pendente |
 |-----------|-------|-------|--------------|----------|
 | Backend - Schema | 3 | 3 | 0 | 0 |
-| Backend - API | 6 | 4 | 0 | 2 |
+| Backend - API | 6 | 5 | 0 | 1 |
 | Frontend - UI | 6 | 5 | 0 | 1 |
 | Frontend - Integração | 4 | 4 | 0 | 0 |
 | Segurança | 4 | 2 | 0 | 2 |
 | UX | 4 | 1 | 0 | 3 |
-| **Total** | **27** | **19** | **0** | **8** |
+| **Total** | **27** | **20** | **0** | **7** |
 
-**Progresso Geral:** ~70% (19/27 tasks)
+**Progresso Geral:** ~74% (20/27 tasks)
 
 ---
 
-*Última atualização: Dezembro 2024 - TASK 1.3 concluída (migrations criadas)*
+*Última atualização: Dezembro 2024 - TASK 2.2 concluída (endpoint GET /auth/profile implementado)*

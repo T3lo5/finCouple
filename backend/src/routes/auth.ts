@@ -181,6 +181,31 @@ auth.get('/me', requireAuth, async (c) => {
   return c.json({ user })
 })
 
+// Get complete user profile with preferences
+auth.get('/profile', requireAuth, async (c) => {
+  const user = c.get('user')
+  
+  // Fetch complete user data including preferences
+  const [completeUser] = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      avatarUrl: users.avatarUrl,
+      coupleId: users.coupleId,
+      theme: users.theme,
+      language: users.language,
+      notifications: users.notifications,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
+    })
+    .from(users)
+    .where(eq(users.id, user.id))
+    .limit(1)
+
+  return c.json({ data: { user: completeUser } })
+})
+
 // Request password reset
 auth.post('/forgot-password',
   zValidator('json', z.object({
