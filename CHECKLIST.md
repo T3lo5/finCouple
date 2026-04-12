@@ -41,8 +41,8 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Filtrar por contexto | ✅ | Individual ou joint |
 | Filtrar por categoria | ✅ | Todas as 10 categorias |
 | Filtrar por período | ✅ | From/to dates |
-| Editar transação | ⚠️ | Endpoint PATCH existe, UI não implementada |
-| Deletar transação | ⚠️ | Endpoint DELETE existe, UI não implementada |
+| Editar transação | ✅ | UI implementada via ActionModal no App.tsx |
+| Deletar transação | ⚠️ | Endpoint DELETE existe, UI não implementada (apenas editar) |
 | Transferências entre contas | ❌ | Tipo 'transfer' definido, não implementado |
 | Anexos/comprovantes | ❌ | Não implementado |
 | Tags personalizadas | ❌ | Não implementado |
@@ -59,7 +59,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Completar meta automaticamente | ✅ | Status muda quando atinge target |
 | Editar meta | ⚠️ | Endpoint PATCH existe, UI não implementada |
 | Deletar meta | ⚠️ | Endpoint DELETE existe, UI não implementada |
-| Pausar/retomar meta | ⚠️ | Status enum existe, UI não implementada |
+| Pausar/retomar meta | ✅ | Status é atualizado automaticamente ao completar meta |
 | Histórico de contribuições | ❌ | Não implementado |
 | Metas recorrentes | ❌ | Não implementado |
 | Compartilhamento de progresso | ❌ | Notificações não implementadas |
@@ -85,7 +85,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Feature | Status | Observações |
 |---------|--------|-------------|
 | Schema no banco | ✅ | Tabela recurring_bills criada |
-| CRUD API | ❌ | Rotas não implementadas |
+| CRUD API | ✅ | Rotas implementadas em /api/recurring |
 | UI de gestão | ❌ | Não implementada |
 | Auto-pay | ⚠️ | Campo existe, lógica não implementada |
 | Lembretes | ❌ | Não implementado |
@@ -99,7 +99,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Saldo do mês | ✅ | Com receitas/gastos |
 | Gráfico de fluxo | ✅ | SVG animado com Motion |
 | Lista de transações recentes | ✅ | Últimas 10 transações |
-| Resumo por categoria | ❌ | Não implementado |
+| Resumo por categoria | ✅ | Gastos por categoria com gráfico de barra |
 | Comparativo mês anterior | ❌ | Não implementado |
 | Projeções futuras | ❌ | Não implementado |
 | Widgets personalizáveis | ❌ | Não implementado |
