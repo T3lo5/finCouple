@@ -11,7 +11,7 @@
 ### Backend - Schema & Banco de Dados
 
 - [x] **TASK 1.1:** Campo `avatar_url` já existe na tabela `users`
-- [ ] **TASK 1.2:** Adicionar campos de preferências do usuário (theme, language, notifications)
+- [x] **TASK 1.2:** Adicionar campos de preferências do usuário (theme, language, notifications)
 - [ ] **TASK 1.3:** Criar migration para novas colunas de perfil
 
 ### Backend - API Endpoints
@@ -19,7 +19,7 @@
 - [x] **TASK 2.1:** Criar endpoint `PATCH /auth/profile` para atualizar dados do perfil (nome, email, avatar)
 - [ ] **TASK 2.2:** Criar endpoint `GET /auth/profile` para buscar dados completos do perfil (já existe /me)
 - [x] **TASK 2.3:** Criar endpoint `DELETE /auth/account` para deletar conta (soft delete)
-- [ ] **TASK 2.4:** Criar endpoint `PATCH /auth/preferences` para atualizar preferências
+- [x] **TASK 2.4:** Criar endpoint `PATCH /auth/preferences` para atualizar preferências
 - [x] **TASK 2.5:** Validação Zod implementada no endpoint PATCH /profile
 - [ ] **TASK 2.6:** Implementar upload de avatar (opcional - usar URL externa)
 
@@ -30,7 +30,8 @@
 - [x] **TASK 3.3:** Criar formulário de edição de email com validação inline
 - [x] **TASK 3.4:** Componente de display de avatar (inicial ou URL)
 - [x] **TASK 3.5:** Criar modal de confirmação para mudanças críticas (email, deletar conta)
-- [ ] **TASK 3.6:** Adicionar feedback visual (toasts) - usar error states por enquanto
+- [x] **TASK 3.6:** Adicionar feedback visual (toasts) - usar error states por enquanto
+- [x] **TASK 3.7:** Criar seção de preferências no SettingsScreen (theme, language, notifications)
 
 ### Frontend - Integração
 
@@ -38,6 +39,7 @@
 - [x] **TASK 4.2:** Atualizar contexto de auth após mudança de dados
 - [x] **TASK 4.3:** Refresh automático do user context após update (via updateProfile)
 - [x] **TASK 4.4:** Tratamento de erros da API na UI
+- [x] **TASK 4.5:** Integrar endpoint de preferências no frontend
 
 ### Segurança & Validação
 
@@ -67,18 +69,23 @@
 - [x] **TASK 0.2:** Revisar schema atual da tabela `users`
 - [x] **TASK 0.3:** Revisar SettingsScreen existente no frontend
 - [x] **TASK 0.4:** Criar documento Kanban para organização das tasks
+- [x] **TASK 1.2:** Campos de preferências adicionados ao schema (theme, language, notifications)
 - [x] **TASK 2.1:** Endpoint PATCH /auth/profile implementado no backend
 - [x] **TASK 2.3:** Endpoint DELETE /auth/account implementado no backend
+- [x] **TASK 2.4:** Endpoint PATCH /auth/preferences implementado no backend
 - [x] **TASK 2.5:** Validação Zod no endpoint de perfil
 - [x] **TASK 3.1:** Edição de perfil integrada ao SettingsScreen
 - [x] **TASK 3.2:** Formulário de edição de nome
 - [x] **TASK 3.3:** Formulário de edição de email
 - [x] **TASK 3.4:** Display de avatar (suporte a URL ou inicial)
 - [x] **TASK 3.5:** Modal de confirmação para email e deletar conta
+- [x] **TASK 3.6:** Feedback visual com error states
+- [x] **TASK 3.7:** Seção de preferências no SettingsScreen
 - [x] **TASK 4.1:** Integração frontend-backend do updateProfile
 - [x] **TASK 4.2:** Contexto de auth atualizado após mudança
 - [x] **TASK 4.3:** Refresh automático do user context
 - [x] **TASK 4.4:** Tratamento de erros na UI
+- [x] **TASK 4.5:** Integração do updatePreferences no frontend
 - [x] **TASK 5.1:** Confirmação de senha para mudanças críticas (email, delete)
 - [x] **TASK 5.2:** Validação de unicidade de email no backend
 
