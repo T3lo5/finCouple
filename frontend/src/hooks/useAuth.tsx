@@ -14,6 +14,7 @@ interface AuthActions {
   createCouple: () => Promise<string> 
   joinCouple:  (code: string) => Promise<void>
   refreshUser: () => Promise<void>
+  forgotPassword: (email: string) => Promise<void>
 }
 
 type AuthContext = AuthState & AuthActions
@@ -72,6 +73,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await refreshUser()
   }
 
+  const forgotPassword = async (email: string) => {
+    await authApi.forgotPassword(email)
+  }
+
   return (
     <AuthCtx.Provider value={{
       user,
@@ -83,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       createCouple,
       joinCouple,
       refreshUser,
+      forgotPassword,
     }}>
       {children}
     </AuthCtx.Provider>

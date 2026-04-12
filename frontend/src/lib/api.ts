@@ -124,6 +124,18 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify({ inviteCode }),
     }),
+
+  forgotPassword: (email: string) =>
+    request<{ message: string }>('/api/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+
+  resetPassword: (token: string, newPassword: string) =>
+    request<{ message: string }>('/api/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, newPassword }),
+    }),
 }
 
 export const transactionsApi = {
