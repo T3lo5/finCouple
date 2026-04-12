@@ -5,7 +5,7 @@ import { db } from '../db/client'
 import { users, sessions, couples, passwordResetTokens } from '../db/schema'
 import { eq, and, gt } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
-import { requireAuth } from '../middleware/auth'
+import { requireAuth, logAudit } from '../middleware/auth'
 import { rateLimit } from '../middleware/rateLimit'
 import Brevo from '@getbrevo/brevo'
 
@@ -386,6 +386,18 @@ auth.patch('/profile',
     const user = c.get('user')
     const updates = c.req.valid('json')
 
+    // Fetch current user data for audit logging
+    const [currentUser] = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        avatarUrl: users.avatarUrl,
+      })
+      .from(users)
+      .where(eq(users.id, user.id))
+      .limit(1)
+
     // Check if critical changes require password confirmation
     const isCriticalChange = updates.email || updates.password
     if (isCriticalChange && !updates.password) {
@@ -422,12 +434,46 @@ auth.patch('/profile',
       delete updates.avatarUrl
     }
 
+    // Determine what fields are actually changing
+    const oldValues: Record<string, unknown> = {}
+    const newValues: Record<string, unknown> = {}
+
+    if (updates.name && updates.name !== currentUser.name) {
+      oldValues.name = currentUser.name
+      newValues.name = updates.name
+    }
+    if (updates.email && updates.email !== currentUser.email) {
+      oldValues.email = currentUser.email
+      newValues.email = updates.email
+    }
+    if (updates.avatarUrl && updates.avatarUrl !== currentUser.avatarUrl) {
+      oldValues.avatarUrl = currentUser.avatarUrl
+      newValues.avatarUrl = updates.avatarUrl
+    }
+
     // Update user if there are any changes
     if (Object.keys(updates).length > 0) {
       await db
         .update(users)
         .set({ ...updates, updatedAt: new Date() })
         .where(eq(users.id, user.id))
+    }
+
+    // Log audit entry if there were actual changes
+    if (Object.keys(oldValues).length > 0 || Object.keys(newValues).length > 0) {
+      const ipAddress = c.req.header('X-Forwarded-For') || c.req.header('X-Real-IP') || null
+      const userAgent = c.req.header('User-Agent') || null
+      
+      await logAudit(
+        user.id,
+        'profile_update',
+        'user',
+        user.id,
+        oldValues,
+        newValues,
+        ipAddress,
+        userAgent
+      )
     }
 
     // Fetch updated user data
@@ -462,12 +508,57 @@ auth.patch('/preferences',
     const user = c.get('user')
     const updates = c.req.valid('json')
 
+    // Fetch current preferences for audit logging
+    const [currentPrefs] = await db
+      .select({
+        theme: users.theme,
+        language: users.language,
+        notifications: users.notifications,
+      })
+      .from(users)
+      .where(eq(users.id, user.id))
+      .limit(1)
+
+    // Determine what fields are actually changing
+    const oldValues: Record<string, unknown> = {}
+    const newValues: Record<string, unknown> = {}
+
+    if (updates.theme !== undefined && updates.theme !== currentPrefs.theme) {
+      oldValues.theme = currentPrefs.theme
+      newValues.theme = updates.theme
+    }
+    if (updates.language !== undefined && updates.language !== currentPrefs.language) {
+      oldValues.language = currentPrefs.language
+      newValues.language = updates.language
+    }
+    if (updates.notifications !== undefined && updates.notifications !== currentPrefs.notifications) {
+      oldValues.notifications = currentPrefs.notifications
+      newValues.notifications = updates.notifications
+    }
+
     // Update preferences if there are any changes
     if (Object.keys(updates).length > 0) {
       await db
         .update(users)
         .set({ ...updates, updatedAt: new Date() })
         .where(eq(users.id, user.id))
+    }
+
+    // Log audit entry if there were actual changes
+    if (Object.keys(oldValues).length > 0 || Object.keys(newValues).length > 0) {
+      const ipAddress = c.req.header('X-Forwarded-For') || c.req.header('X-Real-IP') || null
+      const userAgent = c.req.header('User-Agent') || null
+      
+      await logAudit(
+        user.id,
+        'preferences_update',
+        'user',
+        user.id,
+        oldValues,
+        newValues,
+        ipAddress,
+        userAgent
+      )
     }
 
     // Fetch updated user data
@@ -508,6 +599,21 @@ auth.delete('/account',
     if (hash !== user.passwordHash) {
       return c.json({ error: 'Invalid password' }, 401)
     }
+
+    // Log audit entry before deletion (important for security tracking)
+    const ipAddress = c.req.header('X-Forwarded-For') || c.req.header('X-Real-IP') || null
+    const userAgent = c.req.header('User-Agent') || null
+    
+    await logAudit(
+      user.id,
+      'account_delete',
+      'user',
+      user.id,
+      { email: user.email, name: user.name },
+      null,
+      ipAddress,
+      userAgent
+    )
 
     // Soft delete - mark sessions for cleanup and delete user
     // First, invalidate all sessions

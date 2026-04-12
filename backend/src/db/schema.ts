@@ -178,3 +178,16 @@ export const pushSubscriptions = pgTable('push_subscriptions', {
   createdAt:    timestamp('created_at').defaultNow().notNull(),
   updatedAt:    timestamp('updated_at').defaultNow().notNull(),
 })
+
+export const auditLogs = pgTable('audit_logs', {
+  id:         text('id').primaryKey().$defaultFn(() => nanoid()),
+  userId:     text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  action:     text('action').notNull(), // e.g., 'profile_update', 'email_change', 'password_change', 'preferences_update', 'account_delete'
+  entity:     text('entity').notNull().default('user'), // entidade afetada
+  entityId:   text('entity_id'), // ID da entidade afetada
+  oldValues:  text('old_values'), // JSON string com valores antigos
+  newValues:  text('new_values'), // JSON string com novos valores
+  ipAddress:  text('ip_address'), // IP da requisição (opcional)
+  userAgent:  text('user_agent'), // User agent do cliente
+  createdAt:  timestamp('created_at').defaultNow().notNull(),
+})

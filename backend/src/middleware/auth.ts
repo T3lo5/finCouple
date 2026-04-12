@@ -1,6 +1,6 @@
 import { createMiddleware } from 'hono/factory'
 import { db } from '../db/client'
-import { sessions, users } from '../db/schema'
+import { sessions, users, auditLogs } from '../db/schema'
 import { eq, and, gt } from 'drizzle-orm'
 
 export type AuthUser = {
@@ -55,4 +55,35 @@ function getCookie(request: Request, name: string): string | undefined {
   const cookies = cookieHeader.split(';').map(c => c.trim())
   const cookie = cookies.find(c => c.startsWith(`${name}=`))
   return cookie?.split('=')[1]
+}
+
+/**
+ * Logs an audit entry for profile changes
+ */
+export async function logAudit(
+  userId: string,
+  action: string,
+  entity: string,
+  entityId: string | null,
+  oldValues: Record<string, unknown> | null,
+  newValues: Record<string, unknown> | null,
+  ipAddress?: string | null,
+  userAgent?: string | null
+) {
+  try {
+    await db.insert(auditLogs).values({
+      id: crypto.randomUUID(),
+      userId,
+      action,
+      entity,
+      entityId: entityId || null,
+      oldValues: oldValues ? JSON.stringify(oldValues) : null,
+      newValues: newValues ? JSON.stringify(newValues) : null,
+      ipAddress: ipAddress || null,
+      userAgent: userAgent || null,
+    })
+  } catch (error) {
+    console.error('Failed to create audit log:', error)
+    // Don't throw - audit logging failure shouldn't break the main operation
+  }
 }
