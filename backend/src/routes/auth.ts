@@ -6,6 +6,7 @@ import { users, sessions, couples, passwordResetTokens } from '../db/schema'
 import { eq, and, gt } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { requireAuth } from '../middleware/auth'
+import { rateLimit } from '../middleware/rateLimit'
 import Brevo from '@getbrevo/brevo'
 
 const auth = new Hono()
@@ -374,6 +375,7 @@ auth.post('/couple/join',
 // Update user profile
 auth.patch('/profile',
   requireAuth,
+  rateLimit({ maxRequests: 10, windowMs: 60 * 1000, message: 'Too many profile update attempts, please try again in a minute' }),
   zValidator('json', z.object({
     name: z.string().min(2).max(80).optional(),
     email: z.string().email().optional(),
@@ -450,6 +452,7 @@ auth.patch('/profile',
 // Update user preferences
 auth.patch('/preferences',
   requireAuth,
+  rateLimit({ maxRequests: 10, windowMs: 60 * 1000, message: 'Too many preference update attempts, please try again in a minute' }),
   zValidator('json', z.object({
     theme: z.enum(['dark', 'light']).optional(),
     language: z.string().optional(),
@@ -492,6 +495,7 @@ auth.patch('/preferences',
 // Delete user account
 auth.delete('/account',
   requireAuth,
+  rateLimit({ maxRequests: 5, windowMs: 60 * 1000, message: 'Too many account deletion attempts, please try again in a minute' }),
   zValidator('json', z.object({
     password: z.string().min(8),
   })),
