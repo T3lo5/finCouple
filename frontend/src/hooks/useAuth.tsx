@@ -17,6 +17,7 @@ interface AuthActions {
   forgotPassword: (email: string) => Promise<void>
   updateProfile: (data: Partial<{ name: string; email: string; avatarUrl: string; password: string }>) => Promise<void>
   deleteAccount: (password: string) => Promise<void>
+  updatePreferences: (data: Partial<{ theme: string; language: string; notifications: boolean }>) => Promise<void>
 }
 
 type AuthContext = AuthState & AuthActions
@@ -90,6 +91,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }
 
+  const updatePreferences = async (data: Partial<{ theme: string; language: string; notifications: boolean }>) => {
+    const { data: { user: updatedUser } } = await authApi.updatePreferences(data)
+    setUser(updatedUser)
+  }
+
   return (
     <AuthCtx.Provider value={{
       user,
@@ -104,6 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       forgotPassword,
       updateProfile,
       deleteAccount,
+      updatePreferences,
     }}>
       {children}
     </AuthCtx.Provider>
