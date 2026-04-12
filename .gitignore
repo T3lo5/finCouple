@@ -1,40 +1,4 @@
 ```
-# Environment variables
-.env
-.env.local
-.env.*
-
 # Dependencies
 node_modules/
-.pnpm-store/
-
-# Build outputs
-dist/
-build/
-.next/
-.nuxt/
-public/build/
-
-# TypeScript/JavaScript
-*.tsbuildinfo
-*.js.map
-*.jsx.map
-*.ts.map
-
-# Logs
-*.log
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Coverage
-coverage/
-.nyc_output/
 ```
