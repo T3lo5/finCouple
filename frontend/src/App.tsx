@@ -26,6 +26,7 @@ import { useNotifications } from './hooks/useNotifications'
 import { type Context, type Category, type TransactionType, type Transaction, transactionsApi } from './lib/api'
 import AuthScreen from './components/screens/AuthScreen'
 import OnboardingCouple from './components/screens/OnboardingCouple'
+import ResetPasswordScreen from './components/screens/ResetPasswordScreen'
 
 type Screen = 'dashboard' | 'accounts' | 'savings' | 'recurring' | 'settings'
 
