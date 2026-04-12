@@ -24,10 +24,11 @@ import {
 import { useAuth } from './hooks/useAuth'
 import { useTransactions, useSavingsGoals } from './hooks/useTransactions'
 import { useNotifications } from './hooks/useNotifications'
-import { type Context, type Category, type TransactionType, type Transaction, transactionsApi } from './lib/api'
+import { type Context, type Category, type TransactionType, type Transaction, type SavingsGoal, transactionsApi } from './lib/api'
 import AuthScreen from './components/screens/AuthScreen'
 import OnboardingCouple from './components/screens/OnboardingCouple'
 import ResetPasswordScreen from './components/screens/ResetPasswordScreen'
+import { SettingsSkeleton } from './components/Skeleton'
 
 type Screen = 'dashboard' | 'accounts' | 'savings' | 'recurring' | 'settings'
 
@@ -765,7 +766,7 @@ const SettingsScreen = ({
   isIndividualVisibleToPartner: boolean
   setIsIndividualVisibleToPartner: (v: boolean) => void
 }) => {
-  const { user, logout, isInCouple, updateProfile, deleteAccount, updatePreferences } = useAuth()
+  const { user, loading: authLoading, logout, isInCouple, updateProfile, deleteAccount, updatePreferences } = useAuth()
   const [isEditingName, setIsEditingName] = useState(false)
   const [isEditingEmail, setIsEditingEmail] = useState(false)
   const [isEditingAvatar, setIsEditingAvatar] = useState(false)
@@ -785,6 +786,11 @@ const SettingsScreen = ({
   const [language, setLanguage] = useState(user?.language || 'pt-BR')
   const [notifications, setNotifications] = useState(user?.notifications ?? true)
   const [preferencesLoading, setPreferencesLoading] = useState(false)
+
+  // Show skeleton while user data is loading
+  if (authLoading || !user) {
+    return <SettingsSkeleton />
+  }
 
   const handleUpdateName = async () => {
     if (!editName.trim()) return
@@ -1110,7 +1116,7 @@ const SettingsScreen = ({
             <button
               onClick={async () => {
                 try {
-                  await transactionsApi.export({ context })
+                  await transactionsApi.export({ context: 'individual' })
                 } catch (e) {
                   console.error('Erro ao exportar:', e)
                 }

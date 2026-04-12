@@ -51,7 +51,7 @@
 ### UX & Acessibilidade
 
 - [x] **TASK 6.1:** Mensagens de erro claras na UI
-- [ ] **TASK 6.2:** Implementar skeleton screens durante loading
+- [x] **TASK 6.2:** Implementar skeleton screens durante loading ✅ CONCLUÍDO
 - [ ] **TASK 6.3:** Garantir acessibilidade (labels, focus states)
 - [ ] **TASK 6.4:** Testar responsividade em mobile
 
@@ -96,6 +96,12 @@
 - [x] **TASK 5.1:** Confirmação de senha para mudanças críticas (email, delete)
 - [x] **TASK 5.2:** Validação de unicidade de email no backend
 - [x] **TASK 5.3:** Rate limiting nos endpoints de perfil
+- [x] **TASK 6.2:** Skeleton screens implementados ✅
+  - Componente `Skeleton.tsx` criado com variantes (text, circular, rectangular, rounded)
+  - Animação de shimmer com gradient e motion
+  - Skeletons específicos: ProfileSkeleton, PreferencesSkeleton, SecuritySectionSkeleton, DataSectionSkeleton, DangerZoneSkeleton
+  - SettingsSkeleton composto integrado ao SettingsScreen
+  - Loading state do useAuth agora exibe skeleton durante carregamento do usuário
 
 ---
 
