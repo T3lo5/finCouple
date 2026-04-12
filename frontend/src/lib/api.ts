@@ -5,10 +5,11 @@ export type AccountType = 'checking' | 'savings' | 'credit' | 'investment' | 'be
 export type GoalStatus = 'active' | 'completed' | 'paused'
 
 export interface User {
-  id:       string
-  email:    string
-  name:     string
-  coupleId: string | null
+  id:         string
+  email:      string
+  name:       string
+  avatarUrl?: string | null
+  coupleId:   string | null
 }
 
 export interface Account {
@@ -135,6 +136,12 @@ export const authApi = {
     request<{ message: string }>('/api/auth/reset-password', {
       method: 'POST',
       body: JSON.stringify({ token, newPassword }),
+    }),
+
+  updateProfile: (body: Partial<{ name: string; email: string; avatarUrl: string }>) =>
+    request<{ data: { user: User } }>('/api/auth/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(body),
     }),
 }
 

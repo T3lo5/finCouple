@@ -8,13 +8,14 @@ interface AuthState {
 }
 
 interface AuthActions {
-  login:       (email: string, password: string) => Promise<void>
-  register:    (email: string, name: string, password: string) => Promise<void>
-  logout:      () => Promise<void>
+  login:        (email: string, password: string) => Promise<void>
+  register:     (email: string, name: string, password: string) => Promise<void>
+  logout:       () => Promise<void>
   createCouple: () => Promise<string> 
-  joinCouple:  (code: string) => Promise<void>
-  refreshUser: () => Promise<void>
+  joinCouple:   (code: string) => Promise<void>
+  refreshUser:  () => Promise<void>
   forgotPassword: (email: string) => Promise<void>
+  updateProfile: (data: Partial<{ name: string; email: string; avatarUrl: string }>) => Promise<void>
 }
 
 type AuthContext = AuthState & AuthActions
@@ -77,6 +78,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await authApi.forgotPassword(email)
   }
 
+  const updateProfile = async (data: Partial<{ name: string; email: string; avatarUrl: string }>) => {
+    const { data: { user: updatedUser } } = await authApi.updateProfile(data)
+    setUser(updatedUser)
+  }
+
   return (
     <AuthCtx.Provider value={{
       user,
@@ -89,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       joinCouple,
       refreshUser,
       forgotPassword,
+      updateProfile,
     }}>
       {children}
     </AuthCtx.Provider>
