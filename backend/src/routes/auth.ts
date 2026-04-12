@@ -346,4 +346,63 @@ auth.post('/couple/join',
   }
 )
 
+// Update user profile
+auth.patch('/profile',
+  requireAuth,
+  zValidator('json', z.object({
+    name: z.string().min(2).max(80).optional(),
+    email: z.string().email().optional(),
+    avatarUrl: z.string().url().optional().or(z.literal('')),
+  })),
+  async (c) => {
+    const user = c.get('user')
+    const updates = c.req.valid('json')
+
+    // Check if email is being changed and if it's already in use
+    if (updates.email && updates.email !== user.email) {
+      const [existing] = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, updates.email.toLowerCase()))
+        .limit(1)
+
+      if (existing) {
+        return c.json({ error: 'Email already in use' }, 409)
+      }
+      
+      updates.email = updates.email.toLowerCase()
+    }
+
+    // Remove empty avatarUrl
+    if (updates.avatarUrl === '') {
+      delete updates.avatarUrl
+    }
+
+    // Update user if there are any changes
+    if (Object.keys(updates).length > 0) {
+      await db
+        .update(users)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(users.id, user.id))
+    }
+
+    // Fetch updated user data
+    const [updatedUser] = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        avatarUrl: users.avatarUrl,
+        coupleId: users.coupleId,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+      })
+      .from(users)
+      .where(eq(users.id, user.id))
+      .limit(1)
+
+    return c.json({ data: { user: updatedUser } })
+  }
+)
+
 export default auth

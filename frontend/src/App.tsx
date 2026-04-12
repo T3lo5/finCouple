@@ -764,27 +764,134 @@ const SettingsScreen = ({
   isIndividualVisibleToPartner: boolean
   setIsIndividualVisibleToPartner: (v: boolean) => void
 }) => {
-  const { user, logout, isInCouple } = useAuth()
+  const { user, logout, isInCouple, updateProfile } = useAuth()
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [isEditingEmail, setIsEditingEmail] = useState(false)
+  const [editName, setEditName] = useState(user?.name || '')
+  const [editEmail, setEditEmail] = useState(user?.email || '')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleUpdateName = async () => {
+    if (!editName.trim()) return
+    setLoading(true)
+    setError(null)
+    try {
+      await updateProfile({ name: editName.trim() })
+      setIsEditingName(false)
+    } catch (e: any) {
+      setError(e.message || 'Erro ao atualizar nome')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUpdateEmail = async () => {
+    if (!editEmail.trim() || !editEmail.includes('@')) return
+    setLoading(true)
+    setError(null)
+    try {
+      await updateProfile({ email: editEmail.trim() })
+      setIsEditingEmail(false)
+    } catch (e: any) {
+      setError(e.message || 'Erro ao atualizar email')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-      className="pt-32 pb-32 px-6 space-y-12"
+      className="pt-32 pb-32 px-6 space-y-8"
     >
-      <div className="text-center space-y-4">
-        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto text-2xl font-headings font-medium border border-white/10">
-          {user?.name?.charAt(0).toUpperCase()}
+      {/* Profile Header */}
+      <div className="p-6 bg-surface rounded-[32px] border border-white/5 space-y-6">
+        <div className="text-center space-y-4">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-individual/20 flex items-center justify-center mx-auto text-3xl font-headings font-medium border border-white/10">
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt={user.name} className="w-full h-full rounded-full object-cover" />
+            ) : (
+              user?.name?.charAt(0).toUpperCase()
+            )}
+          </div>
+          <div>
+            {isEditingName ? (
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="bg-white/5 border border-white/10 rounded-xl px-3 py-1 text-center text-lg font-headings focus:outline-none focus:border-primary/30"
+                  autoFocus
+                />
+                <button
+                  onClick={handleUpdateName}
+                  disabled={loading}
+                  className="p-1.5 bg-primary/20 text-primary rounded-full hover:bg-primary/30 transition-colors disabled:opacity-50"
+                >
+                  <ShieldCheck size={16} />
+                </button>
+                <button
+                  onClick={() => { setIsEditingName(false); setEditName(user?.name || '') }}
+                  className="p-1.5 bg-white/5 text-muted rounded-full hover:bg-white/10 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsEditingName(true)}
+                className="text-2xl font-headings font-semibold hover:text-primary/80 transition-colors"
+              >
+                {user?.name}
+              </button>
+            )}
+            {isEditingEmail ? (
+              <div className="flex items-center justify-center gap-2">
+                <input
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  className="bg-white/5 border border-white/10 rounded-xl px-3 py-1 text-center text-sm text-muted focus:outline-none focus:border-primary/30"
+                  autoFocus
+                />
+                <button
+                  onClick={handleUpdateEmail}
+                  disabled={loading}
+                  className="p-1.5 bg-primary/20 text-primary rounded-full hover:bg-primary/30 transition-colors disabled:opacity-50"
+                >
+                  <ShieldCheck size={14} />
+                </button>
+                <button
+                  onClick={() => { setIsEditingEmail(false); setEditEmail(user?.email || '') }}
+                  className="p-1.5 bg-white/5 text-muted rounded-full hover:bg-white/10 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsEditingEmail(true)}
+                className="text-muted text-sm hover:text-primary/80 transition-colors"
+              >
+                {user?.email}
+              </button>
+            )}
+            <p className="text-xs mt-2">
+              {isInCouple
+                ? <span className="text-positive">✓ Conectado ao casal</span>
+                : <span className="text-muted/50">Sem parceiro(a) conectado</span>
+              }
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-2xl font-headings font-semibold">{user?.name}</h2>
-          <p className="text-muted text-sm">{user?.email}</p>
-          <p className="text-xs mt-1">
-            {isInCouple
-              ? <span className="text-positive">✓ Conectado ao casal</span>
-              : <span className="text-muted/50">Sem parceiro(a) conectado</span>
-            }
-          </p>
-        </div>
+
+        {error && (
+          <div className="p-3 bg-negative/10 border border-negative/20 rounded-xl text-negative text-sm text-center">
+            {error}
+          </div>
+        )}
       </div>
 
       <div className="space-y-8">
