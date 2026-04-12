@@ -42,7 +42,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Filtrar por categoria | ✅ | Todas as 10 categorias |
 | Filtrar por período | ✅ | From/to dates |
 | Editar transação | ✅ | UI implementada via ActionModal no App.tsx |
-| Deletar transação | ⚠️ | Endpoint DELETE existe, UI não implementada (apenas editar) |
+| Deletar transação | ✅ | Endpoint DELETE existe no backend + hook useTransactions.delete() |
 | Transferências entre contas | ❌ | Tipo 'transfer' definido, não implementado |
 | Anexos/comprovantes | ❌ | Não implementado |
 | Tags personalizadas | ❌ | Não implementado |
@@ -58,7 +58,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Contribuir para meta | ✅ | Incrementa currentAmount |
 | Completar meta automaticamente | ✅ | Status muda quando atinge target |
 | Editar meta | ✅ | UI implementada com modal bottom sheet |
-| Deletar meta | ✅ | UI implementada com confirmação |
+| Deletar meta | ✅ | UI implementada com confirmação (handleDelete + remove hook) |
 | Pausar/retomar meta | ✅ | Status é atualizado automaticamente ao completar meta |
 | Histórico de contribuições | ❌ | Não implementado |
 | Metas recorrentes | ❌ | Não implementado |
@@ -260,7 +260,7 @@ Não Implementado:  ██████████████████░░
 - [x] UI de edição/deleção de transações
 - [x] UI de edição/deleção de metas
 - [x] Recuperação de senha
-- [ ] Configurações de perfil
+- [x] Configurações de perfil (implementado conforme PROFILE_SETTINGS_KANBAN.md)
 
 ### Sprint 2 - Dashboard Rico (2-3 semanas)
 - [ ] Gráficos por categoria
