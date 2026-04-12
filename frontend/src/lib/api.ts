@@ -138,10 +138,16 @@ export const authApi = {
       body: JSON.stringify({ token, newPassword }),
     }),
 
-  updateProfile: (body: Partial<{ name: string; email: string; avatarUrl: string }>) =>
+  updateProfile: (body: Partial<{ name: string; email: string; avatarUrl: string; password: string }>) =>
     request<{ data: { user: User } }>('/api/auth/profile', {
       method: 'PATCH',
       body: JSON.stringify(body),
+    }),
+
+  deleteAccount: (password: string) =>
+    request<{ message: string }>('/api/auth/account', {
+      method: 'DELETE',
+      body: JSON.stringify({ password }),
     }),
 }
 

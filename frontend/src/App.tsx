@@ -764,13 +764,18 @@ const SettingsScreen = ({
   isIndividualVisibleToPartner: boolean
   setIsIndividualVisibleToPartner: (v: boolean) => void
 }) => {
-  const { user, logout, isInCouple, updateProfile } = useAuth()
+  const { user, logout, isInCouple, updateProfile, deleteAccount } = useAuth()
   const [isEditingName, setIsEditingName] = useState(false)
   const [isEditingEmail, setIsEditingEmail] = useState(false)
   const [editName, setEditName] = useState(user?.name || '')
   const [editEmail, setEditEmail] = useState(user?.email || '')
+  const [passwordConfirm, setPasswordConfirm] = useState('')
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deletePassword, setDeletePassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [pendingEmail, setPendingEmail] = useState('')
 
   const handleUpdateName = async () => {
     if (!editName.trim()) return
@@ -786,16 +791,45 @@ const SettingsScreen = ({
     }
   }
 
-  const handleUpdateEmail = async () => {
+  const handleRequestEmailChange = async () => {
     if (!editEmail.trim() || !editEmail.includes('@')) return
+    setPendingEmail(editEmail.trim())
+    setShowPasswordModal(true)
+    setIsEditingEmail(false)
+  }
+
+  const handleConfirmEmailChange = async () => {
+    if (!passwordConfirm) {
+      setError('Senha é obrigatória')
+      return
+    }
     setLoading(true)
     setError(null)
     try {
-      await updateProfile({ email: editEmail.trim() })
-      setIsEditingEmail(false)
+      await updateProfile({ email: pendingEmail, password: passwordConfirm })
+      setShowPasswordModal(false)
+      setPasswordConfirm('')
+      setPendingEmail('')
+      setEditEmail(pendingEmail)
     } catch (e: any) {
       setError(e.message || 'Erro ao atualizar email')
     } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      setError('Senha é obrigatória')
+      return
+    }
+    setLoading(true)
+    setError(null)
+    try {
+      await deleteAccount(deletePassword)
+      // Redirect will happen after state update
+    } catch (e: any) {
+      setError(e.message || 'Erro ao deletar conta')
       setLoading(false)
     }
   }
@@ -857,7 +891,7 @@ const SettingsScreen = ({
                   autoFocus
                 />
                 <button
-                  onClick={handleUpdateEmail}
+                  onClick={handleRequestEmailChange}
                   disabled={loading}
                   className="p-1.5 bg-primary/20 text-primary rounded-full hover:bg-primary/30 transition-colors disabled:opacity-50"
                 >
@@ -957,14 +991,154 @@ const SettingsScreen = ({
           </div>
         </div>
 
+        <div className="space-y-4">
+          <h3 className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Zona de Perigo</h3>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="w-full flex items-center justify-center gap-3 p-5 bg-negative/5 border border-negative/10 rounded-[24px] text-negative font-medium transition-colors hover:bg-negative/10"
+          >
+            <LogOut size={18} />
+            Deletar Conta
+          </button>
+        </div>
+
         <button
           onClick={logout}
-          className="w-full flex items-center justify-center gap-3 p-5 bg-negative/5 border border-negative/10 rounded-[24px] text-negative font-medium transition-colors hover:bg-negative/10"
+          className="w-full flex items-center justify-center gap-3 p-5 bg-white/5 border border-white/10 rounded-[24px] text-muted font-medium transition-colors hover:bg-white/10"
         >
           <LogOut size={18} />
           Sair da conta
         </button>
       </div>
+
+      {/* Password Confirmation Modal for Email Change */}
+      <AnimatePresence>
+        {showPasswordModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => { setShowPasswordModal(false); setPasswordConfirm('') }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60]"
+            />
+            <motion.div
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed bottom-0 left-0 right-0 h-auto max-h-[60vh] bg-surface rounded-t-[32px] border-t border-white/10 z-[70] p-8"
+            >
+              <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-6" />
+              <h3 className="text-xl font-headings font-semibold mb-2">Confirmar Mudança de Email</h3>
+              <p className="text-muted text-sm mb-6">Para alterar seu email, digite sua senha atual.</p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-muted text-xs uppercase tracking-widest block mb-2">Nova Email</label>
+                  <input
+                    type="email"
+                    value={pendingEmail}
+                    disabled
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 text-muted"
+                  />
+                </div>
+                <div>
+                  <label className="text-muted text-xs uppercase tracking-widest block mb-2">Senha Atual</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={passwordConfirm}
+                    onChange={(e) => setPasswordConfirm(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 focus:outline-none focus:border-primary/30 placeholder:text-muted/40"
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="mt-4 p-3 bg-negative/10 border border-negative/20 rounded-xl text-negative text-sm text-center">
+                  {error}
+                </div>
+              )}
+
+              <div className="flex gap-3 mt-8">
+                <button
+                  onClick={() => { setShowPasswordModal(false); setPasswordConfirm(''); setError(null) }}
+                  className="flex-1 py-4 rounded-2xl font-medium bg-white/5 text-muted hover:bg-white/10 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleConfirmEmailChange}
+                  disabled={loading || !passwordConfirm}
+                  className="flex-1 py-4 rounded-2xl font-medium bg-primary text-background disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+                >
+                  {loading ? 'Confirmando...' : 'Confirmar'}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Account Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => { setShowDeleteModal(false); setDeletePassword('') }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60]"
+            />
+            <motion.div
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed bottom-0 left-0 right-0 h-auto max-h-[60vh] bg-surface rounded-t-[32px] border-t border-white/10 z-[70] p-8"
+            >
+              <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-6" />
+              <h3 className="text-xl font-headings font-semibold mb-2 text-negative">Deletar Conta Permanentemente</h3>
+              <p className="text-muted text-sm mb-6">Esta ação não pode ser desfeita. Todos os seus dados serão apagados.</p>
+              
+              <div className="space-y-4">
+                <div className="p-4 bg-negative/10 border border-negative/20 rounded-xl">
+                  <p className="text-negative text-xs font-medium">⚠️ Atenção:</p>
+                  <p className="text-negative/80 text-xs mt-1">Todas as suas transações, metas e contas serão excluídas permanentemente.</p>
+                </div>
+                <div>
+                  <label className="text-muted text-xs uppercase tracking-widest block mb-2">Confirme sua Senha</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 focus:outline-none focus:border-negative/30 placeholder:text-muted/40"
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="mt-4 p-3 bg-negative/10 border border-negative/20 rounded-xl text-negative text-sm text-center">
+                  {error}
+                </div>
+              )}
+
+              <div className="flex gap-3 mt-8">
+                <button
+                  onClick={() => { setShowDeleteModal(false); setDeletePassword(''); setError(null) }}
+                  className="flex-1 py-4 rounded-2xl font-medium bg-white/5 text-muted hover:bg-white/10 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={loading || !deletePassword}
+                  className="flex-1 py-4 rounded-2xl font-medium bg-negative text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+                >
+                  {loading ? 'Deletando...' : 'Deletar Permanentemente'}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }

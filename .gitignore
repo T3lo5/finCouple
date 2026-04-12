@@ -1,24 +1,31 @@
 ```
-# Environment
-.env
-.env.local
-*.env.*
-
 # Dependencies
 node_modules/
 .pnpm-store/
 .yarn/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+.yarn-cache/
 
 # Build outputs
 dist/
 build/
+public/build/
+out/
 .next/
 .nuxt/
-out/
-public/build/
+.svelte-kit/
+output/
+
+# TypeScript/JavaScript
+*.tsbuildinfo
+*.js.map
+*.jsx.map
+*.ts.map
+
+# Environment variables
+.env
+.env.local
+.env.*
+!.env.example
 
 # Logs
 *.log
@@ -29,58 +36,22 @@ yarn-error.log*
 # OS generated files
 .DS_Store
 Thumbs.db
-
-# IDE files
-.vscode/
-.idea/
+ehthumbs.db
+Icon?
+.directory
+.Trashes
 *.swp
 *.swo
 
-# Python specific
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-.ENV
-.python-version
-
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
-
 # Testing
-*.test.js
-*.spec.js
-*.test.ts
-*.spec.ts
+coverage/
+.nyc_output/
+.jest/
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Temporary folders
-tmp/
-temp/
-.tmptags
-
-# Compiled Binary files
-*.exe
-*.dll
-*.so
-*.dylib
-
-# Compression
-*.zip
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.rar
-*.7z
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+```
 ```
