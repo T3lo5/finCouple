@@ -8,10 +8,11 @@ import {
   Eye,
   EyeOff,
   Sparkles,
+  KeyRound,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 
-type Mode = "login" | "register";
+type Mode = "login" | "register" | "forgot-password";
 
 interface FieldProps {
   icon: React.ReactNode;
@@ -94,11 +95,12 @@ const Orbs = ({ mode }: { mode: Mode }) => (
 );
 
 export default function AuthScreen() {
-  const { login, register } = useAuth();
+  const { login, register, forgotPassword } = useAuth();
   const [mode, setMode] = useState<Mode>("login");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -110,12 +112,16 @@ export default function AuthScreen() {
 
     setLoading(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
       if (mode === "login") {
         await login(email, password);
-      } else {
+      } else if (mode === "register") {
         await register(email, name, password);
+      } else if (mode === "forgot-password") {
+        await forgotPassword(email);
+        setSuccessMessage("Se o email estiver cadastrado, você receberá um link de recuperação.");
       }
     } catch (err: any) {
       setError(
@@ -123,7 +129,7 @@ export default function AuthScreen() {
           ? "Este e-mail já está cadastrado."
           : err.message === "Invalid credentials"
             ? "E-mail ou senha incorretos."
-            : "Algo deu errado. Tente novamente.",
+            : err.message || "Algo deu errado. Tente novamente.",
       );
     } finally {
       setLoading(false);
@@ -134,7 +140,9 @@ export default function AuthScreen() {
     if (e.key === "Enter") handleSubmit();
   };
 
-  const isValid = email && password && (mode === "login" || name);
+  const isValid = mode === "forgot-password" 
+    ? email 
+    : email && password && (mode === "login" || name);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center relative px-6">
@@ -170,6 +178,7 @@ export default function AuthScreen() {
               onClick={() => {
                 setMode(m);
                 setError(null);
+                setSuccessMessage(null);
               }}
               className="relative flex-1 py-2.5 text-sm font-medium rounded-xl transition-colors duration-300"
             >
@@ -188,6 +197,33 @@ export default function AuthScreen() {
             </button>
           ))}
         </motion.div>
+
+        {mode !== "forgot-password" && (
+          <motion.button
+            onClick={() => {
+              setMode("forgot-password");
+              setError(null);
+              setSuccessMessage(null);
+            }}
+            className="w-full text-center text-sm text-muted hover:text-primary transition-colors duration-300 -mt-6 mb-4 flex items-center justify-center gap-2"
+          >
+            <KeyRound size={14} />
+            Esqueci minha senha
+          </motion.button>
+        )}
+
+        {mode === "forgot-password" && (
+          <motion.button
+            onClick={() => {
+              setMode("login");
+              setError(null);
+              setSuccessMessage(null);
+            }}
+            className="w-full text-center text-sm text-muted hover:text-primary transition-colors duration-300 -mt-6 mb-4"
+          >
+            ← Voltar para login
+          </motion.button>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -220,6 +256,23 @@ export default function AuthScreen() {
             )}
           </AnimatePresence>
 
+          <AnimatePresence>
+            {mode === "forgot-password" && (
+              <motion.div
+                key="forgot-info"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.35 }}
+                style={{ overflow: "hidden" }}
+              >
+                <p className="text-muted text-sm mb-3 -mt-2">
+                  Digite seu email e enviaremos um link para redefinir sua senha.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <Field
             icon={<Mail size={16} />}
             type="email"
@@ -229,25 +282,40 @@ export default function AuthScreen() {
             autoComplete="email"
           />
 
-          <Field
-            icon={<Lock size={16} />}
-            type={showPassword ? "text" : "password"}
-            placeholder="Senha"
-            value={password}
-            onChange={setPassword}
-            autoComplete={
-              mode === "login" ? "current-password" : "new-password"
-            }
-            rightSlot={
-              <button
-                type="button"
-                onClick={() => setShowPassword((p) => !p)}
-                className="text-muted hover:text-white/60 transition-colors"
+          <AnimatePresence>
+            {mode !== "forgot-password" && (
+              <motion.div
+                key="password-field"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.35 }}
+                style={{ overflow: "hidden" }}
               >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            }
-          />
+                <div className="pb-3">
+                  <Field
+                    icon={<Lock size={16} />}
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Senha"
+                    value={password}
+                    onChange={setPassword}
+                    autoComplete={
+                      mode === "login" ? "current-password" : "new-password"
+                    }
+                    rightSlot={
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((p) => !p)}
+                        className="text-muted hover:text-white/60 transition-colors"
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    }
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <AnimatePresence>
             {error && (
@@ -260,6 +328,21 @@ export default function AuthScreen() {
                 className="px-4 py-3 bg-negative/10 border border-negative/20 rounded-xl text-negative text-sm"
               >
                 {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {successMessage && (
+              <motion.div
+                key="success"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.25 }}
+                className="px-4 py-3 bg-positive/10 border border-positive/20 rounded-xl text-positive text-sm"
+              >
+                {successMessage}
               </motion.div>
             )}
           </AnimatePresence>
@@ -279,7 +362,13 @@ export default function AuthScreen() {
               <div className="w-5 h-5 border-2 border-background/30 border-t-background rounded-full animate-spin" />
             ) : (
               <>
-                <span>{mode === "login" ? "Entrar" : "Criar conta"}</span>
+                <span>
+                  {mode === "login" 
+                    ? "Entrar" 
+                    : mode === "register" 
+                      ? "Criar conta" 
+                      : "Enviar link de recuperação"}
+                </span>
                 <ArrowRight size={18} />
               </>
             )}

@@ -2,12 +2,17 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { db } from '../db/client'
-import { users, sessions, couples } from '../db/schema'
-import { eq, and } from 'drizzle-orm'
+import { users, sessions, couples, passwordResetTokens } from '../db/schema'
+import { eq, and, gt } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { requireAuth } from '../middleware/auth'
+import Brevo from '@getbrevo/brevo'
 
 const auth = new Hono()
+
+// Initialize Brevo API client
+const brevoApi = new Brevo.TransactionalEmailsApi()
+brevoApi.setApiKey(process.env.BREVO_API_KEY || '')
 
 async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder()
@@ -18,6 +23,64 @@ async function hashPassword(password: string): Promise<string> {
 
 function createSessionToken(): string {
   return nanoid(64)
+}
+
+function createResetToken(): string {
+  return nanoid(32)
+}
+
+async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`
+  
+  const sendSmtpEmail = new Brevo.SendSmtpEmail()
+  sendSmtpEmail.subject = 'Recuperação de Senha - FinCouple'
+  sendSmtpEmail.sender = { name: 'FinCouple', email: process.env.BREVO_SENDER_EMAIL || 'noreply@fincouple.com' }
+  sendSmtpEmail.to = [{ email, name: '' }]
+  sendSmtpEmail.htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: 'DM Sans', sans-serif; background-color: #08080A; color: #F9FAFB; margin: 0; padding: 20px; }
+          .container { max-width: 400px; margin: 0 auto; background-color: #141417; border-radius: 24px; padding: 32px; border: 1px solid rgba(255, 255, 255, 0.05); }
+          .logo { text-align: center; margin-bottom: 24px; }
+          h1 { font-family: 'Playfair Display', serif; color: #D4AF37; font-size: 24px; margin-bottom: 16px; }
+          p { color: #82828C; line-height: 1.6; margin-bottom: 24px; }
+          .button { display: inline-block; background-color: #D4AF37; color: #08080A; text-decoration: none; padding: 14px 32px; border-radius: 20px; font-weight: 600; margin: 16px 0; }
+          .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.05); font-size: 12px; color: #82828C; text-align: center; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="logo">
+            <h1>FinCouple</h1>
+          </div>
+          <p>Você solicitou a recuperação de senha da sua conta FinCouple.</p>
+          <p>Clique no botão abaixo para criar uma nova senha:</p>
+          <div style="text-align: center;">
+            <a href="${resetUrl}" class="button">Redefinir Senha</a>
+          </div>
+          <p>Ou copie e cole este link no seu navegador:</p>
+          <p style="word-break: break-all; font-size: 12px; color: #82828C;">${resetUrl}</p>
+          <p>Este link é válido por 1 hora.</p>
+          <p>Se você não solicitou esta recuperação, ignore este email.</p>
+          <div class="footer">
+            © 2024 FinCouple. Todos os direitos reservados.
+          </div>
+        </div>
+      </body>
+    </html>
+  `
+  sendSmtpEmail.tags = ['password-reset']
+
+  try {
+    await brevoApi.sendTransacEmail(sendSmtpEmail)
+  } catch (error) {
+    console.error('Failed to send password reset email:', error)
+    throw new Error('Failed to send email')
+  }
 }
 
 auth.post('/register',
@@ -117,6 +180,110 @@ auth.get('/me', requireAuth, async (c) => {
   const user = c.get('user')
   return c.json({ user })
 })
+
+// Request password reset
+auth.post('/forgot-password',
+  zValidator('json', z.object({
+    email: z.string().email(),
+  })),
+  async (c) => {
+    const { email } = c.req.valid('json')
+
+    const [user] = await db
+      .select({ id: users.id, email: users.email, name: users.name })
+      .from(users)
+      .where(eq(users.email, email.toLowerCase()))
+      .limit(1)
+
+    if (!user) {
+      // Don't reveal if email exists or not for security
+      return c.json({ message: 'If the email is registered, you will receive a password reset link' })
+    }
+
+    // Invalidate any existing reset tokens for this user
+    await db
+      .update(passwordResetTokens)
+      .set({ used: true })
+      .where(and(
+        eq(passwordResetTokens.userId, user.id),
+        eq(passwordResetTokens.used, false)
+      ))
+
+    // Create new reset token
+    const token = createResetToken()
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
+
+    await db.insert(passwordResetTokens).values({
+      id: nanoid(),
+      userId: user.id,
+      token,
+      expiresAt,
+      used: false,
+    })
+
+    // Send email
+    try {
+      await sendPasswordResetEmail(user.email, token)
+      return c.json({ message: 'If the email is registered, you will receive a password reset link' })
+    } catch (error) {
+      console.error('Error sending password reset email:', error)
+      return c.json({ error: 'Failed to send email. Please try again later.' }, 500)
+    }
+  }
+)
+
+// Reset password with token
+auth.post('/reset-password',
+  zValidator('json', z.object({
+    token: z.string(),
+    newPassword: z.string().min(8),
+  })),
+  async (c) => {
+    const { token, newPassword } = c.req.valid('json')
+
+    // Find valid reset token
+    const [resetToken] = await db
+      .select({ 
+        id: passwordResetTokens.id,
+        userId: passwordResetTokens.userId,
+        expiresAt: passwordResetTokens.expiresAt,
+        used: passwordResetTokens.used
+      })
+      .from(passwordResetTokens)
+      .where(and(
+        eq(passwordResetTokens.token, token),
+        eq(passwordResetTokens.used, false),
+        gt(passwordResetTokens.expiresAt, new Date())
+      ))
+      .limit(1)
+
+    if (!resetToken) {
+      return c.json({ error: 'Invalid or expired reset token' }, 400)
+    }
+
+    // Hash new password
+    const passwordHash = await hashPassword(newPassword)
+
+    // Update user password
+    await db
+      .update(users)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(users.id, resetToken.userId))
+
+    // Mark token as used
+    await db
+      .update(passwordResetTokens)
+      .set({ used: true })
+      .where(eq(passwordResetTokens.id, resetToken.id))
+
+    // Invalidate all sessions for this user (optional security measure)
+    await db
+      .delete(sessions)
+      .where(eq(sessions.userId, resetToken.userId))
+
+    return c.json({ message: 'Password successfully reset. Please login with your new password.' })
+  }
+)
 
 auth.post('/couple/create', requireAuth, async (c) => {
   const user = c.get('user')
