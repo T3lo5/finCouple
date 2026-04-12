@@ -2,7 +2,7 @@
 
 **Objetivo:** Implementar configurações completas do perfil do usuário conforme SPEC.md e CHECKLIST.md
 
-**Status Geral:** 🟡 Em Progresso
+**Status Geral:** 🟢 Em Progresso (TASK 1.3 Concluída)
 
 ---
 
@@ -12,7 +12,7 @@
 
 - [x] **TASK 1.1:** Campo `avatar_url` já existe na tabela `users`
 - [x] **TASK 1.2:** Adicionar campos de preferências do usuário (theme, language, notifications)
-- [ ] **TASK 1.3:** Criar migration para novas colunas de perfil
+- [x] **TASK 1.3:** Criar migration para novas colunas de perfil
 
 ### Backend - API Endpoints
 
@@ -70,6 +70,7 @@
 - [x] **TASK 0.3:** Revisar SettingsScreen existente no frontend
 - [x] **TASK 0.4:** Criar documento Kanban para organização das tasks
 - [x] **TASK 1.2:** Campos de preferências adicionados ao schema (theme, language, notifications)
+- [x] **TASK 1.3:** Criar migration para novas colunas de perfil - Migrations 0001 e 0002 criadas
 - [x] **TASK 2.1:** Endpoint PATCH /auth/profile implementado no backend
 - [x] **TASK 2.3:** Endpoint DELETE /auth/account implementado no backend
 - [x] **TASK 2.4:** Endpoint PATCH /auth/preferences implementado no backend
@@ -138,16 +139,16 @@ TASK 1.x (Schema) → TASK 2.x (API) → TASK 4.x (Integração)
 
 | Categoria | Total | Feito | Em Progresso | Pendente |
 |-----------|-------|-------|--------------|----------|
-| Backend - Schema | 3 | 1 | 0 | 2 |
+| Backend - Schema | 3 | 3 | 0 | 0 |
 | Backend - API | 6 | 4 | 0 | 2 |
 | Frontend - UI | 6 | 5 | 0 | 1 |
 | Frontend - Integração | 4 | 4 | 0 | 0 |
 | Segurança | 4 | 2 | 0 | 2 |
 | UX | 4 | 1 | 0 | 3 |
-| **Total** | **27** | **17** | **0** | **10** |
+| **Total** | **27** | **19** | **0** | **8** |
 
-**Progresso Geral:** ~63% (17/27 tasks)
+**Progresso Geral:** ~70% (19/27 tasks)
 
 ---
 
-*Última atualização: Dezembro 2024 - TASKs 2.3, 3.5, 5.1 concluídas*
+*Última atualização: Dezembro 2024 - TASK 1.3 concluída (migrations criadas)*
