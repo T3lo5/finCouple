@@ -18,9 +18,11 @@ import {
   TrendingUp,
   X,
   LogOut,
+  Bell,
 } from 'lucide-react'
 import { useAuth } from './hooks/useAuth'
 import { useTransactions, useSavingsGoals } from './hooks/useTransactions'
+import { useNotifications } from './hooks/useNotifications'
 import { type Context, type Category, type TransactionType, type Transaction } from './lib/api'
 import AuthScreen from './components/screens/AuthScreen'
 import OnboardingCouple from './components/screens/OnboardingCouple'
@@ -694,12 +696,14 @@ const SettingsScreen = ({
 
 export default function App() {
   const { user, loading, isInCouple } = useAuth()
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications()
   const [context, setContext] = useState<Context>('individual')
   const [activeScreen, setActiveScreen] = useState<Screen>('dashboard')
   const [isActionModalOpen, setIsActionModalOpen] = useState(false)
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null)
   const [isIndividualVisibleToPartner, setIsIndividualVisibleToPartner] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [showNotifications, setShowNotifications] = useState(false)
 
   const handleCreated = useCallback(() => setRefreshKey(k => k + 1), [])
 
@@ -753,6 +757,104 @@ export default function App() {
       context === 'individual' ? 'ambient-glow-indigo' : 'ambient-glow-gold'
     }`}>
       <ContextToggle context={context} setContext={setContext} hasCouple={isInCouple} />
+      
+      {/* Notification Bell */}
+      <button
+        onClick={() => setShowNotifications(!showNotifications)}
+        className="fixed top-8 right-6 z-50 p-3 bg-surface/60 backdrop-blur-xl rounded-full border border-white/5 shadow-2xl transition-all hover:scale-105 active:scale-95"
+      >
+        <Bell size={20} className={unreadCount > 0 ? 'text-primary' : 'text-muted'} />
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-background text-xs font-bold rounded-full flex items-center justify-center">
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {/* Notifications Panel */}
+      <AnimatePresence>
+        {showNotifications && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowNotifications(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+            />
+            <motion.div
+              initial={{ x: '100%', opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 h-full w-full max-w-sm bg-surface border-l border-white/10 z-[70] p-6 overflow-y-auto"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-headings font-semibold">Notificações</h2>
+                <div className="flex gap-2">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllAsRead}
+                      className="text-xs text-primary hover:text-primary/80"
+                    >
+                      Marcar todas como lidas
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowNotifications(false)}
+                    className="p-2 bg-white/5 rounded-full text-muted"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              </div>
+
+              {notifications.length === 0 ? (
+                <div className="text-center py-12">
+                  <Bell size={48} className="mx-auto mb-4 text-muted/40" />
+                  <p className="text-muted">Nenhuma notificação</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {notifications.map(notification => (
+                    <motion.div
+                      key={notification.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      onClick={() => !notification.read && markAsRead(notification.id)}
+                      className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                        notification.read
+                          ? 'bg-white/3 border-white/5'
+                          : 'bg-primary/10 border-primary/30'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <p className={`font-medium text-sm ${
+                          notification.read ? 'text-muted' : 'text-white'
+                        }`}>
+                          {notification.title}
+                        </p>
+                        {!notification.read && (
+                          <span className="w-2 h-2 bg-primary rounded-full" />
+                        )}
+                      </div>
+                      <p className="text-xs text-muted/80">{notification.message}</p>
+                      <p className="text-xs text-muted/40 mt-2">
+                        {new Date(notification.createdAt).toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <main className="max-w-md mx-auto relative">
         <AnimatePresence mode="wait">
