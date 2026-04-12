@@ -878,44 +878,53 @@ const SettingsScreen = ({
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
       className="pt-32 pb-32 px-6 space-y-8"
+      role="main"
+      aria-label="Configurações do Perfil"
     >
       {/* Profile Header */}
       <div className="p-6 bg-surface rounded-[32px] border border-white/5 space-y-6">
         <div className="text-center space-y-4">
           <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-individual/20 flex items-center justify-center mx-auto text-3xl font-headings font-medium border border-white/10">
             {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt={user.name} className="w-full h-full rounded-full object-cover" />
+              <img src={user.avatarUrl} alt={`Avatar de ${user.name}`} className="w-full h-full rounded-full object-cover" />
             ) : (
-              user?.name?.charAt(0).toUpperCase()
+              <span aria-hidden="true">{user?.name?.charAt(0).toUpperCase()}</span>
             )}
             <button
               onClick={() => { setIsEditingAvatar(true); setEditAvatarUrl(user?.avatarUrl || '') }}
-              className="absolute -bottom-1 -right-1 p-1.5 bg-primary text-background rounded-full hover:bg-primary/80 transition-colors shadow-lg"
+              className="absolute -bottom-1 -right-1 p-1.5 bg-primary text-background rounded-full hover:bg-primary/80 transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface"
               title="Editar avatar"
+              aria-label="Editar avatar"
             >
               <Camera size={14} />
             </button>
           </div>
           {isEditingAvatar && (
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-2" role="group" aria-label="Editor de avatar">
+              <label htmlFor="avatar-url-input" className="sr-only">URL do avatar</label>
               <input
+                id="avatar-url-input"
                 type="url"
                 value={editAvatarUrl}
                 onChange={(e) => setEditAvatarUrl(e.target.value)}
                 placeholder="URL do avatar"
-                className="bg-white/5 border border-white/10 rounded-xl px-3 py-1 text-sm text-center focus:outline-none focus:border-primary/30 w-64"
+                className="bg-white/5 border border-white/10 rounded-xl px-3 py-1 text-sm text-center focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/50 w-64"
                 autoFocus
+                aria-describedby="avatar-url-hint"
               />
+              <span id="avatar-url-hint" className="sr-only">Insira a URL da imagem do seu perfil</span>
               <button
                 onClick={handleUpdateAvatar}
                 disabled={loading}
-                className="p-1.5 bg-primary/20 text-primary rounded-full hover:bg-primary/30 transition-colors disabled:opacity-50"
+                className="p-1.5 bg-primary/20 text-primary rounded-full hover:bg-primary/30 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface"
+                aria-label="Confirmar alteração do avatar"
               >
                 <ShieldCheck size={16} />
               </button>
               <button
                 onClick={() => { setIsEditingAvatar(false); setEditAvatarUrl(user?.avatarUrl || '') }}
-                className="p-1.5 bg-white/5 text-muted rounded-full hover:bg-white/10 transition-colors"
+                className="p-1.5 bg-white/5 text-muted rounded-full hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-surface"
+                aria-label="Cancelar alteração do avatar"
               >
                 <X size={16} />
               </button>
@@ -923,24 +932,30 @@ const SettingsScreen = ({
           )}
           <div>
             {isEditingName ? (
-              <div className="flex items-center justify-center gap-2 mb-1">
+              <div className="flex items-center justify-center gap-2 mb-1" role="group" aria-label="Editor de nome">
+                <label htmlFor="name-input" className="sr-only">Nome</label>
                 <input
+                  id="name-input"
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="bg-white/5 border border-white/10 rounded-xl px-3 py-1 text-center text-lg font-headings focus:outline-none focus:border-primary/30"
+                  className="bg-white/5 border border-white/10 rounded-xl px-3 py-1 text-center text-lg font-headings focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/50"
                   autoFocus
+                  aria-describedby="name-hint"
                 />
+                <span id="name-hint" className="sr-only">Digite seu novo nome</span>
                 <button
                   onClick={handleUpdateName}
                   disabled={loading}
-                  className="p-1.5 bg-primary/20 text-primary rounded-full hover:bg-primary/30 transition-colors disabled:opacity-50"
+                  className="p-1.5 bg-primary/20 text-primary rounded-full hover:bg-primary/30 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface"
+                  aria-label="Confirmar alteração do nome"
                 >
                   <ShieldCheck size={16} />
                 </button>
                 <button
                   onClick={() => { setIsEditingName(false); setEditName(user?.name || '') }}
-                  className="p-1.5 bg-white/5 text-muted rounded-full hover:bg-white/10 transition-colors"
+                  className="p-1.5 bg-white/5 text-muted rounded-full hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-surface"
+                  aria-label="Cancelar alteração do nome"
                 >
                   <X size={16} />
                 </button>
@@ -948,30 +963,37 @@ const SettingsScreen = ({
             ) : (
               <button
                 onClick={() => setIsEditingName(true)}
-                className="text-2xl font-headings font-semibold hover:text-primary/80 transition-colors"
+                className="text-2xl font-headings font-semibold hover:text-primary/80 transition-colors focus:outline-none focus:underline focus:text-primary/80"
+                aria-label={`Editar nome. Nome atual: ${user?.name}`}
               >
                 {user?.name}
               </button>
             )}
             {isEditingEmail ? (
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-2" role="group" aria-label="Editor de email">
+                <label htmlFor="email-input" className="sr-only">Email</label>
                 <input
+                  id="email-input"
                   type="email"
                   value={editEmail}
                   onChange={(e) => setEditEmail(e.target.value)}
-                  className="bg-white/5 border border-white/10 rounded-xl px-3 py-1 text-center text-sm text-muted focus:outline-none focus:border-primary/30"
+                  className="bg-white/5 border border-white/10 rounded-xl px-3 py-1 text-center text-sm text-muted focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/50"
                   autoFocus
+                  aria-describedby="email-hint"
                 />
+                <span id="email-hint" className="sr-only">Digite seu novo email</span>
                 <button
                   onClick={handleRequestEmailChange}
                   disabled={loading}
-                  className="p-1.5 bg-primary/20 text-primary rounded-full hover:bg-primary/30 transition-colors disabled:opacity-50"
+                  className="p-1.5 bg-primary/20 text-primary rounded-full hover:bg-primary/30 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface"
+                  aria-label="Solicitar alteração de email"
                 >
                   <ShieldCheck size={14} />
                 </button>
                 <button
                   onClick={() => { setIsEditingEmail(false); setEditEmail(user?.email || '') }}
-                  className="p-1.5 bg-white/5 text-muted rounded-full hover:bg-white/10 transition-colors"
+                  className="p-1.5 bg-white/5 text-muted rounded-full hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-surface"
+                  aria-label="Cancelar alteração de email"
                 >
                   <X size={14} />
                 </button>
@@ -979,12 +1001,13 @@ const SettingsScreen = ({
             ) : (
               <button
                 onClick={() => setIsEditingEmail(true)}
-                className="text-muted text-sm hover:text-primary/80 transition-colors"
+                className="text-muted text-sm hover:text-primary/80 transition-colors focus:outline-none focus:underline focus:text-primary/80"
+                aria-label={`Editar email. Email atual: ${user?.email}`}
               >
                 {user?.email}
               </button>
             )}
-            <p className="text-xs mt-2">
+            <p className="text-xs mt-2" role="status" aria-live="polite">
               {isInCouple
                 ? <span className="text-positive">✓ Conectado ao casal</span>
                 : <span className="text-muted/50">Sem parceiro(a) conectado</span>
@@ -994,7 +1017,7 @@ const SettingsScreen = ({
         </div>
 
         {error && (
-          <div className="p-3 bg-negative/10 border border-negative/20 rounded-xl text-negative text-sm text-center">
+          <div className="p-3 bg-negative/10 border border-negative/20 rounded-xl text-negative text-sm text-center" role="alert" aria-live="assertive">
             {error}
           </div>
         )}
@@ -1005,24 +1028,28 @@ const SettingsScreen = ({
           <div className="p-6 bg-surface rounded-[32px] border border-white/5 space-y-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <p className="font-medium">Modo Privacidade Compartilhado</p>
-                <p className="text-xs text-muted max-w-[200px]">
+                <p id="privacy-mode-label" className="font-medium">Modo Privacidade Compartilhado</p>
+                <p className="text-xs text-muted max-w-[200px]" aria-describedby="privacy-mode-label">
                   Permite que seu parceiro(a) veja seu saldo individual.
                 </p>
               </div>
               <button
                 onClick={() => setIsIndividualVisibleToPartner(!isIndividualVisibleToPartner)}
-                className={`w-14 h-8 rounded-full relative transition-colors duration-300 ${isIndividualVisibleToPartner ? 'bg-positive' : 'bg-white/10'}`}
+                className={`w-14 h-8 rounded-full relative transition-colors duration-300 ${isIndividualVisibleToPartner ? 'bg-positive' : 'bg-white/10'} focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface`}
+                role="switch"
+                aria-checked={isIndividualVisibleToPartner}
+                aria-labelledby="privacy-mode-label"
               >
                 <motion.div
                   animate={{ x: isIndividualVisibleToPartner ? 24 : 4 }}
                   className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-lg"
+                  aria-hidden="true"
                 />
               </button>
             </div>
 
             <div className="p-4 bg-white/5 rounded-2xl flex items-start gap-3">
-              <Lock size={16} className="text-muted mt-0.5" />
+              <Lock size={16} className="text-muted mt-0.5" aria-hidden="true" />
               <p className="text-[10px] text-muted leading-relaxed uppercase tracking-wider">
                 {isIndividualVisibleToPartner
                   ? 'Seu parceiro(a) pode ver seu painel individual. Transações detalhadas permanecem privadas.'
@@ -1034,22 +1061,25 @@ const SettingsScreen = ({
 
         {/* Preferences Section */}
         <div className="space-y-4">
-          <h3 className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Preferências</h3>
-          <div className="p-6 bg-surface rounded-[32px] border border-white/5 space-y-6">
+          <h3 id="preferences-heading" className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Preferências</h3>
+          <div className="p-6 bg-surface rounded-[32px] border border-white/5 space-y-6" role="region" aria-labelledby="preferences-heading">
             {/* Theme */}
             <div className="space-y-3">
-              <label className="text-muted text-xs uppercase tracking-widest">Tema</label>
-              <div className="flex gap-2">
+              <label id="theme-label" className="text-muted text-xs uppercase tracking-widest">Tema</label>
+              <div className="flex gap-2" role="group" aria-labelledby="theme-label">
                 <button
                   onClick={() => setTheme('dark')}
-                  className={`flex-1 py-3 rounded-2xl font-medium transition-all ${theme === 'dark' ? 'bg-primary text-background' : 'bg-white/5 text-muted hover:bg-white/10'}`}
+                  className={`flex-1 py-3 rounded-2xl font-medium transition-all focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface ${theme === 'dark' ? 'bg-primary text-background' : 'bg-white/5 text-muted hover:bg-white/10'}`}
+                  aria-pressed={theme === 'dark'}
                 >
                   Escuro
                 </button>
                 <button
                   onClick={() => setTheme('light')}
                   disabled
-                  className={`flex-1 py-3 rounded-2xl font-medium transition-all opacity-50 cursor-not-allowed ${theme === 'light' ? 'bg-primary text-background' : 'bg-white/5 text-muted'}`}
+                  className={`flex-1 py-3 rounded-2xl font-medium transition-all opacity-50 cursor-not-allowed focus:outline-none ${theme === 'light' ? 'bg-primary text-background' : 'bg-white/5 text-muted'}`}
+                  aria-pressed={theme === 'light'}
+                  aria-disabled="true"
                 >
                   Claro (Em breve)
                 </button>
@@ -1058,11 +1088,13 @@ const SettingsScreen = ({
 
             {/* Language */}
             <div className="space-y-3">
-              <label className="text-muted text-xs uppercase tracking-widest">Idioma</label>
+              <label htmlFor="language-select" id="language-label" className="text-muted text-xs uppercase tracking-widest">Idioma</label>
               <select
+                id="language-select"
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 focus:outline-none focus:border-primary/30 text-white appearance-none"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/50 text-white appearance-none"
+                aria-labelledby="language-label"
               >
                 <option value="pt-BR">Português (Brasil)</option>
                 <option value="en-US">English (US)</option>
@@ -1073,16 +1105,20 @@ const SettingsScreen = ({
             {/* Notifications Toggle */}
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <p className="font-medium">Notificações</p>
-                <p className="text-xs text-muted">Receba alertas e atualizações</p>
+                <p id="notifications-label" className="font-medium">Notificações</p>
+                <p className="text-xs text-muted" aria-describedby="notifications-label">Receba alertas e atualizações</p>
               </div>
               <button
                 onClick={() => setNotifications(!notifications)}
-                className={`w-14 h-8 rounded-full relative transition-colors duration-300 ${notifications ? 'bg-positive' : 'bg-white/10'}`}
+                className={`w-14 h-8 rounded-full relative transition-colors duration-300 ${notifications ? 'bg-positive' : 'bg-white/10'} focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface`}
+                role="switch"
+                aria-checked={notifications}
+                aria-labelledby="notifications-label"
               >
                 <motion.div
                   animate={{ x: notifications ? 24 : 4 }}
                   className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-lg"
+                  aria-hidden="true"
                 />
               </button>
             </div>
@@ -1091,7 +1127,8 @@ const SettingsScreen = ({
             <button
               onClick={handleUpdatePreferences}
               disabled={preferencesLoading}
-              className="w-full py-4 rounded-2xl font-medium bg-primary text-background disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+              className="w-full py-4 rounded-2xl font-medium bg-primary text-background disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface"
+              aria-busy={preferencesLoading}
             >
               {preferencesLoading ? 'Salvando...' : 'Salvar Preferências'}
             </button>
@@ -1099,20 +1136,20 @@ const SettingsScreen = ({
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Segurança</h3>
-          <div className="space-y-2">
+          <h3 id="security-heading" className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Segurança</h3>
+          <div className="space-y-2" role="region" aria-labelledby="security-heading">
             {['Autenticação Biométrica', 'Verificação em Dois Fatores'].map(item => (
-              <button key={item} className="w-full flex items-center justify-between p-5 bg-surface/40 rounded-[24px] border border-white/5 text-left">
+              <button key={item} className="w-full flex items-center justify-between p-5 bg-surface/40 rounded-[24px] border border-white/5 text-left focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface">
                 <span className="font-medium">{item}</span>
-                <ChevronRight size={18} className="text-muted" />
+                <ChevronRight size={18} className="text-muted" aria-hidden="true" />
               </button>
             ))}
           </div>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Dados</h3>
-          <div className="space-y-2">
+          <h3 id="data-heading" className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Dados</h3>
+          <div className="space-y-2" role="region" aria-labelledby="data-heading">
             <button
               onClick={async () => {
                 try {
@@ -1121,30 +1158,31 @@ const SettingsScreen = ({
                   console.error('Erro ao exportar:', e)
                 }
               }}
-              className="w-full flex items-center justify-between p-5 bg-surface/40 rounded-[24px] border border-white/5 text-left"
+              className="w-full flex items-center justify-between p-5 bg-surface/40 rounded-[24px] border border-white/5 text-left focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface"
             >
               <span className="font-medium">Exportar Transações (CSV)</span>
-              <ChevronRight size={18} className="text-muted" />
+              <ChevronRight size={18} className="text-muted" aria-hidden="true" />
             </button>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Zona de Perigo</h3>
+          <h3 id="danger-zone-heading" className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Zona de Perigo</h3>
           <button
             onClick={() => setShowDeleteModal(true)}
-            className="w-full flex items-center justify-center gap-3 p-5 bg-negative/5 border border-negative/10 rounded-[24px] text-negative font-medium transition-colors hover:bg-negative/10"
+            className="w-full flex items-center justify-center gap-3 p-5 bg-negative/5 border border-negative/10 rounded-[24px] text-negative font-medium transition-colors hover:bg-negative/10 focus:outline-none focus:ring-2 focus:ring-negative/50 focus:ring-offset-2 focus:ring-offset-surface"
+            aria-describedby="danger-zone-heading"
           >
-            <LogOut size={18} />
+            <LogOut size={18} aria-hidden="true" />
             Deletar Conta
           </button>
         </div>
 
         <button
           onClick={logout}
-          className="w-full flex items-center justify-center gap-3 p-5 bg-white/5 border border-white/10 rounded-[24px] text-muted font-medium transition-colors hover:bg-white/10"
+          className="w-full flex items-center justify-center gap-3 p-5 bg-white/5 border border-white/10 rounded-[24px] text-muted font-medium transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface"
         >
-          <LogOut size={18} />
+          <LogOut size={18} aria-hidden="true" />
           Sair da conta
         </button>
       </div>
