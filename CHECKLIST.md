@@ -14,8 +14,8 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Login | ✅ | Email + senha com hash SHA-256 |
 | Logout | ✅ | Invalida sessão no backend + localStorage |
 | Session management | ✅ | Tokens de 30 dias, HttpOnly cookie |
-| Recuperação de senha | ❌ | Não implementado |
-| Esqueci minha senha | ❌ | Não implementado |
+| Recuperação de senha | ✅ | Flow completo com email via Brevo (300 emails/dia grátis) |
+| Esqueci minha senha | ✅ | UI integrada na AuthScreen + endpoint /forgot-password |
 | OAuth (Google/Apple) | ❌ | Não implementado |
 | 2FA | ❌ | Não implementado |
 | Verificação de email | ❌ | Não implementado |
