@@ -23,7 +23,7 @@ import {
 import { useAuth } from './hooks/useAuth'
 import { useTransactions, useSavingsGoals } from './hooks/useTransactions'
 import { useNotifications } from './hooks/useNotifications'
-import { type Context, type Category, type TransactionType, type Transaction } from './lib/api'
+import { type Context, type Category, type TransactionType, type Transaction, transactionsApi } from './lib/api'
 import AuthScreen from './components/screens/AuthScreen'
 import OnboardingCouple from './components/screens/OnboardingCouple'
 
@@ -673,12 +673,31 @@ const SettingsScreen = ({
         <div className="space-y-4">
           <h3 className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Segurança</h3>
           <div className="space-y-2">
-            {['Autenticação Biométrica', 'Verificação em Dois Fatores', 'Exportar Dados'].map(item => (
+            {['Autenticação Biométrica', 'Verificação em Dois Fatores'].map(item => (
               <button key={item} className="w-full flex items-center justify-between p-5 bg-surface/40 rounded-[24px] border border-white/5 text-left">
                 <span className="font-medium">{item}</span>
                 <ChevronRight size={18} className="text-muted" />
               </button>
             ))}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Dados</h3>
+          <div className="space-y-2">
+            <button
+              onClick={async () => {
+                try {
+                  await transactionsApi.export({ context })
+                } catch (e) {
+                  console.error('Erro ao exportar:', e)
+                }
+              }}
+              className="w-full flex items-center justify-between p-5 bg-surface/40 rounded-[24px] border border-white/5 text-left"
+            >
+              <span className="font-medium">Exportar Transações (CSV)</span>
+              <ChevronRight size={18} className="text-muted" />
+            </button>
           </div>
         </div>
 

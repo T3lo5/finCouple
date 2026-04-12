@@ -363,4 +363,71 @@ router.get('/summary/by-category', async (c) => {
   })
 })
 
+router.get('/export', zValidator('query', listQuerySchema), async (c) => {
+  const user = c.get('user')
+  const { context, category, from, to } = c.req.valid('query')
+
+  const conditions = []
+
+  if (context === 'individual') {
+    conditions.push(and(
+      eq(transactions.userId, user.id),
+      eq(transactions.context, 'individual')
+    ))
+  } else if (context === 'joint' && user.coupleId) {
+    conditions.push(and(
+      eq(transactions.coupleId, user.coupleId),
+      eq(transactions.context, 'joint')
+    ))
+  } else {
+    const orConditions = [
+      and(eq(transactions.userId, user.id), eq(transactions.context, 'individual')),
+    ]
+    if (user.coupleId) {
+      orConditions.push(
+        and(eq(transactions.coupleId, user.coupleId!), eq(transactions.context, 'joint')) as any
+      )
+    }
+    conditions.push(or(...orConditions))
+  }
+
+  if (category && category !== 'undefined') {
+    conditions.push(eq(transactions.category, category as any))
+  }
+  if (from) conditions.push(gte(transactions.date, new Date(from)))
+  if (to) conditions.push(lte(transactions.date, new Date(to)))
+
+  const rows = await db
+    .select()
+    .from(transactions)
+    .where(and(...conditions))
+    .orderBy(desc(transactions.date))
+
+  // CSV header
+  const headers = ['Date', 'Title', 'Type', 'Category', 'Amount', 'Context', 'Notes']
+  
+  // CSV rows
+  const csvRows = rows.map(tx => [
+    new Date(tx.date).toISOString().split('T')[0],
+    tx.title.replace(/,/g, ';'),
+    tx.type,
+    tx.category,
+    tx.amount,
+    tx.context,
+    (tx.notes || '').replace(/,/g, ';'),
+  ])
+
+  // Build CSV content
+  const csvContent = [
+    headers.join(','),
+    ...csvRows.map(row => row.join(','))
+  ].join('\n')
+
+  // Return as CSV file
+  return c.body(csvContent, 200, {
+    'Content-Type': 'text/csv',
+    'Content-Disposition': `attachment; filename="transactions_export_${new Date().toISOString().split('T')[0]}.csv"`,
+  })
+})
+
 export default router
