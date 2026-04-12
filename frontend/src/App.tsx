@@ -764,7 +764,7 @@ const SettingsScreen = ({
   isIndividualVisibleToPartner: boolean
   setIsIndividualVisibleToPartner: (v: boolean) => void
 }) => {
-  const { user, logout, isInCouple, updateProfile, deleteAccount } = useAuth()
+  const { user, logout, isInCouple, updateProfile, deleteAccount, updatePreferences } = useAuth()
   const [isEditingName, setIsEditingName] = useState(false)
   const [isEditingEmail, setIsEditingEmail] = useState(false)
   const [editName, setEditName] = useState(user?.name || '')
@@ -776,6 +776,12 @@ const SettingsScreen = ({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pendingEmail, setPendingEmail] = useState('')
+  
+  // Preferences state
+  const [theme, setTheme] = useState(user?.theme || 'dark')
+  const [language, setLanguage] = useState(user?.language || 'pt-BR')
+  const [notifications, setNotifications] = useState(user?.notifications ?? true)
+  const [preferencesLoading, setPreferencesLoading] = useState(false)
 
   const handleUpdateName = async () => {
     if (!editName.trim()) return
@@ -831,6 +837,18 @@ const SettingsScreen = ({
     } catch (e: any) {
       setError(e.message || 'Erro ao deletar conta')
       setLoading(false)
+    }
+  }
+
+  const handleUpdatePreferences = async () => {
+    setPreferencesLoading(true)
+    setError(null)
+    try {
+      await updatePreferences({ theme, language, notifications })
+    } catch (e: any) {
+      setError(e.message || 'Erro ao atualizar preferências')
+    } finally {
+      setPreferencesLoading(false)
     }
   }
 
@@ -959,6 +977,72 @@ const SettingsScreen = ({
             </div>
           </div>
         )}
+
+        {/* Preferences Section */}
+        <div className="space-y-4">
+          <h3 className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Preferências</h3>
+          <div className="p-6 bg-surface rounded-[32px] border border-white/5 space-y-6">
+            {/* Theme */}
+            <div className="space-y-3">
+              <label className="text-muted text-xs uppercase tracking-widest">Tema</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setTheme('dark')}
+                  className={`flex-1 py-3 rounded-2xl font-medium transition-all ${theme === 'dark' ? 'bg-primary text-background' : 'bg-white/5 text-muted hover:bg-white/10'}`}
+                >
+                  Escuro
+                </button>
+                <button
+                  onClick={() => setTheme('light')}
+                  disabled
+                  className={`flex-1 py-3 rounded-2xl font-medium transition-all opacity-50 cursor-not-allowed ${theme === 'light' ? 'bg-primary text-background' : 'bg-white/5 text-muted'}`}
+                >
+                  Claro (Em breve)
+                </button>
+              </div>
+            </div>
+
+            {/* Language */}
+            <div className="space-y-3">
+              <label className="text-muted text-xs uppercase tracking-widest">Idioma</label>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 focus:outline-none focus:border-primary/30 text-white appearance-none"
+              >
+                <option value="pt-BR">Português (Brasil)</option>
+                <option value="en-US">English (US)</option>
+                <option value="es-ES">Español</option>
+              </select>
+            </div>
+
+            {/* Notifications Toggle */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="font-medium">Notificações</p>
+                <p className="text-xs text-muted">Receba alertas e atualizações</p>
+              </div>
+              <button
+                onClick={() => setNotifications(!notifications)}
+                className={`w-14 h-8 rounded-full relative transition-colors duration-300 ${notifications ? 'bg-positive' : 'bg-white/10'}`}
+              >
+                <motion.div
+                  animate={{ x: notifications ? 24 : 4 }}
+                  className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-lg"
+                />
+              </button>
+            </div>
+
+            {/* Save Button */}
+            <button
+              onClick={handleUpdatePreferences}
+              disabled={preferencesLoading}
+              className="w-full py-4 rounded-2xl font-medium bg-primary text-background disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+            >
+              {preferencesLoading ? 'Salvando...' : 'Salvar Preferências'}
+            </button>
+          </div>
+        </div>
 
         <div className="space-y-4">
           <h3 className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Segurança</h3>
