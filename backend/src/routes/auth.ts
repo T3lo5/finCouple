@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { db } from '../db/client'
 import { users, sessions, couples, passwordResetTokens } from '../db/schema'
-import { eq, and, gt } from 'drizzle-orm'
+import { eq, and, gt, ne } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { requireAuth } from '../middleware/auth'
 import Brevo from '@getbrevo/brevo'
@@ -180,6 +180,88 @@ auth.get('/me', requireAuth, async (c) => {
   const user = c.get('user')
   return c.json({ user })
 })
+
+// Update user profile
+auth.patch('/profile',
+  requireAuth,
+  zValidator('json', z.object({
+    name: z.string().min(2).max(80).optional(),
+    email: z.string().email().optional(),
+  })),
+  async (c) => {
+    const user = c.get('user')
+    const updates = c.req.valid('json')
+
+    // Check if email is already taken
+    if (updates.email && updates.email.toLowerCase() !== user.email.toLowerCase()) {
+      const [existing] = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, updates.email.toLowerCase()))
+        .limit(1)
+
+      if (existing) {
+        return c.json({ error: 'Email already registered' }, 409)
+      }
+    }
+
+    const updateData: Record<string, string> = {
+      updatedAt: new Date().toISOString(),
+    }
+
+    if (updates.name) updateData.name = updates.name
+    if (updates.email) updateData.email = updates.email.toLowerCase()
+
+    const [updatedUser] = await db
+      .update(users)
+      .set(updateData)
+      .where(eq(users.id, user.id))
+      .returning({ id: users.id, name: users.name, email: users.email, coupleId: users.coupleId })
+
+    return c.json({ user: updatedUser })
+  }
+)
+
+// Change password
+auth.post('/change-password',
+  requireAuth,
+  zValidator('json', z.object({
+    currentPassword: z.string().min(8),
+    newPassword: z.string().min(8),
+  })),
+  async (c) => {
+    const user = c.get('user')
+    const { currentPassword, newPassword } = c.req.valid('json')
+
+    // Verify current password
+    const currentHash = await hashPassword(currentPassword)
+    if (currentHash !== user.passwordHash) {
+      return c.json({ error: 'Current password is incorrect' }, 401)
+    }
+
+    // Hash new password
+    const newHash = await hashPassword(newPassword)
+
+    // Update password
+    await db
+      .update(users)
+      .set({ passwordHash: newHash, updatedAt: new Date() })
+      .where(eq(users.id, user.id))
+
+    // Invalidate all sessions except current one (optional security measure)
+    const currentToken = c.req.header('Authorization')?.replace('Bearer ', '')
+    if (currentToken) {
+      await db
+        .delete(sessions)
+        .where(and(
+          eq(sessions.userId, user.id),
+          ne(sessions.token, currentToken)
+        ))
+    }
+
+    return c.json({ message: 'Password successfully changed' })
+  }
+)
 
 // Request password reset
 auth.post('/forgot-password',

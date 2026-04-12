@@ -15,6 +15,8 @@ interface AuthActions {
   joinCouple:  (code: string) => Promise<void>
   refreshUser: () => Promise<void>
   forgotPassword: (email: string) => Promise<void>
+  updateProfile: (body: Partial<{ name: string; email: string }>) => Promise<void>
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>
 }
 
 type AuthContext = AuthState & AuthActions
@@ -77,6 +79,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await authApi.forgotPassword(email)
   }
 
+  const updateProfile = async (body: Partial<{ name: string; email: string }>) => {
+    const { user: updatedUser } = await authApi.updateProfile(body)
+    setUser(updatedUser)
+  }
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    await authApi.changePassword(currentPassword, newPassword)
+  }
+
   return (
     <AuthCtx.Provider value={{
       user,
@@ -89,6 +100,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       joinCouple,
       refreshUser,
       forgotPassword,
+      updateProfile,
+      changePassword,
     }}>
       {children}
     </AuthCtx.Provider>

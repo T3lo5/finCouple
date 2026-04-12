@@ -9,6 +9,7 @@ export interface User {
   email:    string
   name:     string
   coupleId: string | null
+  avatarUrl?: string | null
 }
 
 export interface Account {
@@ -135,6 +136,18 @@ export const authApi = {
     request<{ message: string }>('/api/auth/reset-password', {
       method: 'POST',
       body: JSON.stringify({ token, newPassword }),
+    }),
+
+  updateProfile: (body: Partial<{ name: string; email: string }>) =>
+    request<{ user: User }>('/api/auth/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  changePassword: (currentPassword: string, newPassword: string) =>
+    request<{ message: string }>('/api/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
     }),
 }
 

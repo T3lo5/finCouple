@@ -19,6 +19,11 @@ import {
   X,
   LogOut,
   Bell,
+  User as UserIcon,
+  Key,
+  Mail,
+  Save,
+  Edit2,
 } from 'lucide-react'
 import { useAuth } from './hooks/useAuth'
 import { useTransactions, useSavingsGoals } from './hooks/useTransactions'
@@ -764,26 +769,145 @@ const SettingsScreen = ({
   isIndividualVisibleToPartner: boolean
   setIsIndividualVisibleToPartner: (v: boolean) => void
 }) => {
-  const { user, logout, isInCouple } = useAuth()
+  const { user, logout, isInCouple, updateProfile, changePassword } = useAuth()
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
+  const [editName, setEditName] = useState(user?.name || '')
+  const [editEmail, setEditEmail] = useState(user?.email || '')
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  const handleSaveProfile = async () => {
+    if (!editName.trim()) {
+      setError('Nome é obrigatório')
+      return
+    }
+    setLoading(true)
+    setError(null)
+    try {
+      await updateProfile({ name: editName, email: editEmail })
+      setIsEditingProfile(false)
+      setSuccessMessage('Perfil atualizado com sucesso!')
+      setTimeout(() => setSuccessMessage(null), 3000)
+    } catch (e: any) {
+      setError(e.message || 'Erro ao atualizar perfil')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setError('Preencha todos os campos')
+      return
+    }
+    if (newPassword.length < 8) {
+      setError('A nova senha deve ter pelo menos 8 caracteres')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setError('As senhas não coincidem')
+      return
+    }
+    setLoading(true)
+    setError(null)
+    try {
+      await changePassword(currentPassword, newPassword)
+      setShowPasswordModal(false)
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setSuccessMessage('Senha alterada com sucesso!')
+      setTimeout(() => setSuccessMessage(null), 3000)
+    } catch (e: any) {
+      setError(e.message || 'Erro ao alterar senha')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const startEditing = () => {
+    setEditName(user?.name || '')
+    setEditEmail(user?.email || '')
+    setIsEditingProfile(true)
+  }
 
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
       className="pt-32 pb-32 px-6 space-y-12"
     >
+      {successMessage && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 bg-positive/20 border border-positive/30 text-positive px-6 py-3 rounded-2xl backdrop-blur-xl z-50">
+          {successMessage}
+        </div>
+      )}
+
       <div className="text-center space-y-4">
-        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto text-2xl font-headings font-medium border border-white/10">
-          {user?.name?.charAt(0).toUpperCase()}
+        <div className="relative inline-block">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/30 to-individual/30 flex items-center justify-center mx-auto text-3xl font-headings font-medium border border-white/10">
+            {user?.name?.charAt(0).toUpperCase()}
+          </div>
+          <button
+            onClick={startEditing}
+            className="absolute bottom-0 right-0 w-8 h-8 bg-surface border border-white/10 rounded-full flex items-center justify-center text-muted hover:text-white transition-colors"
+          >
+            <Edit2 size={14} />
+          </button>
         </div>
         <div>
-          <h2 className="text-2xl font-headings font-semibold">{user?.name}</h2>
-          <p className="text-muted text-sm">{user?.email}</p>
-          <p className="text-xs mt-1">
-            {isInCouple
-              ? <span className="text-positive">✓ Conectado ao casal</span>
-              : <span className="text-muted/50">Sem parceiro(a) conectado</span>
-            }
-          </p>
+          {!isEditingProfile ? (
+            <>
+              <h2 className="text-2xl font-headings font-semibold">{user?.name}</h2>
+              <p className="text-muted text-sm">{user?.email}</p>
+              <p className="text-xs mt-1">
+                {isInCouple
+                  ? <span className="text-positive">✓ Conectado ao casal</span>
+                  : <span className="text-muted/50">Sem parceiro(a) conectado</span>
+                }
+              </p>
+            </>
+          ) : (
+            <div className="space-y-3 text-left max-w-xs mx-auto">
+              <div>
+                <label className="text-xs text-muted uppercase tracking-widest block mb-1">Nome</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={e => setEditName(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-primary/30"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted uppercase tracking-widest block mb-1">Email</label>
+                <input
+                  type="email"
+                  value={editEmail}
+                  onChange={e => setEditEmail(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-primary/30"
+                />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => setIsEditingProfile(false)}
+                  className="flex-1 py-2 bg-white/5 rounded-xl text-sm font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveProfile}
+                  disabled={loading}
+                  className="flex-1 py-2 bg-primary text-background rounded-xl text-sm font-medium disabled:opacity-50"
+                >
+                  {loading ? 'Salvando...' : 'Salvar'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -822,10 +946,23 @@ const SettingsScreen = ({
         <div className="space-y-4">
           <h3 className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Segurança</h3>
           <div className="space-y-2">
+            <button
+              onClick={() => setShowPasswordModal(true)}
+              className="w-full flex items-center justify-between p-5 bg-surface/40 rounded-[24px] border border-white/5 text-left"
+            >
+              <span className="flex items-center gap-3">
+                <Key size={18} className="text-muted" />
+                <span className="font-medium">Alterar Senha</span>
+              </span>
+              <ChevronRight size={18} className="text-muted" />
+            </button>
             {['Autenticação Biométrica', 'Verificação em Dois Fatores'].map(item => (
-              <button key={item} className="w-full flex items-center justify-between p-5 bg-surface/40 rounded-[24px] border border-white/5 text-left">
-                <span className="font-medium">{item}</span>
-                <ChevronRight size={18} className="text-muted" />
+              <button key={item} className="w-full flex items-center justify-between p-5 bg-surface/40 rounded-[24px] border border-white/5 text-left opacity-50 cursor-not-allowed">
+                <span className="flex items-center gap-3">
+                  <Lock size={18} className="text-muted" />
+                  <span className="font-medium">{item}</span>
+                </span>
+                <span className="text-[10px] text-muted">Em breve</span>
               </button>
             ))}
           </div>
@@ -837,7 +974,7 @@ const SettingsScreen = ({
             <button
               onClick={async () => {
                 try {
-                  await transactionsApi.export({ context })
+                  await transactionsApi.export({ context: 'individual' })
                 } catch (e) {
                   console.error('Erro ao exportar:', e)
                 }
@@ -858,6 +995,78 @@ const SettingsScreen = ({
           Sair da conta
         </button>
       </div>
+
+      {/* Password Change Modal */}
+      <AnimatePresence>
+        {showPasswordModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setShowPasswordModal(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60]"
+            />
+            <motion.div
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed bottom-0 left-0 right-0 bg-surface rounded-t-[32px] border-t border-white/10 z-[70] p-8 space-y-6"
+            >
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-headings font-semibold">Alterar Senha</h3>
+                <button onClick={() => setShowPasswordModal(false)} className="p-2 bg-white/5 rounded-full text-muted">
+                  <X size={20} />
+                </button>
+              </div>
+
+              {error && (
+                <div className="p-4 bg-negative/10 border border-negative/20 rounded-xl text-negative text-sm">
+                  {error}
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs text-muted uppercase tracking-widest block mb-1">Senha Atual</label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-primary/30"
+                    placeholder="••••••••"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted uppercase tracking-widest block mb-1">Nova Senha</label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-primary/30"
+                    placeholder="Mínimo 8 caracteres"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted uppercase tracking-widest block mb-1">Confirmar Nova Senha</label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-primary/30"
+                    placeholder="Repita a nova senha"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={handleChangePassword}
+                disabled={loading}
+                className="w-full py-4 bg-primary text-background rounded-2xl font-medium text-lg disabled:opacity-50"
+              >
+                {loading ? 'Alterando...' : 'Alterar Senha'}
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
