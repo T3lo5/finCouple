@@ -1,0 +1,3 @@
+-- Add avatar_url column to users table (if not exists from initial schema)
+-- Note: avatar_url já existe no schema inicial, esta migration é apenas para documentação
+-- Migration: 0001_add_avatar_url
