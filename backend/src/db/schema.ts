@@ -19,6 +19,9 @@ export const users = pgTable('users', {
   passwordHash:  text('password_hash').notNull(),
   avatarUrl:     text('avatar_url'),
   coupleId:      text('couple_id').references(() => couples.id, { onDelete: 'set null' }),
+  theme:         text('theme').notNull().default('dark'),
+  language:      text('language').notNull().default('pt-BR'),
+  notifications: boolean('notifications').notNull().default(true),
   createdAt:     timestamp('created_at').defaultNow().notNull(),
   updatedAt:     timestamp('updated_at').defaultNow().notNull(),
 })
