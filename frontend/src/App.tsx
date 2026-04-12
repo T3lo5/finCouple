@@ -1025,11 +1025,11 @@ const SettingsScreen = ({
 
       <div className="space-y-6 sm:space-y-8">
         {isInCouple && (
-          <div className="p-6 bg-surface rounded-[32px] border border-white/5 space-y-6">
-            <div className="flex items-center justify-between">
+          <div className="p-5 sm:p-6 bg-surface rounded-[32px] border border-white/5 space-y-5 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
               <div className="space-y-1">
                 <p id="privacy-mode-label" className="font-medium">Modo Privacidade Compartilhado</p>
-                <p className="text-xs text-muted max-w-xs" aria-describedby="privacy-mode-label">
+                <p className="text-xs text-muted max-w-xs sm:max-w-md" aria-describedby="privacy-mode-label">
                   Permite que seu parceiro(a) veja seu saldo individual.
                 </p>
               </div>
@@ -1048,9 +1048,9 @@ const SettingsScreen = ({
               </button>
             </div>
 
-            <div className="p-4 bg-white/5 rounded-2xl flex items-start gap-3">
-              <Lock size={16} className="text-muted mt-0.5" aria-hidden="true" />
-              <p className="text-[10px] text-muted leading-relaxed uppercase tracking-wider">
+            <div className="p-3 sm:p-4 bg-white/5 rounded-2xl flex items-start gap-3">
+              <Lock size={16} className="text-muted mt-0.5 flex-shrink-0" aria-hidden="true" />
+              <p className="text-[10px] sm:text-xs text-muted leading-relaxed uppercase tracking-wider">
                 {isIndividualVisibleToPartner
                   ? 'Seu parceiro(a) pode ver seu painel individual. Transações detalhadas permanecem privadas.'
                   : 'Suas finanças individuais estão completamente ocultas da visão conjunta.'}
@@ -1062,14 +1062,14 @@ const SettingsScreen = ({
         {/* Preferences Section */}
         <div className="space-y-4">
           <h3 id="preferences-heading" className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Preferências</h3>
-          <div className="p-6 bg-surface rounded-[32px] border border-white/5 space-y-6" role="region" aria-labelledby="preferences-heading">
+          <div className="p-5 sm:p-6 bg-surface rounded-[32px] border border-white/5 space-y-5 sm:space-y-6" role="region" aria-labelledby="preferences-heading">
             {/* Theme */}
             <div className="space-y-3">
               <label id="theme-label" className="text-muted text-xs uppercase tracking-widest">Tema</label>
-              <div className="flex gap-2" role="group" aria-labelledby="theme-label">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3" role="group" aria-labelledby="theme-label">
                 <button
                   onClick={() => setTheme('dark')}
-                  className={`flex-1 py-3 rounded-2xl font-medium transition-all focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface ${theme === 'dark' ? 'bg-primary text-background' : 'bg-white/5 text-muted hover:bg-white/10'}`}
+                  className={`w-full sm:flex-1 py-3 sm:py-3 rounded-2xl font-medium transition-all focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface ${theme === 'dark' ? 'bg-primary text-background' : 'bg-white/5 text-muted hover:bg-white/10'}`}
                   aria-pressed={theme === 'dark'}
                 >
                   Escuro
@@ -1077,7 +1077,7 @@ const SettingsScreen = ({
                 <button
                   onClick={() => setTheme('light')}
                   disabled
-                  className={`flex-1 py-3 rounded-2xl font-medium transition-all opacity-50 cursor-not-allowed focus:outline-none ${theme === 'light' ? 'bg-primary text-background' : 'bg-white/5 text-muted'}`}
+                  className={`w-full sm:flex-1 py-3 sm:py-3 rounded-2xl font-medium transition-all opacity-50 cursor-not-allowed focus:outline-none ${theme === 'light' ? 'bg-primary text-background' : 'bg-white/5 text-muted'}`}
                   aria-pressed={theme === 'light'}
                   aria-disabled="true"
                 >
@@ -1103,7 +1103,7 @@ const SettingsScreen = ({
             </div>
 
             {/* Notifications Toggle */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
               <div className="space-y-1">
                 <p id="notifications-label" className="font-medium">Notificações</p>
                 <p className="text-xs text-muted" aria-describedby="notifications-label">Receba alertas e atualizações</p>
@@ -1139,9 +1139,9 @@ const SettingsScreen = ({
           <h3 id="security-heading" className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Segurança</h3>
           <div className="space-y-2" role="region" aria-labelledby="security-heading">
             {['Autenticação Biométrica', 'Verificação em Dois Fatores'].map(item => (
-              <button key={item} className="w-full flex items-center justify-between p-5 bg-surface/40 rounded-[24px] border border-white/5 text-left focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface">
-                <span className="font-medium">{item}</span>
-                <ChevronRight size={18} className="text-muted" aria-hidden="true" />
+              <button key={item} className="w-full flex items-center justify-between p-4 sm:p-5 bg-surface/40 rounded-[24px] border border-white/5 text-left hover:bg-surface/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface">
+                <span className="font-medium text-sm sm:text-base">{item}</span>
+                <ChevronRight size={18} className="text-muted flex-shrink-0" aria-hidden="true" />
               </button>
             ))}
           </div>
@@ -1158,10 +1158,10 @@ const SettingsScreen = ({
                   console.error('Erro ao exportar:', e)
                 }
               }}
-              className="w-full flex items-center justify-between p-5 bg-surface/40 rounded-[24px] border border-white/5 text-left focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface"
+              className="w-full flex items-center justify-between p-4 sm:p-5 bg-surface/40 rounded-[24px] border border-white/5 text-left hover:bg-surface/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface"
             >
-              <span className="font-medium">Exportar Transações (CSV)</span>
-              <ChevronRight size={18} className="text-muted" aria-hidden="true" />
+              <span className="font-medium text-sm sm:text-base">Exportar Transações (CSV)</span>
+              <ChevronRight size={18} className="text-muted flex-shrink-0" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -1170,20 +1170,20 @@ const SettingsScreen = ({
           <h3 id="danger-zone-heading" className="text-muted text-[10px] uppercase tracking-[0.2em] font-bold px-2">Zona de Perigo</h3>
           <button
             onClick={() => setShowDeleteModal(true)}
-            className="w-full flex items-center justify-center gap-3 p-5 bg-negative/5 border border-negative/10 rounded-[24px] text-negative font-medium transition-colors hover:bg-negative/10 focus:outline-none focus:ring-2 focus:ring-negative/50 focus:ring-offset-2 focus:ring-offset-surface"
+            className="w-full flex items-center justify-center gap-3 p-4 sm:p-5 bg-negative/5 border border-negative/10 rounded-[24px] text-negative font-medium transition-colors hover:bg-negative/10 focus:outline-none focus:ring-2 focus:ring-negative/50 focus:ring-offset-2 focus:ring-offset-surface"
             aria-describedby="danger-zone-heading"
           >
             <LogOut size={18} aria-hidden="true" />
-            Deletar Conta
+            <span className="text-sm sm:text-base">Deletar Conta</span>
           </button>
         </div>
 
         <button
           onClick={logout}
-          className="w-full flex items-center justify-center gap-3 p-5 bg-white/5 border border-white/10 rounded-[24px] text-muted font-medium transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface"
+          className="w-full flex items-center justify-center gap-3 p-4 sm:p-5 bg-white/5 border border-white/10 rounded-[24px] text-muted font-medium transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface"
         >
           <LogOut size={18} aria-hidden="true" />
-          Sair da conta
+          <span className="text-sm sm:text-base">Sair da conta</span>
         </button>
       </div>
 

@@ -53,7 +53,7 @@
 - [x] **TASK 6.1:** Mensagens de erro claras na UI
 - [x] **TASK 6.2:** Implementar skeleton screens durante loading ✅ CONCLUÍDO
 - [x] **TASK 6.3:** Garantir acessibilidade (labels, focus states) ✅ CONCLUÍDO
-- [ ] **TASK 6.4:** Testar responsividade em mobile
+- [x] **TASK 6.4:** Testar responsividade em mobile ✅ CONCLUÍDO
 
 ---
 
@@ -168,11 +168,25 @@ TASK 1.x (Schema) → TASK 2.x (API) → TASK 4.x (Integração)
 | Frontend - UI | 6 | 5 | 0 | 1 |
 | Frontend - Integração | 4 | 4 | 0 | 0 |
 | Segurança | 4 | 4 | 0 | 0 |
-| UX | 4 | 2 | 0 | 2 |
-| **Total** | **27** | **22** | **0** | **5** |
+| UX | 4 | 3 | 0 | 1 |
+| **Total** | **27** | **23** | **0** | **4** |
 
-**Progresso Geral:** ~89% (24/27 tasks)
+**Progresso Geral:** ~93% (25/27 tasks)
 
 ---
 
-*Última atualização: Dezembro 2024 - TASK 6.3 concluída (acessibilidade implementada com labels ARIA, focus states visíveis, roles semânticos, aria-live para mensagens dinâmicas, aria-describedby, aria-hidden em elementos decorativos, aria-label/aria-labelledby para contexto, grupos de formulário, botões toggle com aria-pressed, e inputs com ids únicos associados a labels)*
+*Última atualização: Dezembro 2024 - TASK 6.4 concluída (responsividade mobile implementada)*
+
+**TASK 6.4 - Responsividade Mobile Implementada:**
+- Layout do SettingsScreen adaptado para mobile com `sm:` breakpoints
+- Seção de privacidade com layout flex-col em mobile, flex-row em desktop
+- Botões de tema empilhados verticalmente em mobile, lado a lado em desktop
+- Toggle de notificações com layout responsivo
+- Padding ajustável: `p-4 sm:p-5` e `p-5 sm:p-6` para diferentes tamanhos de tela
+- Textos com tamanhos responsivos: `text-sm sm:text-base`
+- Grid de categorias já responsivo (`grid-cols-2`, `grid-cols-4`)
+- Modais bottom sheet já otimizados para mobile (`h-[80vh]`, `max-h-[60vh]`)
+- Context toggle no topo centralizado com posicionamento fixo
+- Inputs e botões com largura total em mobile (`w-full`)
+- Ícones com `flex-shrink-0` para evitar distorção
+- Hover states adicionados para melhor feedback visual em todas as seções
