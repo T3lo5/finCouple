@@ -517,8 +517,21 @@ const Dashboard = ({ context, isIndividualVisibleToPartner, openEditModal }: {
 }
 
 const SavingsScreen = ({ context }: { context: Context }) => {
-  const { goals, loading, contribute } = useSavingsGoals(context)
+  const { goals, loading, contribute, edit, remove } = useSavingsGoals(context)
+  const [editingGoal, setEditingGoal] = useState<SavingsGoal | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const accentColor = context === 'individual' ? 'var(--color-individual)' : 'var(--color-primary)'
+
+  const handleEdit = (goal: SavingsGoal) => {
+    setEditingGoal(goal)
+    setIsModalOpen(true)
+  }
+
+  const handleDelete = async (goal: SavingsGoal) => {
+    if (confirm(`Tem certeza que deseja excluir a meta "${goal.title}"?`)) {
+      await remove(goal.id)
+    }
+  }
 
   return (
     <motion.div
@@ -563,11 +576,19 @@ const SavingsScreen = ({ context }: { context: Context }) => {
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-headings font-medium text-xl">
-                      R${current.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
-                    </p>
-                    <p className="text-[10px] text-muted">{Math.round(pct)}% alcançado</p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleEdit(goal)}
+                      className="p-2 rounded-full bg-white/5 text-muted hover:text-white transition-colors"
+                    >
+                      <Settings size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(goal)}
+                      className="p-2 rounded-full bg-white/5 text-negative hover:bg-negative/10 transition-colors"
+                    >
+                      <X size={16} />
+                    </button>
                   </div>
                 </div>
 
@@ -605,7 +626,134 @@ const SavingsScreen = ({ context }: { context: Context }) => {
         </div>
         <span className="text-xs uppercase tracking-[0.2em] font-bold">Criar Meta</span>
       </button>
+
+      {/* Edit Goal Modal */}
+      <AnimatePresence>
+        {isModalOpen && editingGoal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setIsModalOpen(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60]"
+            />
+            <motion.div
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed bottom-0 left-0 right-0 h-auto max-h-[80vh] bg-surface rounded-t-[32px] border-t border-white/10 z-[70] p-8 flex flex-col"
+            >
+              <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-8" />
+              
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-headings font-semibold">Editar Meta</h2>
+                <button onClick={() => setIsModalOpen(false)} className="p-2 bg-white/5 rounded-full text-muted">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <EditGoalForm
+                goal={editingGoal}
+                onSave={async (data) => {
+                  await edit(editingGoal.id, data)
+                  setIsModalOpen(false)
+                }}
+                onClose={() => setIsModalOpen(false)}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.div>
+  )
+}
+
+const EditGoalForm = ({ goal, onSave, onClose }: {
+  goal: SavingsGoal
+  onSave: (data: { title?: string; targetAmount?: number; emoji?: string; deadline?: string }) => void
+  onClose: () => void
+}) => {
+  const [title, setTitle] = useState(goal.title)
+  const [targetAmount, setTargetAmount] = useState(String(goal.targetAmount))
+  const [emoji, setEmoji] = useState(goal.emoji || '🎯')
+  const [deadline, setDeadline] = useState(goal.deadline ? goal.deadline.split('T')[0] : '')
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!title || !targetAmount) return
+    setLoading(true)
+    try {
+      await onSave({
+        title,
+        targetAmount: parseFloat(targetAmount),
+        emoji,
+        deadline: deadline ? new Date(deadline).toISOString() : undefined,
+      })
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto space-y-6">
+      <div>
+        <label className="text-muted text-xs uppercase tracking-widest block mb-2">Título</label>
+        <input
+          type="text"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="Ex: Viagem Europa"
+          className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-5 focus:outline-none focus:border-primary/30 placeholder:text-muted/40 text-sm"
+        />
+      </div>
+
+      <div>
+        <label className="text-muted text-xs uppercase tracking-widest block mb-2">Valor Alvo</label>
+        <div className="flex items-center gap-2">
+          <span className="text-2xl font-headings text-muted">R$</span>
+          <input
+            type="number"
+            value={targetAmount}
+            onChange={e => setTargetAmount(e.target.value)}
+            placeholder="0,00"
+            className="bg-transparent text-3xl font-headings w-full focus:outline-none placeholder:text-white/10"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="text-muted text-xs uppercase tracking-widest block mb-2">Emoji</label>
+        <input
+          type="text"
+          value={emoji}
+          onChange={e => setEmoji(e.target.value)}
+          maxLength={4}
+          className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-5 focus:outline-none focus:border-primary/30 placeholder:text-muted/40 text-sm text-center text-2xl"
+        />
+      </div>
+
+      <div>
+        <label className="text-muted text-xs uppercase tracking-widest block mb-2">Prazo (opcional)</label>
+        <input
+          type="date"
+          value={deadline}
+          onChange={e => setDeadline(e.target.value)}
+          className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-5 focus:outline-none focus:border-primary/30 placeholder:text-muted/40 text-sm text-white"
+        />
+      </div>
+
+      <button
+        onClick={handleSubmit}
+        disabled={!title || !targetAmount || loading}
+        className={`w-full py-5 rounded-2xl font-medium text-lg transition-all active:scale-95 ${
+          title && targetAmount && !loading
+            ? 'bg-primary text-background'
+            : 'bg-white/5 text-muted cursor-not-allowed'
+        }`}
+      >
+        {loading ? 'Salvando...' : 'Salvar Alterações'}
+      </button>
+    </div>
   )
 }
 
