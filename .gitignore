@@ -1,4 +1,1 @@
-```
-# Build artifacts
-frontend/dist/
-```
+Nothing needs to be added to .gitignore since only a markdown file (PROFILE_SETTINGS_KANBAN.md) was modified and no build artifacts, dependencies, or temporary files were detected in the changes.
