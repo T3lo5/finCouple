@@ -19,6 +19,7 @@ import {
   X,
   LogOut,
   Bell,
+  Camera,
 } from 'lucide-react'
 import { useAuth } from './hooks/useAuth'
 import { useTransactions, useSavingsGoals } from './hooks/useTransactions'
@@ -767,8 +768,10 @@ const SettingsScreen = ({
   const { user, logout, isInCouple, updateProfile, deleteAccount, updatePreferences } = useAuth()
   const [isEditingName, setIsEditingName] = useState(false)
   const [isEditingEmail, setIsEditingEmail] = useState(false)
+  const [isEditingAvatar, setIsEditingAvatar] = useState(false)
   const [editName, setEditName] = useState(user?.name || '')
   const [editEmail, setEditEmail] = useState(user?.email || '')
+  const [editAvatarUrl, setEditAvatarUrl] = useState(user?.avatarUrl || '')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -792,6 +795,19 @@ const SettingsScreen = ({
       setIsEditingName(false)
     } catch (e: any) {
       setError(e.message || 'Erro ao atualizar nome')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUpdateAvatar = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      await updateProfile({ avatarUrl: editAvatarUrl.trim() || undefined })
+      setIsEditingAvatar(false)
+    } catch (e: any) {
+      setError(e.message || 'Erro ao atualizar avatar')
     } finally {
       setLoading(false)
     }
@@ -860,13 +876,45 @@ const SettingsScreen = ({
       {/* Profile Header */}
       <div className="p-6 bg-surface rounded-[32px] border border-white/5 space-y-6">
         <div className="text-center space-y-4">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-individual/20 flex items-center justify-center mx-auto text-3xl font-headings font-medium border border-white/10">
+          <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-individual/20 flex items-center justify-center mx-auto text-3xl font-headings font-medium border border-white/10">
             {user?.avatarUrl ? (
               <img src={user.avatarUrl} alt={user.name} className="w-full h-full rounded-full object-cover" />
             ) : (
               user?.name?.charAt(0).toUpperCase()
             )}
+            <button
+              onClick={() => { setIsEditingAvatar(true); setEditAvatarUrl(user?.avatarUrl || '') }}
+              className="absolute -bottom-1 -right-1 p-1.5 bg-primary text-background rounded-full hover:bg-primary/80 transition-colors shadow-lg"
+              title="Editar avatar"
+            >
+              <Camera size={14} />
+            </button>
           </div>
+          {isEditingAvatar && (
+            <div className="flex items-center justify-center gap-2">
+              <input
+                type="url"
+                value={editAvatarUrl}
+                onChange={(e) => setEditAvatarUrl(e.target.value)}
+                placeholder="URL do avatar"
+                className="bg-white/5 border border-white/10 rounded-xl px-3 py-1 text-sm text-center focus:outline-none focus:border-primary/30 w-64"
+                autoFocus
+              />
+              <button
+                onClick={handleUpdateAvatar}
+                disabled={loading}
+                className="p-1.5 bg-primary/20 text-primary rounded-full hover:bg-primary/30 transition-colors disabled:opacity-50"
+              >
+                <ShieldCheck size={16} />
+              </button>
+              <button
+                onClick={() => { setIsEditingAvatar(false); setEditAvatarUrl(user?.avatarUrl || '') }}
+                className="p-1.5 bg-white/5 text-muted rounded-full hover:bg-white/10 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
           <div>
             {isEditingName ? (
               <div className="flex items-center justify-center gap-2 mb-1">

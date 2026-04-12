@@ -21,7 +21,7 @@
 - [x] **TASK 2.3:** Criar endpoint `DELETE /auth/account` para deletar conta (soft delete)
 - [x] **TASK 2.4:** Criar endpoint `PATCH /auth/preferences` para atualizar preferências
 - [x] **TASK 2.5:** Validação Zod implementada no endpoint PATCH /profile
-- [ ] **TASK 2.6:** Implementar upload de avatar (opcional - usar URL externa)
+- [x] **TASK 2.6:** Implementar upload de avatar (opcional - usar URL externa) ✅ CONCLUÍDO
 
 ### Frontend - Componentes UI
 
@@ -76,6 +76,7 @@
 - [x] **TASK 2.3:** Endpoint DELETE /auth/account implementado no backend
 - [x] **TASK 2.4:** Endpoint PATCH /auth/preferences implementado no backend
 - [x] **TASK 2.5:** Validação Zod no endpoint de perfil
+- [x] **TASK 2.6:** Upload de avatar via URL externa implementado no frontend
 - [x] **TASK 3.1:** Edição de perfil integrada ao SettingsScreen
 - [x] **TASK 3.2:** Formulário de edição de nome
 - [x] **TASK 3.3:** Formulário de edição de email
@@ -108,8 +109,8 @@
    - ~~TASK 2.3: Deletar conta~~ ✅ CONCLUÍDO
 
 3. **Baixa Prioridade:**
-   - TASK 1.2: Preferências do usuário
-   - TASK 2.6: Upload de avatar
+   - ~~TASK 1.2: Preferências do usuário~~ ✅ CONCLUÍDO
+   - ~~TASK 2.6: Upload de avatar~~ ✅ CONCLUÍDO
    - TASK 6.2: Skeleton screens
 
 ### Dependências
@@ -141,15 +142,15 @@ TASK 1.x (Schema) → TASK 2.x (API) → TASK 4.x (Integração)
 | Categoria | Total | Feito | Em Progresso | Pendente |
 |-----------|-------|-------|--------------|----------|
 | Backend - Schema | 3 | 3 | 0 | 0 |
-| Backend - API | 6 | 5 | 0 | 1 |
+| Backend - API | 6 | 6 | 0 | 0 |
 | Frontend - UI | 6 | 5 | 0 | 1 |
 | Frontend - Integração | 4 | 4 | 0 | 0 |
 | Segurança | 4 | 2 | 0 | 2 |
 | UX | 4 | 1 | 0 | 3 |
-| **Total** | **27** | **20** | **0** | **7** |
+| **Total** | **27** | **21** | **0** | **6** |
 
-**Progresso Geral:** ~74% (20/27 tasks)
+**Progresso Geral:** ~78% (21/27 tasks)
 
 ---
 
-*Última atualização: Dezembro 2024 - TASK 2.2 concluída (endpoint GET /auth/profile implementado)*
+*Última atualização: Dezembro 2024 - TASK 2.6 concluída (upload de avatar via URL externa implementado)*
