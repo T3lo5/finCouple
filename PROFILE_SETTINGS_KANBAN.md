@@ -52,7 +52,7 @@
 
 - [x] **TASK 6.1:** Mensagens de erro claras na UI
 - [x] **TASK 6.2:** Implementar skeleton screens durante loading ✅ CONCLUÍDO
-- [ ] **TASK 6.3:** Garantir acessibilidade (labels, focus states)
+- [x] **TASK 6.3:** Garantir acessibilidade (labels, focus states) ✅ CONCLUÍDO
 - [ ] **TASK 6.4:** Testar responsividade em mobile
 
 ---
@@ -102,6 +102,17 @@
   - Skeletons específicos: ProfileSkeleton, PreferencesSkeleton, SecuritySectionSkeleton, DataSectionSkeleton, DangerZoneSkeleton
   - SettingsSkeleton composto integrado ao SettingsScreen
   - Loading state do useAuth agora exibe skeleton durante carregamento do usuário
+- [x] **TASK 6.3:** Acessibilidade implementada ✅
+  - Labels ARIA em todos os inputs e botões
+  - Focus states visíveis com ring offsets
+  - Roles semânticos (switch, region, alert, status)
+  - aria-live para mensagens dinâmicas
+  - aria-describedby para descrições relacionadas
+  - aria-hidden em elementos decorativos
+  - aria-label e aria-labelledby para contexto
+  - Grupos de formulário com role="group"
+  - Botões com aria-pressed para estados toggle
+  - Inputs com ids únicos e labels associados
 
 ---
 
@@ -157,11 +168,11 @@ TASK 1.x (Schema) → TASK 2.x (API) → TASK 4.x (Integração)
 | Frontend - UI | 6 | 5 | 0 | 1 |
 | Frontend - Integração | 4 | 4 | 0 | 0 |
 | Segurança | 4 | 4 | 0 | 0 |
-| UX | 4 | 1 | 0 | 3 |
-| **Total** | **27** | **21** | **0** | **6** |
+| UX | 4 | 2 | 0 | 2 |
+| **Total** | **27** | **22** | **0** | **5** |
 
-**Progresso Geral:** ~85% (23/27 tasks)
+**Progresso Geral:** ~89% (24/27 tasks)
 
 ---
 
-*Última atualização: Dezembro 2024 - TASK 5.4 concluída (logging de auditoria implementado para mudanças de perfil com tabela audit_logs, função logAudit reutilizável e rastreamento de profile_update, preferences_update e account_delete)*
+*Última atualização: Dezembro 2024 - TASK 6.3 concluída (acessibilidade implementada com labels ARIA, focus states visíveis, roles semânticos, aria-live para mensagens dinâmicas, aria-describedby, aria-hidden em elementos decorativos, aria-label/aria-labelledby para contexto, grupos de formulário, botões toggle com aria-pressed, e inputs com ids únicos associados a labels)*
