@@ -57,8 +57,8 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Listar metas | ✅ | Ordenadas por criação |
 | Contribuir para meta | ✅ | Incrementa currentAmount |
 | Completar meta automaticamente | ✅ | Status muda quando atinge target |
-| Editar meta | ⚠️ | Endpoint PATCH existe, UI não implementada |
-| Deletar meta | ⚠️ | Endpoint DELETE existe, UI não implementada |
+| Editar meta | ✅ | UI implementada com modal bottom sheet |
+| Deletar meta | ✅ | UI implementada com confirmação |
 | Pausar/retomar meta | ✅ | Status é atualizado automaticamente ao completar meta |
 | Histórico de contribuições | ❌ | Não implementado |
 | Metas recorrentes | ❌ | Não implementado |
@@ -171,12 +171,12 @@ Este documento lista o que está implementado e o que seria útil implementar no
 
 | Feature | Impacto | Esforço | Descrição |
 |---------|---------|---------|-----------|
-| **Edição de transações** | Alto | Baixo | UI para editar/deletar transações existentes |
+| ~~**Edição de transações**~~ | ~~Alto~~ | ~~Baixo~~ | ~~UI para editar/deletar transações existentes~~ |
 | **Dashboard por categoria** | Alto | Médio | Gráficos de pizza/barras por categoria |
 | ~~**Notificações push**~~ | ~~Alto~~ | ~~Médio~~ | ~~Lembretes de bills, metas atingidas~~ |
 | ~~**Exportar dados (CSV)**~~ | ~~Alto~~ | ~~Baixo~~ | ~~Backup e análise externa~~ |
-| **Recuperação de senha** | Alto | Médio | Flow completo com email |
-| **Edição de metas** | Médio | Baixo | UI para editar/deletar metas |
+| ~~**Recuperação de senha**~~ | ~~Alto~~ | ~~Médio~~ | ~~Flow completo com email~~ |
+| ~~**Edição de metas**~~ | ~~Médio~~ | ~~Baixo~~ | ~~UI para editar/deletar metas~~ |
 | **Configurações do perfil** | Médio | Baixo | Mudar nome, email, avatar |
 
 ### Média Prioridade
@@ -233,7 +233,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Autenticação | 4 | 0 | 6 | 10 |
 | Casais | 2 | 0 | 5 | 7 |
 | Transações | 6 | 2 | 6 | 14 |
-| Metas | 4 | 2 | 4 | 10 |
+| Metas | 6 | 0 | 4 | 10 |
 | Contas | 5 | 1 | 5 | 11 |
 | Bills Recorrentes | 1 | 1 | 5 | 7 |
 | Dashboard | 3 | 0 | 5 | 8 |
@@ -242,13 +242,13 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Backend | 6 | 1 | 4 | 11 |
 | Segurança | 4 | 1 | 3 | 8 |
 
-**Total Geral:** 45 implementados, 9 parciais, 50 não implementados
+**Total Geral:** 47 implementados, 7 parciais, 50 não implementados
 
 ### Progresso Geral
 
 ```
-Implementado:      ████████████████░░░░░░░░  43%
-Parcial:           ███░░░░░░░░░░░░░░░░░░░░░   9%
+Implementado:      ████████████████░░░░░░░░  45%
+Parcial:           ███░░░░░░░░░░░░░░░░░░░░░   7%
 Não Implementado:  ██████████████████░░░░░░  48%
 ```
 
@@ -257,9 +257,9 @@ Não Implementado:  ██████████████████░░
 ## 🎯 Roadmap Sugerido
 
 ### Sprint 1 - Complete o Básico (1-2 semanas)
-- [ ] UI de edição/deleção de transações
-- [ ] UI de edição/deleção de metas
-- [ ] Recuperação de senha
+- [x] UI de edição/deleção de transações
+- [x] UI de edição/deleção de metas
+- [x] Recuperação de senha
 - [ ] Configurações de perfil
 
 ### Sprint 2 - Dashboard Rico (2-3 semanas)

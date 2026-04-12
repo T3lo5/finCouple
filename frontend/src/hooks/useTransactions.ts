@@ -112,10 +112,16 @@ export function useSavingsGoals(context?: Context) {
     return { goal: data, completed }
   }
 
+  const edit = async (id: string, body: Partial<{ title: string; targetAmount: number; emoji: string; deadline: string }>) => {
+    const { data } = await savingsApi.update(id, body)
+    setGoals(prev => prev.map(g => g.id === id ? data : g))
+    return data
+  }
+
   const remove = async (id: string) => {
     await savingsApi.delete(id)
     setGoals(prev => prev.filter(g => g.id !== id))
   }
 
-  return { goals, loading, error, refetch: fetch, create, contribute, remove }
+  return { goals, loading, error, refetch: fetch, create, contribute, edit, remove }
 }
