@@ -131,6 +131,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Confirmações de ação | ❌ | Não implementado |
 | Pull to refresh | ❌ | Não implementado |
 | Infinite scroll | ❌ | Paginação tradicional apenas |
+| Notificações push | ✅ | Sistema completo com bell, painel e polling |
 
 ### Backend & Infra
 
@@ -172,7 +173,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 |---------|---------|---------|-----------|
 | **Edição de transações** | Alto | Baixo | UI para editar/deletar transações existentes |
 | **Dashboard por categoria** | Alto | Médio | Gráficos de pizza/barras por categoria |
-| **Notificações push** | Alto | Médio | Lembretes de bills, metas atingidas |
+| ~~**Notificações push**~~ | ~~Alto~~ | ~~Médio~~ | ~~Lembretes de bills, metas atingidas~~ |
 | **Exportar dados (CSV)** | Alto | Baixo | Backup e análise externa |
 | **Recuperação de senha** | Alto | Médio | Flow completo com email |
 | **Edição de metas** | Médio | Baixo | UI para editar/deletar metas |
@@ -268,7 +269,7 @@ Não Implementado:  ██████████████████░░
 - [ ] Busca de transações
 
 ### Sprint 3 - Engajamento (2-3 semanas)
-- [ ] Notificações push
+- [x] Notificações push
 - [ ] Alertas de orçamento
 - [ ] Relatórios mensais por email
 - [ ] Light theme toggle

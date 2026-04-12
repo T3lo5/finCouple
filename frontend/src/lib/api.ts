@@ -248,3 +248,55 @@ export const accountsApi = {
   delete: (id: string) =>
     request<{ ok: boolean }>(`/api/accounts/${id}`, { method: 'DELETE' }),
 }
+
+export interface Notification {
+  id:        string
+  userId:    string
+  type:      'bill_reminder' | 'goal_completed' | 'goal_near_completion' | 'budget_alert' | 'couple_invite' | 'general'
+  title:     string
+  message:   string
+  data:      Record<string, any> | null
+  read:      boolean
+  createdAt: string
+}
+
+export interface PushSubscriptionKeys {
+  p256dh: string
+  auth:   string
+}
+
+export const notificationsApi = {
+  list: () =>
+    request<{ data: Notification[] }>('/api/notifications'),
+
+  getUnreadCount: () =>
+    request<{ data: { unreadCount: number } }>('/api/notifications/unread'),
+
+  markAsRead: (id: string) =>
+    request<{ data: { success: boolean } }>(`/api/notifications/${id}/read`, {
+      method: 'PATCH',
+    }),
+
+  markAllAsRead: () =>
+    request<{ data: { success: boolean } }>('/api/notifications/read-all', {
+      method: 'PATCH',
+    }),
+
+  subscribe: (subscription: {
+    endpoint: string
+    keys: PushSubscriptionKeys
+    userAgent?: string
+  }) =>
+    request<{ data: { id: string; created: boolean; updated: boolean } }>('/api/notifications/subscribe', {
+      method: 'POST',
+      body: JSON.stringify(subscription),
+    }),
+
+  unsubscribe: (id: string) =>
+    request<{ data: { success: boolean } }>(`/api/notifications/subscribe/${id}`, {
+      method: 'DELETE',
+    }),
+
+  getSubscriptions: () =>
+    request<{ data: Array<{ id: string; endpoint: string; userAgent: string | null; createdAt: string; updatedAt: string }> }>('/api/notifications/subscriptions'),
+}

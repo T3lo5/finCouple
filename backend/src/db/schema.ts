@@ -136,3 +136,33 @@ export const savingsGoalsRelations = relations(savingsGoals, ({ one }) => ({
   user:   one(users, { fields: [savingsGoals.userId], references: [users.id] }),
   couple: one(couples, { fields: [savingsGoals.coupleId], references: [couples.id] }),
 }))
+
+export const notificationTypeEnum = pgEnum('notification_type', [
+  'bill_reminder',
+  'goal_completed',
+  'goal_near_completion',
+  'budget_alert',
+  'couple_invite',
+  'general'
+])
+
+export const pushNotifications = pgTable('push_notifications', {
+  id:         text('id').primaryKey().$defaultFn(() => nanoid()),
+  userId:     text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type:       notificationTypeEnum('type').notNull(),
+  title:      text('title').notNull(),
+  message:    text('message').notNull(),
+  data:       text('data'), // JSON string para dados extras
+  read:       boolean('read').notNull().default(false),
+  createdAt:  timestamp('created_at').defaultNow().notNull(),
+})
+
+export const pushSubscriptions = pgTable('push_subscriptions', {
+  id:           text('id').primaryKey().$defaultFn(() => nanoid()),
+  userId:       text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  endpoint:     text('endpoint').notNull().unique(),
+  keys:         text('keys').notNull(), // JSON string com p256dh e auth
+  userAgent:    text('user_agent'),
+  createdAt:    timestamp('created_at').defaultNow().notNull(),
+  updatedAt:    timestamp('updated_at').defaultNow().notNull(),
+})
