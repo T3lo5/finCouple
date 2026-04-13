@@ -191,3 +191,17 @@ export const auditLogs = pgTable('audit_logs', {
   userAgent:  text('user_agent'), // User agent do cliente
   createdAt:  timestamp('created_at').defaultNow().notNull(),
 })
+
+export const budgetContextEnum = pgEnum('budget_context', ['individual', 'joint'])
+
+export const monthlyBudgets = pgTable('monthly_budgets', {
+  id:          text('id').primaryKey().$defaultFn(() => nanoid()),
+  userId:      text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  coupleId:    text('couple_id').references(() => couples.id, { onDelete: 'set null' }),
+  month:       integer('month').notNull(), // 1-12
+  year:        integer('year').notNull(),
+  totalBudget: numeric('total_budget', { precision: 12, scale: 2 }).notNull(),
+  context:     budgetContextEnum('context').notNull().default('individual'),
+  createdAt:   timestamp('created_at').defaultNow().notNull(),
+  updatedAt:   timestamp('updated_at').defaultNow().notNull(),
+})

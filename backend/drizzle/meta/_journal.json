@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1774298560520,
-      "tag": "0000_big_blackheart",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1734033600000,
-      "tag": "0001_add_avatar_url",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1734033660000,
-      "tag": "0002_add_user_preferences",
+      "when": 1776109844942,
+      "tag": "0000_empty_diamondback",
       "breakpoints": true
     }
   ]
