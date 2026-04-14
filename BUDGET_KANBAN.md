@@ -34,7 +34,7 @@
     - `createdAt`, `updatedAt` (timestamp)
   - Adicionar migration correspondente
 
-- [ ] **TASK 1.3:** Atualizar enum `notification_type` se necessário (já existe `budget_alert`)
+- [x] **TASK 1.3:** Atualizar enum `notification_type` se necessário (já existe `budget_alert`)
   - ✅ Verificado: `budget_alert` já existe no schema (linha 156)
 
 ### Backend - API Endpoints
@@ -325,15 +325,15 @@ alertTriggered = categoryPercentage >= alertThreshold
 
 | Categoria | Total | Feito | Em Progresso | Pendente |
 |-----------|-------|-------|--------------|----------|
-| Backend - Schema | 3 | 2 | 0 | 1 |
+| Backend - Schema | 3 | 3 | 0 | 0 |
 | Backend - API | 8 | 0 | 0 | 8 |
 | Frontend - UI | 7 | 0 | 0 | 7 |
 | Frontend - Integração | 5 | 0 | 0 | 5 |
 | Segurança | 4 | 0 | 0 | 4 |
 | UX | 6 | 1 | 0 | 5 |
-| **Total** | **33** | **3** | **0** | **30** |
+| **Total** | **33** | **4** | **0** | **29** |
 
-**Progresso Geral:** 9% (3/33 tasks) - **SCHEMA DO BANCO IMPLEMENTADO**
+**Progresso Geral:** 12% (4/33 tasks) - **SCHEMA DO BANCO COMPLETO**
 
 ---
 
