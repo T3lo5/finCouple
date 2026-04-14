@@ -49,6 +49,13 @@ const updateBudgetSchema = z.object({
   })).optional(),
 })
 
+// Schema para confirmação de deleção
+const deleteConfirmationSchema = z.object({
+  confirm: z.boolean().refine(val => val === true, {
+    message: 'Confirmation is required to delete a budget',
+  }),
+}).optional()
+
 /**
  * POST /api/budget
  * Cria um novo orçamento mensal com categorias opcionais
@@ -462,6 +469,101 @@ router.patch('/:id', zValidator('param', budgetIdParamsSchema), zValidator('json
         : '0.00',
     }
   })
+})
+
+/**
+ * DELETE /api/budget/:id
+ * Deleta um orçamento existente (hard delete com confirmação de segurança)
+ */
+router.delete('/:id', zValidator('param', budgetIdParamsSchema), zValidator('json', deleteConfirmationSchema), async (c) => {
+  const user = c.get('user')
+  const params = c.req.valid('param')
+  const body = c.req.valid('json')
+  const { id } = params
+
+  // Busca o orçamento pelo ID
+  const budgetResult = await db
+    .select()
+    .from(monthlyBudgets)
+    .where(eq(monthlyBudgets.id, id))
+    .limit(1)
+
+  if (budgetResult.length === 0) {
+    return c.json({ error: 'Budget not found' }, 404)
+  }
+
+  const budget = budgetResult[0]
+
+  // Validação: usuário só pode deletar seu próprio orçamento
+  if (budget.userId !== user.id) {
+    return c.json({ error: 'You do not have permission to delete this budget' }, 403)
+  }
+
+  // Validação: usuário precisa estar em casal para deletar orçamento joint
+  if (budget.context === 'joint' && !user.coupleId) {
+    return c.json({ error: 'You must be in a couple to delete joint budgets' }, 403)
+  }
+
+  // Validação: confirmação é obrigatória
+  if (!body?.confirm) {
+    return c.json({ 
+      error: 'Confirmation required',
+      details: 'Please provide { "confirm": true } in the request body to delete this budget'
+    }, 400)
+  }
+
+  // Armazena dados para auditoria antes de deletar
+  const deletedBudgetData = {
+    id: budget.id,
+    month: budget.month,
+    year: budget.year,
+    totalBudget: parseFloat(budget.totalBudget),
+    context: budget.context,
+  }
+
+  // Busca categorias associadas para auditoria
+  const categories = await db
+    .select()
+    .from(budgetCategories)
+    .where(eq(budgetCategories.budgetId, id))
+
+  const deletedCategoriesData = categories.map(cat => ({
+    category: cat.category,
+    limitAmount: parseFloat(cat.limitAmount),
+    spentAmount: parseFloat(cat.spentAmount),
+  }))
+
+  // Hard delete: deleta categorias primeiro (devido ao cascade, mas fazemos explícito para clareza)
+  await db
+    .delete(budgetCategories)
+    .where(eq(budgetCategories.budgetId, id))
+
+  // Deleta o orçamento principal
+  await db
+    .delete(monthlyBudgets)
+    .where(eq(monthlyBudgets.id, id))
+
+  // Log de auditoria para deleção
+  await logAudit(
+    user.id,
+    'delete',
+    'monthly_budget',
+    id,
+    { 
+      budget: deletedBudgetData,
+      categories: deletedCategoriesData,
+    },
+    null,
+    c.req.header('X-Forwarded-For'),
+    c.req.header('User-Agent')
+  )
+
+  return c.json({ 
+    data: { 
+      message: 'Budget deleted successfully',
+      deletedBudget: deletedBudgetData,
+    }
+  }, 200)
 })
 
 export default router

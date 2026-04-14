@@ -127,9 +127,20 @@
     - Formato: `{ data: { budget, categories, spentTotal, remainingTotal, percentageUsed } }`
     - Status 200 OK
 
-- [ ] **TASK 2.4:** Criar endpoint `DELETE /api/budget/:id` para deletar orçamento
-  - Soft delete ou hard delete (definir na implementação)
-  - Confirmação de segurança
+- [x] **TASK 2.4:** Criar endpoint `DELETE /api/budget/:id` para deletar orçamento
+  - [x] **TASK 2.4.1:** Implementar hard delete com confirmação de segurança
+    - Schema Zod para confirmação: `{ confirm: true }` obrigatório
+    - Validação de permissão (usuário dono do orçamento)
+    - Validação de contexto joint
+  - [x] **TASK 2.4.2:** Implementar deleção em cascata das categorias
+    - Deleta budget_categories associadas
+    - Deleta monthly_budgets
+  - [x] **TASK 2.4.3:** Implementar logging de auditoria para deleção
+    - Registra oldValues (dados do orçamento e categorias deletados)
+    - Registra IP e User-Agent
+  - [x] **TASK 2.4.4:** Retornar resposta no padrão da API
+    - Formato: `{ data: { message, deletedBudget } }`
+    - Status 200 OK
 
 - [ ] **TASK 2.5:** Criar endpoint `GET /api/budget/history` para histórico de orçamentos
   - Query: limit, offset, year (opcional)
