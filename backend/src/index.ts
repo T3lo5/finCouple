@@ -8,6 +8,7 @@ import savingsRoutes from './routes/savings'
 import accountRoutes from './routes/accounts'
 import recurringRoutes from './routes/recurring'
 import notificationRoutes from './routes/notifications'
+import budgetRoutes from './routes/budget'
 
 const app = new Hono()
 
@@ -28,6 +29,7 @@ app.route('/api/savings', savingsRoutes)
 app.route('/api/accounts', accountRoutes)
 app.route('/api/recurring', recurringRoutes)
 app.route('/api/notifications', notificationRoutes)
+app.route('/api/budget', budgetRoutes)
 
 app.notFound((c) => c.json({ error: 'Not Found' }, 404))
 app.onError((err, c) => {

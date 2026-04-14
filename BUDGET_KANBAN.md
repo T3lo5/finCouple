@@ -41,10 +41,27 @@
 
 #### Alta Prioridade
 
-- [ ] **TASK 2.1:** Criar endpoint `POST /api/budget` para criar orçamento mensal
-  - Validação Zod: month (1-12), year, totalBudget, context, categories (array opcional)
-  - Middleware requireAuth
-  - Retorno: `{ data: { budget, categories } }`
+- [x] **TASK 2.1:** Criar endpoint `POST /api/budget` para criar orçamento mensal
+  - [x] **TASK 2.1.1:** Validação Zod: month (1-12), year, totalBudget, context, categories (array opcional)
+    - Schema criado com validações completas
+    - Month: 1-12
+    - Year: 2020-2100
+    - TotalBudget: positivo, máximo 999999.99
+    - Context: enum individual/joint
+    - Categories: array opcional com category, limitAmount, alertThreshold
+  - [x] **TASK 2.1.2:** Middleware requireAuth e validação de permissões
+    - Verificar se usuário está autenticado
+    - Validar permissão para contexto joint (precisa estar em casal)
+  - [x] **TASK 2.1.3:** Lógica de criação do orçamento no banco
+    - Verificar duplicidade (mês/ano/contexto)
+    - Insert na tabela monthly_budgets
+    - Insert nas categorias (se fornecidas)
+  - [x] **TASK 2.1.4:** Logging de auditoria e tratamento de erros
+    - Registrar ação no audit_logs
+    - Retorno padrão: `{ data: { budget, categories } }`
+  - [x] **TASK 2.1.5:** Registrar rota no index.ts
+    - Importar router de budget
+    - Registrar em `/api/budget`
 
 - [ ] **TASK 2.2:** Criar endpoint `GET /api/budget/:month/:year` para buscar orçamento do mês
   - Params: month, year
@@ -243,6 +260,14 @@
   - ✅ Dashboard como referência para BudgetScreen
   - ✅ Skeleton components como referência
 - [x] **TASK 0.4:** Criar documento Kanban para organização das tasks
+- [x] **TASK 2.1:** Criar endpoint POST /api/budget para criar orçamento mensal
+  - [x] Validação Zod completa: month (1-12), year (2020-2100), totalBudget, context, categories
+  - [x] Middleware requireAuth implementado
+  - [x] Validação de permissão para contexto joint
+  - [x] Verificação de duplicidade de orçamento (mês/ano/contexto)
+  - [x] Criação do orçamento e categorias no banco
+  - [x] Logging de auditoria implementado
+  - [x] Rota registrada no index.ts
 
 ---
 
@@ -326,14 +351,14 @@ alertTriggered = categoryPercentage >= alertThreshold
 | Categoria | Total | Feito | Em Progresso | Pendente |
 |-----------|-------|-------|--------------|----------|
 | Backend - Schema | 3 | 3 | 0 | 0 |
-| Backend - API | 8 | 0 | 0 | 8 |
+| Backend - API | 8 | 1 | 0 | 7 |
 | Frontend - UI | 7 | 0 | 0 | 7 |
 | Frontend - Integração | 5 | 0 | 0 | 5 |
 | Segurança | 4 | 0 | 0 | 4 |
 | UX | 6 | 1 | 0 | 5 |
-| **Total** | **33** | **4** | **0** | **29** |
+| **Total** | **33** | **5** | **0** | **28** |
 
-**Progresso Geral:** 12% (4/33 tasks) - **SCHEMA DO BANCO COMPLETO**
+**Progresso Geral:** 15% (5/33 tasks) - **ENDPOINT POST /api/budget IMPLEMENTADO**
 
 ---
 
