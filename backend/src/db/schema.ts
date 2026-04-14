@@ -205,3 +205,29 @@ export const monthlyBudgets = pgTable('monthly_budgets', {
   createdAt:   timestamp('created_at').defaultNow().notNull(),
   updatedAt:   timestamp('updated_at').defaultNow().notNull(),
 })
+
+export const budgetCategoryEnum = pgEnum('budget_category', [
+  'dining', 'home', 'transport', 'shopping', 'health',
+  'travel', 'bills', 'salary', 'investment', 'other'
+])
+
+export const budgetCategories = pgTable('budget_categories', {
+  id:            text('id').primaryKey().$defaultFn(() => nanoid()),
+  budgetId:      text('budget_id').notNull().references(() => monthlyBudgets.id, { onDelete: 'cascade' }),
+  category:      budgetCategoryEnum('category').notNull(),
+  limitAmount:   numeric('limit_amount', { precision: 12, scale: 2 }).notNull(),
+  spentAmount:   numeric('spent_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+  alertThreshold: numeric('alert_threshold', { precision: 5, scale: 2 }).notNull().default('80.00'),
+  createdAt:     timestamp('created_at').defaultNow().notNull(),
+  updatedAt:     timestamp('updated_at').defaultNow().notNull(),
+})
+
+export const monthlyBudgetsRelations = relations(monthlyBudgets, ({ one, many }) => ({
+  user:       one(users, { fields: [monthlyBudgets.userId], references: [users.id] }),
+  couple:     one(couples, { fields: [monthlyBudgets.coupleId], references: [couples.id] }),
+  categories: many(budgetCategories),
+}))
+
+export const budgetCategoriesRelations = relations(budgetCategories, ({ one }) => ({
+  budget: one(monthlyBudgets, { fields: [budgetCategories.budgetId], references: [monthlyBudgets.id] }),
+}))
