@@ -11,7 +11,7 @@
 
 #### Alta Prioridade
 
-- [ ] **TASK 1.1:** Criar tabela `monthly_budgets` no schema
+- [x] **TASK 1.1:** Criar tabela `monthly_budgets` no schema
   - Campos necessários:
     - `id` (nanoid, primary key)
     - `userId` (FK → users.id)
@@ -23,7 +23,7 @@
     - `createdAt`, `updatedAt` (timestamp)
   - Adicionar migration correspondente
 
-- [ ] **TASK 1.2:** Criar tabela `budget_categories` para limites por categoria
+- [x] **TASK 1.2:** Criar tabela `budget_categories` para limites por categoria
   - Campos necessários:
     - `id` (nanoid, primary key)
     - `budgetId` (FK → monthly_budgets.id)
@@ -325,15 +325,15 @@ alertTriggered = categoryPercentage >= alertThreshold
 
 | Categoria | Total | Feito | Em Progresso | Pendente |
 |-----------|-------|-------|--------------|----------|
-| Backend - Schema | 3 | 1 | 0 | 2 |
+| Backend - Schema | 3 | 2 | 0 | 1 |
 | Backend - API | 8 | 0 | 0 | 8 |
 | Frontend - UI | 7 | 0 | 0 | 7 |
 | Frontend - Integração | 5 | 0 | 0 | 5 |
 | Segurança | 4 | 0 | 0 | 4 |
 | UX | 6 | 1 | 0 | 5 |
-| **Total** | **33** | **2** | **0** | **31** |
+| **Total** | **33** | **3** | **0** | **30** |
 
-**Progresso Geral:** 6% (2/33 tasks) - **FASE DE PLANEJAMENTO CONCLUÍDA**
+**Progresso Geral:** 9% (3/33 tasks) - **SCHEMA DO BANCO IMPLEMENTADO**
 
 ---
 
