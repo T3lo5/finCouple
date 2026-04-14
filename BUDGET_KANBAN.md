@@ -63,10 +63,39 @@
     - Importar router de budget
     - Registrar em `/api/budget`
 
-- [ ] **TASK 2.2:** Criar endpoint `GET /api/budget/:month/:year` para buscar orçamento do mês
+- [x] **TASK 2.2:** Criar endpoint `GET /api/budget/:month/:year` para buscar orçamento do mês
   - Params: month, year
   - Query: context (individual/joint)
   - Retorno: `{ data: { budget, categories, spentTotal, remainingTotal } }`
+  - [x] **TASK 2.2.1:** Criar schemas de validação Zod para params e query
+    - budgetParamsSchema: month (string→int 1-12), year (string→int 2020-2100)
+    - budgetQuerySchema: context (enum individual/joint, default individual)
+  - [x] **TASK 2.2.2:** Implementar middleware de autenticação e validação de permissões
+    - requireAuth middleware já aplicado no router
+    - Validação de contexto joint (usuário precisa estar em casal)
+    - Validação de month (1-12) e year (2020-2100)
+  - [x] **TASK 2.2.3:** Implementar busca do orçamento no banco de dados
+    - Query na tabela monthly_budgets com filters: userId, month, year, context
+    - Retorno 404 se orçamento não encontrado
+  - [x] **TASK 2.2.4:** Buscar categorias do orçamento
+    - Query na tabela budget_categories filtrando por budgetId
+  - [x] **TASK 2.2.5:** Calcular gastos totais baseado nas transações do mês
+    - Definir período do mês (startDate, endDate)
+    - Query de agregração com SUM nas transações (type=expense)
+    - Filtros: userId, type, date range, context, coupleId (se joint)
+    - Agrupamento por categoria
+  - [x] **TASK 2.2.6:** Processar e retornar dados formatados
+    - Mapear expenses por categoria usando Map
+    - Calcular spentTotal somando todas as categorias
+    - Calcular remainingTotal (totalBudget - spentTotal)
+    - Adicionar campos calculados: spentAmount, remainingAmount, percentageUsed por categoria
+    - Adicionar percentageUsed total no retorno
+  - [x] **TASK 2.2.7:** Implementar logging de auditoria
+    - Log action 'read' para entidade 'monthly_budget'
+    - Registrar IP e User-Agent
+  - [x] **TASK 2.2.8:** Retornar resposta no padrão da API
+    - Formato: `{ data: { budget, categories, spentTotal, remainingTotal, percentageUsed } }`
+    - Status 200 OK
 
 - [ ] **TASK 2.3:** Criar endpoint `PATCH /api/budget/:id` para atualizar orçamento
   - Validação: apenas campos atualizáveis (totalBudget, categories)
@@ -268,6 +297,15 @@
   - [x] Criação do orçamento e categorias no banco
   - [x] Logging de auditoria implementado
   - [x] Rota registrada no index.ts
+- [x] **TASK 2.2:** Criar endpoint GET /api/budget/:month/:year para buscar orçamento do mês
+  - [x] Validação Zod para params (month, year) e query (context)
+  - [x] Middleware requireAuth e validação de permissões
+  - [x] Busca do orçamento no banco (monthly_budgets)
+  - [x] Busca das categorias (budget_categories)
+  - [x] Cálculo de gastos baseado em transações do mês
+  - [x] Processamento e formatação dos dados (spentTotal, remainingTotal, percentageUsed)
+  - [x] Logging de auditoria para leitura
+  - [x] Retorno no padrão `{ data: { budget, categories, spentTotal, remainingTotal, percentageUsed } }`
 
 ---
 
