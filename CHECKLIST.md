@@ -99,10 +99,10 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Endpoint POST /api/budget | ✅ | Criação de orçamento com validação Zod completa |
 | Validações de segurança | ✅ | requireAuth, permissão joint, duplicidade |
 | Logging de auditoria | ✅ | Audit logs para criação de orçamento |
-| Endpoint GET /api/budget/:month/:year | ❌ | Não implementado |
-| Endpoint PATCH /api/budget/:id | ❌ | Não implementado |
+| Endpoint GET /api/budget/:month/:year | ✅ | Busca orçamento do mês com cálculos de gastos |
+| Endpoint PATCH /api/budget/:id | ✅ | Atualização de totalBudget e categorias com cálculo automático de spentAmount |
 | Endpoint DELETE /api/budget/:id | ❌ | Não implementado |
-| Cálculo automático de gastos | ❌ | Não implementado |
+| Cálculo automático de gastos | ✅ | Implementado nos endpoints GET e PATCH |
 | Sistema de alertas | ❌ | Não implementado |
 | UI de orçamento | ❌ | Não implementada |
 

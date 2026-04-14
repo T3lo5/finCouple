@@ -97,9 +97,35 @@
     - Formato: `{ data: { budget, categories, spentTotal, remainingTotal, percentageUsed } }`
     - Status 200 OK
 
-- [ ] **TASK 2.3:** Criar endpoint `PATCH /api/budget/:id` para atualizar orçamento
+- [x] **TASK 2.3:** Criar endpoint `PATCH /api/budget/:id` para atualizar orçamento
   - Validação: apenas campos atualizáveis (totalBudget, categories)
   - Atualizar spentAmount automaticamente baseado nas transações do mês
+  - [x] **TASK 2.3.1:** Criar schemas de validação Zod para params e body
+    - budgetIdSchema: id (string, nanoid)
+    - updateBudgetSchema: totalBudget (opcional), categories (array opcional)
+  - [x] **TASK 2.3.2:** Implementar middleware de autenticação e validação de permissões
+    - requireAuth middleware já aplicado no router
+    - Validar se usuário é dono do orçamento
+    - Validar permissão para contexto joint
+  - [x] **TASK 2.3.3:** Implementar busca e validação do orçamento existente
+    - Verificar se orçamento existe
+    - Retornar 404 se não encontrado
+    - Validar permissão de edição
+  - [x] **TASK 2.3.4:** Implementar atualização do totalBudget
+    - Atualizar campo totalBudget se fornecido
+    - Manter updatedAt
+  - [x] **TASK 2.3.5:** Implementar atualização/crição de categorias
+    - Upsert nas categorias (atualizar existentes, criar novas)
+    - Remover categorias não fornecidas (opcional)
+  - [x] **TASK 2.3.6:** Calcular e atualizar spentAmount baseado nas transações
+    - Reutilizar lógica do GET /api/budget/:month/:year
+    - Atualizar budget_categories.spentAmount
+  - [x] **TASK 2.3.7:** Implementar logging de auditoria
+    - Log action 'update' para entidade 'monthly_budget'
+    - Registrar oldValues e newValues
+  - [x] **TASK 2.3.8:** Retornar resposta no padrão da API
+    - Formato: `{ data: { budget, categories, spentTotal, remainingTotal, percentageUsed } }`
+    - Status 200 OK
 
 - [ ] **TASK 2.4:** Criar endpoint `DELETE /api/budget/:id` para deletar orçamento
   - Soft delete ou hard delete (definir na implementação)
@@ -306,6 +332,16 @@
   - [x] Processamento e formatação dos dados (spentTotal, remainingTotal, percentageUsed)
   - [x] Logging de auditoria para leitura
   - [x] Retorno no padrão `{ data: { budget, categories, spentTotal, remainingTotal, percentageUsed } }`
+- [x] **TASK 2.3:** Criar endpoint PATCH /api/budget/:id para atualizar orçamento
+  - [x] Validação Zod para params (id) e body (totalBudget, categories)
+  - [x] Middleware requireAuth e validação de permissões (dono do orçamento, contexto joint)
+  - [x] Busca e validação do orçamento existente
+  - [x] Atualização do totalBudget (se fornecido)
+  - [x] Atualização/criação de categorias (upsert)
+  - [x] Cálculo automático do spentAmount baseado nas transações
+  - [x] Atualização do spentAmount no banco de dados
+  - [x] Logging de auditoria para atualização
+  - [x] Retorno no padrão `{ data: { budget, categories, spentTotal, remainingTotal, percentageUsed } }`
 
 ---
 
@@ -389,14 +425,14 @@ alertTriggered = categoryPercentage >= alertThreshold
 | Categoria | Total | Feito | Em Progresso | Pendente |
 |-----------|-------|-------|--------------|----------|
 | Backend - Schema | 3 | 3 | 0 | 0 |
-| Backend - API | 8 | 1 | 0 | 7 |
+| Backend - API | 8 | 2 | 0 | 6 |
 | Frontend - UI | 7 | 0 | 0 | 7 |
 | Frontend - Integração | 5 | 0 | 0 | 5 |
 | Segurança | 4 | 0 | 0 | 4 |
 | UX | 6 | 1 | 0 | 5 |
-| **Total** | **33** | **5** | **0** | **28** |
+| **Total** | **33** | **6** | **0** | **27** |
 
-**Progresso Geral:** 15% (5/33 tasks) - **ENDPOINT POST /api/budget IMPLEMENTADO**
+**Progresso Geral:** 18% (6/33 tasks) - **ENDPOINTS POST E PATCH /api/budget IMPLEMENTADOS**
 
 ---
 
