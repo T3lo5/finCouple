@@ -8,6 +8,13 @@
       "when": 1776109844942,
       "tag": "0000_empty_diamondback",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776187940060,
+      "tag": "0001_remarkable_scourge",
+      "breakpoints": true
     }
   ]
 }
