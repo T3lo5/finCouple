@@ -91,6 +91,21 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Lembretes | ❌ | Não implementado |
 | Histórico de pagamentos | ❌ | Não implementado |
 
+### Orçamento Mensal (Budget)
+
+| Feature | Status | Observações |
+|---------|--------|-------------|
+| Schema no banco | ✅ | Tabelas monthly_budgets e budget_categories criadas |
+| Endpoint POST /api/budget | ✅ | Criação de orçamento com validação Zod completa |
+| Validações de segurança | ✅ | requireAuth, permissão joint, duplicidade |
+| Logging de auditoria | ✅ | Audit logs para criação de orçamento |
+| Endpoint GET /api/budget/:month/:year | ❌ | Não implementado |
+| Endpoint PATCH /api/budget/:id | ❌ | Não implementado |
+| Endpoint DELETE /api/budget/:id | ❌ | Não implementado |
+| Cálculo automático de gastos | ❌ | Não implementado |
+| Sistema de alertas | ❌ | Não implementado |
+| UI de orçamento | ❌ | Não implementada |
+
 ### Dashboard & Visualização
 
 | Feature | Status | Observações |
@@ -183,7 +198,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 
 | Feature | Impacto | Esforço | Descrição |
 |---------|---------|---------|-----------|
-| ~~**Orçamento mensal**~~ | ~~Alto~~ | ~~Alto~~ | ~~Definir limites por categoria - Schema implementado (TASK 1.1, 1.2)~~ |
+| ~~**Orçamento mensal**~~ | ~~Alto~~ | ~~Alto~~ | ~~Definir limites por categoria - Schema implementado (TASK 1.1, 1.2) + Endpoint POST /api/budget implementado~~ |
 | **Alertas de orçamento** | Médio | Médio | Notificar quando próximo do limite |
 | **Relatórios mensais** | Médio | Médio | Email com resumo do mês |
 | **Metas múltiplas fotos** | Baixo | Médio | Upload de imagens para metas |
@@ -236,19 +251,20 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Metas | 6 | 0 | 4 | 10 |
 | Contas | 5 | 1 | 5 | 11 |
 | Bills Recorrentes | 1 | 1 | 5 | 7 |
+| **Orçamento Mensal** | **3** | **0** | **5** | **8** |
 | Dashboard | 3 | 0 | 5 | 8 |
 | Onboarding | 2 | 1 | 2 | 5 |
 | UI/UX | 8 | 0 | 5 | 13 |
 | Backend | 6 | 1 | 4 | 11 |
 | Segurança | 4 | 1 | 3 | 8 |
 
-**Total Geral:** 47 implementados, 7 parciais, 50 não implementados
+**Total Geral:** 50 implementados, 7 parciais, 55 não implementados
 
 ### Progresso Geral
 
 ```
-Implementado:      ████████████████░░░░░░░░  45%
-Parcial:           ███░░░░░░░░░░░░░░░░░░░░░   7%
+Implementado:      ████████████████░░░░░░░░  46%
+Parcial:           ███░░░░░░░░░░░░░░░░░░░░░   6%
 Não Implementado:  ██████████████████░░░░░░  48%
 ```
 
