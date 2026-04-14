@@ -1,13 +1,1 @@
-```
-# Database migrations
-backend/drizzle/meta/
-
-# Dependencies
-backend/node_modules/
-frontend/node_modules/
-
-# Environment
-.env
-.env.local
-.env.*
-```
+Nothing should be ignored based on the provided file changes. The modified files (BUDGET_KANBAN.md and CHECKLIST.md) are markdown documentation files that should be tracked in version control.
