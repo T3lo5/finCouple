@@ -183,8 +183,8 @@ Este documento lista o que está implementado e o que seria útil implementar no
 
 | Feature | Impacto | Esforço | Descrição |
 |---------|---------|---------|-----------|
-| **Orçamento mensal** | Alto | Alto | Definir limites por categoria |
-| **Alertas de orçamento** | Médio | Médio | Notificar quando接近 limite |
+| ~~**Orçamento mensal**~~ | ~~Alto~~ | ~~Alto~~ | ~~Definir limites por categoria - Schema implementado (TASK 1.1, 1.2)~~ |
+| **Alertas de orçamento** | Médio | Médio | Notificar quando próximo do limite |
 | **Relatórios mensais** | Médio | Médio | Email com resumo do mês |
 | **Metas múltiplas fotos** | Baixo | Médio | Upload de imagens para metas |
 | **Compartilhar via link** | Médio | Médio | Gerar link compartilhável |
