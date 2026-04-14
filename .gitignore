@@ -1,1 +1,51 @@
-Nothing needs to be added to the .gitignore file based on the provided changes. The listed files are all source code and documentation files (.ts, .md) which should not be ignored.
+```gitignore
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+dist/
+build/
+target/
+
+# Dependencies
+node_modules/
+venv/
+.venv/
+.env
+.env.local
+.env.*
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Editors
+.vscode/
+.idea/
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Python specific
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+*.so
+.PyCharmCache
+
+# Environment
+.env
+.env.local
+.env.*
+!.env.example
+
+# OS generated files
+.DS_Store
+Thumbs.db
+```
