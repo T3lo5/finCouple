@@ -567,6 +567,25 @@
 - [ ] **TASK 4.2:** Atualizar contexto de auth para incluir preferências de orçamento
   - Armazenar mês/ano selecionado
   - Persistir contexto (individual/joint)
+  
+  **Subtasks quebradas para melhor gerenciamento:**
+  - [ ] **TASK 4.2.1:** Criar interface BudgetPreferences no api.ts
+    - Campos: selectedMonth, selectedYear, budgetContext
+  - [ ] **TASK 4.2.2:** Criar endpoint PATCH /api/auth/preferences/budget no backend
+    - Validação Zod para month (1-12), year (2020-2100), context (enum)
+    - Atualizar tabela users com novas colunas de preferências
+  - [ ] **TASK 4.2.3:** Adicionar método updateBudgetPreferences no authApi
+    - Integrar com endpoint do backend
+  - [ ] **TASK 4.2.4:** Criar hook useBudgetPreferences.ts
+    - Estado local para month/year/context
+    - Persistência em localStorage
+    - Integração com API para sincronização
+  - [ ] **TASK 4.2.5:** Integrar useBudgetPreferences no BudgetScreen
+    - Substituir estados locais selectedMonth/selectedYear
+    - Usar contexto persistido das preferências
+  - [ ] **TASK 4.2.6:** Adicionar colunas no schema de users para preferências
+    - budgetDefaultMonth, budgetDefaultYear, budgetDefaultContext
+    - Criar migration correspondente
 
 - [ ] **TASK 4.3:** Tratamento de erros da API na UI
   - Mensagens claras para erros de validação

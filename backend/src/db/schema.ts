@@ -13,17 +13,21 @@ export const frequencyEnum = pgEnum('frequency', ['daily', 'weekly', 'monthly', 
 export const goalStatusEnum = pgEnum('goal_status', ['active', 'completed', 'paused'])
 
 export const users = pgTable('users', {
-  id:            text('id').primaryKey().$defaultFn(() => nanoid()),
-  email:         text('email').notNull().unique(),
-  name:          text('name').notNull(),
-  passwordHash:  text('password_hash').notNull(),
-  avatarUrl:     text('avatar_url'),
-  coupleId:      text('couple_id').references(() => couples.id, { onDelete: 'set null' }),
-  theme:         text('theme').notNull().default('dark'),
-  language:      text('language').notNull().default('pt-BR'),
-  notifications: boolean('notifications').notNull().default(true),
-  createdAt:     timestamp('created_at').defaultNow().notNull(),
-  updatedAt:     timestamp('updated_at').defaultNow().notNull(),
+  id:                     text('id').primaryKey().$defaultFn(() => nanoid()),
+  email:                  text('email').notNull().unique(),
+  name:                   text('name').notNull(),
+  passwordHash:           text('password_hash').notNull(),
+  avatarUrl:              text('avatar_url'),
+  coupleId:               text('couple_id').references(() => couples.id, { onDelete: 'set null' }),
+  theme:                  text('theme').notNull().default('dark'),
+  language:               text('language').notNull().default('pt-BR'),
+  notifications:          boolean('notifications').notNull().default(true),
+  // Budget preferences
+  budgetDefaultMonth:     integer('budget_default_month'),
+  budgetDefaultYear:      integer('budget_default_year'),
+  budgetDefaultContext:   contextEnum('budget_default_context').default('individual'),
+  createdAt:              timestamp('created_at').defaultNow().notNull(),
+  updatedAt:              timestamp('updated_at').defaultNow().notNull(),
 })
 
 export const couples = pgTable('couples', {
