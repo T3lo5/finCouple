@@ -681,10 +681,41 @@
     - X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
     - Retry-After quando limite excedido
 
-- [ ] **TASK 5.4:** Logging de auditoria para mudanças de orçamento
-  - Registrar no audit_logs
-  - Ações: create, update, delete
-  - Old values e new values em JSON
+- [x] **TASK 5.4:** Logging de auditoria para mudanças de orçamento ✅ **CONCLUÍDA**
+  - Registrar no audit_logs ✅
+  - Ações: create, update, delete ✅
+  - Old values e new values em JSON ✅
+  
+  **Subtasks quebradas para melhor gerenciamento:**
+  - [x] **TASK 5.4.1:** Implementar logging para POST /api/budget (create)
+    - Log action 'create' para entidade 'monthly_budget'
+    - Registrar newValues: month, year, totalBudget, context, categories
+    - Registrar IP e User-Agent
+  - [x] **TASK 5.4.2:** Implementar logging para GET /api/budget/:month/:year (read)
+    - Log action 'read' para entidade 'monthly_budget'
+    - Registrar params: month, year, context
+    - Registrar IP e User-Agent
+  - [x] **TASK 5.4.3:** Implementar logging para PATCH /api/budget/:id (update)
+    - Log action 'update' para entidade 'monthly_budget'
+    - Registrar oldValues: totalBudget, categories
+    - Registrar newValues: totalBudget, categories
+    - Registrar IP e User-Agent
+  - [x] **TASK 5.4.4:** Implementar logging para DELETE /api/budget/:id (delete)
+    - Log action 'delete' para entidade 'monthly_budget'
+    - Registrar oldValues: budget data e categorias deletadas
+    - Registrar IP e User-Agent
+  - [x] **TASK 5.4.5:** Implementar logging para GET /api/budget/history (read)
+    - Log action 'read' para entidade 'monthly_budget'
+    - Registrar query params: limit, offset, year, count
+    - Registrar IP e User-Agent
+  - [x] **TASK 5.4.6:** Implementar logging para POST /api/budget/calculate (update)
+    - Log action 'update' para entidade 'monthly_budget'
+    - Registrar params: month, year, context, totalSpent, categoriesUpdated
+    - Registrar IP e User-Agent
+  - [x] **TASK 5.4.7:** Implementar logging para GET /api/budget/alerts (read)
+    - Log action 'read' para entidade 'budget_alerts'
+    - Registrar alertsCount, notificationsCreated
+    - Registrar IP e User-Agent
 
 ### UX & Acessibilidade
 
