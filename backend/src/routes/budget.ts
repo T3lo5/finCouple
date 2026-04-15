@@ -25,8 +25,16 @@ const createBudgetSchema = z.object({
 
 // Schema para parâmetros de rota
 const budgetParamsSchema = z.object({
-  month: z.string().transform(val => parseInt(val, 10)),
-  year: z.string().transform(val => parseInt(val, 10)),
+  month: z.string()
+    .transform(val => parseInt(val, 10))
+    .refine(val => !isNaN(val) && val >= 1 && val <= 12, {
+      message: 'Month must be between 1 and 12',
+    }),
+  year: z.string()
+    .transform(val => parseInt(val, 10))
+    .refine(val => !isNaN(val) && val >= 2020 && val <= 2100, {
+      message: 'Year must be between 2020 and 2100',
+    }),
 })
 
 // Schema para query params
@@ -67,6 +75,13 @@ const budgetHistoryQuerySchema = z.object({
 const calculateBudgetSchema = z.object({
   month: z.number().int().min(1).max(12, 'Month must be between 1 and 12'),
   year: z.number().int().min(2020).max(2100, 'Year must be between 2020 and 2100'),
+  context: z.enum(['individual', 'joint']).optional().default('individual'),
+})
+
+// Schema para query params de alerts (opcional, para filtrar por mês/ano)
+const budgetAlertsQuerySchema = z.object({
+  month: z.string().optional(),
+  year: z.string().optional(),
   context: z.enum(['individual', 'joint']).optional().default('individual'),
 })
 
@@ -886,23 +901,51 @@ router.get('/history', zValidator('query', budgetHistoryQuerySchema), async (c) 
  * Cria notificações do tipo budget_alert automaticamente
  * Retorno: { data: { alerts: [{ category, limit, spent, percentage }] } }
  */
-router.get('/alerts', async (c) => {
+router.get('/alerts', zValidator('query', budgetAlertsQuerySchema), async (c) => {
   const user = c.get('user')
+  const query = c.req.valid('query')
+  
+  // Parse e validação dos parâmetros opcionais
+  const month = query.month ? parseInt(query.month, 10) : undefined
+  const year = query.year ? parseInt(query.year, 10) : undefined
+  const context = query.context
+  
+  // Validação dos parâmetros se fornecidos
+  if (month !== undefined && (month < 1 || month > 12)) {
+    return c.json({ error: 'Month must be between 1 and 12' }, 400)
+  }
+
+  if (year !== undefined && (year < 2020 || year > 2100)) {
+    return c.json({ error: 'Year must be between 2020 and 2100' }, 400)
+  }
 
   // Busca todos os orçamentos ativos do usuário (últimos 3 meses para eficiência)
   const threeMonthsAgo = new Date()
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
 
+  const whereConditions: any[] = [
+    eq(monthlyBudgets.userId, user.id),
+  ]
+
+  // Filtra por contexto
+  whereConditions.push(eq(monthlyBudgets.context, context))
+
+  // Filtra por mês/ano se fornecidos
+  if (month !== undefined && year !== undefined) {
+    whereConditions.push(eq(monthlyBudgets.month, month))
+    whereConditions.push(eq(monthlyBudgets.year, year))
+  } else {
+    // Caso contrário, usa filtro de últimos 3 meses
+    whereConditions.push(
+      gte(monthlyBudgets.year, threeMonthsAgo.getFullYear()),
+      sql`(${monthlyBudgets.year} > ${threeMonthsAgo.getFullYear()} OR (${monthlyBudgets.year} = ${threeMonthsAgo.getFullYear()} AND ${monthlyBudgets.month} >= ${threeMonthsAgo.getMonth() + 1}))`
+    )
+  }
+
   const budgets = await db
     .select()
     .from(monthlyBudgets)
-    .where(
-      and(
-        eq(monthlyBudgets.userId, user.id),
-        gte(monthlyBudgets.year, threeMonthsAgo.getFullYear()),
-        sql`(${monthlyBudgets.year} > ${threeMonthsAgo.getFullYear()} OR (${monthlyBudgets.year} = ${threeMonthsAgo.getFullYear()} AND ${monthlyBudgets.month} >= ${threeMonthsAgo.getMonth() + 1}))`
-      )
-    )
+    .where(and(...whereConditions))
     .orderBy(monthlyBudgets.year, monthlyBudgets.month)
 
   const allAlerts: Array<{
@@ -1024,18 +1067,4 @@ router.get('/alerts', async (c) => {
   )
 
   // Formata resposta
-  const formattedAlerts = allAlerts.map(alert => ({
-    category: alert.category,
-    limit: alert.limit,
-    spent: alert.spent,
-    percentage: parseFloat(alert.percentage.toFixed(2)),
-  }))
-
-  return c.json({
-    data: {
-      alerts: formattedAlerts,
-    }
-  })
-})
-
-export default router
+  const formattedAlerts = all
