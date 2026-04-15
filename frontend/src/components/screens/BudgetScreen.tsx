@@ -18,6 +18,7 @@ import CategoryBudgetItem from '../CategoryBudgetItem'
 import BudgetModal from '../BudgetModal'
 import BudgetAlert from '../BudgetAlert'
 import { CATEGORIES_META } from '../BudgetModal'
+import { BudgetSkeleton } from '../Skeleton'
 
 interface BudgetScreenProps {
   context: Context
@@ -32,14 +33,7 @@ const getCategoryMeta = (catId: string) =>
   CATEGORIES_META.find(c => c.id === catId) || { label: catId, icon: <Settings size={18} /> }
 
 export default function BudgetScreen({ context }: BudgetScreenProps) {
-  const { 
-    preferences, 
-    setSelectedMonth, 
-    setSelectedYear, 
-    prevMonth, 
-    nextMonth,
-    loading: prefsLoading,
-  } = useBudgetPreferences({ autoSync: true })
+  const { preferences, setSelectedMonth, setSelectedYear, prevMonth, nextMonth, loading: prefsLoading } = useBudgetPreferences({ autoSync: true })
   
   const {
     budget,
@@ -75,6 +69,9 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
   useEffect(() => {
     handleFetchBudget()
   }, [handleFetchBudget])
+
+  // Use prefsLoading for initial skeleton loading
+  const isLoading = prefsLoading || loading
 
   const handlePrevMonth = () => {
     prevMonth()
@@ -122,23 +119,18 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
         </button>
       </div>
 
-      {/* Loading State */}
-      {loading && (
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-          <p className="mt-4 text-muted text-sm">Carregando orçamento...</p>
-        </div>
-      )}
+      {/* Skeleton Loading State */}
+      {isLoading && <BudgetSkeleton />}
 
       {/* Error State */}
-      {!loading && error && (
-        <div className="p-4 bg-negative/10 border border-negative/20 rounded-2xl">
+      {!isLoading && error && (
+        <div className="p-4 bg-negative/10 border border-negative/20 rounded-2xl" role="alert" aria-live="assertive">
           <div className="flex items-center gap-3">
-            <AlertTriangle size={20} className="text-negative" />
+            <AlertTriangle size={20} className="text-negative" aria-hidden="true" />
             <div className="flex-1">
               <p className="text-negative text-sm font-medium">{error}</p>
               {validationErrors && (
-                <ul className="mt-2 space-y-1">
+                <ul className="mt-2 space-y-1" role="list">
                   {Object.entries(validationErrors).map(([field, message]) => (
                     <li key={field} className="text-negative/80 text-xs">• {message}</li>
                   ))}
@@ -150,7 +142,7 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
       )}
 
       {/* No Budget State */}
-      {!loading && !error && !budget && (
+      {!isLoading && !error && !budget && (
         <div className="text-center py-20">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-white/5 flex items-center justify-center">
             <Wallet size={40} className="text-muted" />
@@ -176,7 +168,7 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
       )}
 
       {/* Budget Display */}
-      {!loading && !error && budget && (
+      {!isLoading && !error && budget && (
         <>
           {/* Alerta de Orçamento - Toast/Banner quando >80% utilizado */}
           <BudgetAlert
@@ -201,10 +193,10 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
 
           {/* Lista de Categorias */}
           <div>
-            <h3 className="text-lg font-headings font-semibold mb-4">
+            <h3 className="text-lg font-headings font-semibold mb-4" id="categories-heading">
               Categorias
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-3" role="list" aria-labelledby="categories-heading">
               <AnimatePresence>
                 {categories.map((category, index) => {
                   const categoryMeta = getCategoryMeta(category.category)

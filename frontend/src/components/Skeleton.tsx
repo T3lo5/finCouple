@@ -177,3 +177,115 @@ export function SettingsSkeleton() {
     </motion.div>
   )
 }
+
+/**
+ * Budget card skeleton - matches the BudgetCard layout
+ */
+export function BudgetCardSkeleton() {
+  return (
+    <div className="p-6 bg-surface rounded-[32px] border border-white/5 space-y-6">
+      {/* Title */}
+      <Skeleton variant="text" width={140} height={14} className="mx-auto" />
+      
+      {/* Total budget */}
+      <div className="text-center space-y-2">
+        <Skeleton variant="text" width={180} height={36} className="mx-auto" />
+      </div>
+      
+      {/* Spent and remaining grid */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Skeleton variant="text" width={60} height={24} />
+          <Skeleton variant="text" width={80} height={14} />
+        </div>
+        <div className="space-y-2">
+          <Skeleton variant="text" width={60} height={24} />
+          <Skeleton variant="text" width={80} height={14} />
+        </div>
+      </div>
+      
+      {/* Progress bar */}
+      <div className="space-y-2">
+        <Skeleton variant="rounded" width="100%" height={8} />
+        <Skeleton variant="text" width={60} height={12} className="mx-auto" />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Category budget item skeleton - matches the CategoryBudgetItem layout
+ */
+export function CategoryBudgetSkeleton() {
+  return (
+    <div className="p-4 bg-surface rounded-2xl border border-white/5 space-y-3">
+      {/* Header with icon and label */}
+      <div className="flex items-center gap-3">
+        <Skeleton variant="circular" width={36} height={36} />
+        <div className="flex-1 space-y-2">
+          <Skeleton variant="text" width={120} height={16} />
+          <Skeleton variant="text" width={80} height={12} />
+        </div>
+        <Skeleton variant="text" width={60} height={20} />
+      </div>
+      
+      {/* Progress bar */}
+      <Skeleton variant="rounded" width="100%" height={6} />
+      
+      {/* Footer with spent and limit */}
+      <div className="flex justify-between">
+        <Skeleton variant="text" width={70} height={14} />
+        <Skeleton variant="text" width={70} height={14} />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Budget list skeleton - for the categories list
+ */
+export function BudgetListSkeleton({ count = 4 }: { count?: number }) {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: count }).map((_, i) => (
+        <CategoryBudgetSkeleton key={i} />
+      ))}
+    </div>
+  )
+}
+
+/**
+ * Complete budget screen skeleton
+ */
+export function BudgetSkeleton() {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="pt-28 pb-28 px-4 sm:px-6 space-y-6 sm:space-y-8"
+    >
+      {/* Month selector skeleton */}
+      <div className="flex items-center justify-between">
+        <Skeleton variant="circular" width={40} height={40} />
+        <div className="text-center space-y-2">
+          <Skeleton variant="text" width={180} height={28} className="mx-auto" />
+          <Skeleton variant="text" width={120} height={12} className="mx-auto" />
+        </div>
+        <Skeleton variant="circular" width={40} height={40} />
+      </div>
+      
+      {/* Budget card */}
+      <BudgetCardSkeleton />
+      
+      {/* Categories title */}
+      <Skeleton variant="text" width={100} height={20} />
+      
+      {/* Categories list */}
+      <BudgetListSkeleton count={4} />
+      
+      {/* Action button */}
+      <Skeleton variant="rounded" width="100%" height={56} />
+    </motion.div>
+  )
+}

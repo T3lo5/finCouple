@@ -587,10 +587,24 @@
     - budgetDefaultMonth, budgetDefaultYear, budgetDefaultContext
     - Criar migration correspondente
 
-- [ ] **TASK 4.3:** Tratamento de erros da API na UI
-  - Mensagens claras para erros de validação
-  - Feedback visual de loading
-  - Error states para falhas na requisição
+- [x] **TASK 4.3:** Tratamento de erros da API na UI
+  - [x] **TASK 4.3.1:** Mensagens claras para erros de validação
+    - Implementado no useBudget.ts: handleApiError e extractValidationErrors
+    - Mensagens específicas por status code (400, 401, 403, 404, 409, 500)
+    - Validação de campos: month, year, totalBudget, context, categories, limitAmount
+  - [x] **TASK 4.3.2:** Feedback visual de loading
+    - Skeleton screens implementados (BudgetSkeleton, BudgetCardSkeleton, CategoryBudgetSkeleton)
+    - Substituição do spinner simples por skeleton completo
+    - Loading states integrados no hook useBudget
+  - [x] **TASK 4.3.3:** Error states para falhas na requisição
+    - Error state com ícone AlertTriangle e mensagem clara
+    - Exibição de validationErrors em lista
+    - ARIA labels para acessibilidade (role="alert", aria-live="assertive")
+  - [x] **TASK 4.3.4:** Melhorar acessibilidade
+    - Labels ARIA nos botões de navegação (aria-label)
+    - role="list" na lista de categorias
+    - aria-labelledby no heading de categorias
+    - aria-hidden="true" em ícones decorativos
 
 - [ ] **TASK 4.4:** Calcular automaticamente gastos ao carregar BudgetScreen
   - Chamar calculateSpent ao montar componente
@@ -632,21 +646,25 @@
 
 #### Alta Prioridade
 
-- [ ] **TASK 6.1:** Mensagens de erro claras na UI
+- [x] **TASK 6.1:** Mensagens de erro claras na UI ✅ **CONCLUÍDA via TASK 4.3.1**
   - "Orçamento não encontrado para este mês"
   - "Valor inválido para orçamento"
   - "Categoria sem limite definido"
+  - Implementado no hook useBudget.ts com handleApiError e extractValidationErrors
 
-- [ ] **TASK 6.2:** Skeleton screens durante loading
+- [x] **TASK 6.2:** Skeleton screens durante loading ✅ **CONCLUÍDA via TASK 4.3.2**
   - BudgetSkeleton para tela principal
-  - CategorySkeleton para lista de categorias
+  - CategoryBudgetSkeleton para lista de categorias
+  - BudgetCardSkeleton para card de orçamento
   - Seguir padrão do SettingsSkeleton
 
-- [ ] **TASK 6.3:** Garantir acessibilidade (ARIA labels, focus states)
-  - Labels em todos os inputs
+- [x] **TASK 6.3:** Garantir acessibilidade (ARIA labels, focus states) ✅ **CONCLUÍDA via TASK 4.3.4**
+  - Labels em todos os inputs (aria-label nos botões de navegação)
   - Focus states visíveis
-  - aria-live para atualizações dinâmicas
+  - aria-live para atualizações dinâmicas (role="alert", aria-live="assertive")
   - Suporte a navegação por teclado
+  - aria-labelledby e role="list" na lista de categorias
+  - aria-hidden="true" em ícones decorativos
 
 - [ ] **TASK 6.4:** Testar responsividade em mobile
   - Layout adaptável para telas pequenas
