@@ -54,6 +54,23 @@ export interface Transaction {
   date:        string
   isRecurring: boolean
   createdAt:   string
+  tags?:       Tag[] // Tags associadas à transação
+  attachments?: Attachment[] // Anexos/comprovantes da transação
+}
+
+export interface Tag {
+  id:        string
+  name:      string
+  color:     string
+  createdAt: string
+}
+
+export interface Attachment {
+  id:         string
+  fileName:   string
+  fileType:   string
+  fileSize:   number
+  createdAt:  string
 }
 
 export interface SavingsGoal {
@@ -176,6 +193,7 @@ export const transactionsApi = {
     category?: Category
     from?: string
     to?: string
+    search?: string  // Nova funcionalidade: busca textual
     page?: number
     limit?: number
   }) => {
@@ -195,6 +213,7 @@ export const transactionsApi = {
     accountId?: string
     notes?: string
     date?: string
+    tagIds?: string[]  // Novo campo: IDs das tags
   }) =>
     request<{ data: Transaction }>('/api/transactions', {
       method: 'POST',
@@ -209,6 +228,7 @@ export const transactionsApi = {
     context: Context
     notes: string
     date: string
+    tagIds?: string[]  // Novo campo: IDs das tags
   }>) =>
     request<{ data: Transaction }>(`/api/transactions/${id}`, {
       method: 'PATCH',
@@ -237,19 +257,19 @@ export const transactionsApi = {
     const token = localStorage.getItem('session_token')
     const qs = params ? new URLSearchParams(params as any).toString() : ''
     const url = `${BASE_URL}/api/transactions/export${qs ? `?${qs}` : ''}`
-    
+
     const res = await fetch(url, {
       credentials: 'include',
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     })
-    
+
     if (!res.ok) {
       const data = await res.json()
       throw new ApiError(res.status, data.error || 'Unknown error')
     }
-    
+
     // Download the CSV file
     const blob = await res.blob()
     const downloadUrl = window.URL.createObjectURL(blob)
@@ -260,8 +280,78 @@ export const transactionsApi = {
     a.click()
     a.remove()
     window.URL.revokeObjectURL(downloadUrl)
-    
+
     return { ok: true }
+  },
+
+  // Nova funcionalidade: Tags de transações
+  tags: {
+    list: () =>
+      request<{ data: Tag[] }>('/api/transactions/tags'),
+
+    create: (body: { name: string; color?: string }) =>
+      request<{ data: Tag }>('/api/transactions/tags', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+
+    delete: (id: string) =>
+      request<{ ok: boolean }>(`/api/transactions/tags/${id}`, { method: 'DELETE' }),
+
+    associate: (id: string, tagIds: string[]) =>
+      request<{ ok: boolean }>(`/api/transactions/${id}/tags`, {
+        method: 'POST',
+        body: JSON.stringify({ tagIds }),
+      }),
+
+    get: (id: string) =>
+      request<{ data: Tag[] }>(`/api/transactions/${id}/tags`),
+  },
+
+  // Nova funcionalidade: Anexos de transações
+  attachments: {
+    upload: async (id: string, file: File) => {
+      const token = localStorage.getItem('session_token')
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch(`${BASE_URL}/api/transactions/${id}/attachments`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: formData,
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new ApiError(res.status, data.error || 'Unknown error')
+      }
+
+      return data
+    },
+
+    list: (id: string) =>
+      request<{ data: Attachment[] }>(`/api/transactions/${id}/attachments`),
+
+    get: (id: string, attachmentId: string) => {
+      const token = localStorage.getItem('session_token')
+      const url = `${BASE_URL}/api/transactions/${id}/attachments/${attachmentId}`
+
+      return fetch(url, {
+        credentials: 'include',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      })
+    },
+
+    delete: (id: string, attachmentId: string) =>
+      request<{ ok: boolean }>(`/api/transactions/${id}/attachments/${attachmentId}`, {
+        method: 'DELETE'
+      }),
   },
 }
 
@@ -464,4 +554,71 @@ export const budgetApi = {
 
   alerts: () =>
     request<{ data: { alerts: Array<{ category: Category; limit: number; spent: number; percentage: number }> } }>('/api/budget/alerts'),
+}
+
+export interface Couple {
+  id: string
+  name: string
+  user1VisibleToPartner: boolean
+  user2VisibleToPartner: boolean
+  createdAt: string
+  members: Array<{
+    id: string
+    name: string
+    email: string
+    avatarUrl?: string | null
+    createdAt: string
+  }>
+}
+
+export interface CoupleInviteLink {
+  inviteLink: string
+  expiresAt: string
+  maxUses: number
+  tokenPreview: string
+}
+
+export const couplesApi = {
+  get: () =>
+    request<{ couple: Couple }>('/api/couples'),
+
+  update: (body: Partial<{
+    name: string
+    user1VisibleToPartner: boolean
+    user2VisibleToPartner: boolean
+  }>) =>
+    request<{ couple: Couple }>('/api/couples', {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  leave: () =>
+    request<{ message: string }>('/api/couples/leave', {
+      method: 'POST',
+    }),
+
+  dissolve: () =>
+    request<{ message: string }>('/api/couples', {
+      method: 'DELETE',
+    }),
+
+  createInviteLink: (body: {
+    expiresAt?: string
+    maxUses?: number
+  }) =>
+    request<CoupleInviteLink>('/api/couples/invite-link', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  revokeInviteLink: () =>
+    request<{ message: string }>('/api/couples/invite-link', {
+      method: 'DELETE',
+    }),
+
+  acceptInvite: (token: string) =>
+    request<{ message: string; couple: { id: string; name: string } }>('/api/couples/accept-invite', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    }),
 }

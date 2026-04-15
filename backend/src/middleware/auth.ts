@@ -87,3 +87,16 @@ export async function logAudit(
     // Don't throw - audit logging failure shouldn't break the main operation
   }
 }
+
+/**
+ * Middleware para verificar acesso conjunto (requer que o usuário esteja em um casal)
+ */
+export const requireJointAccess = createMiddleware(async (c, next) => {
+  const user = c.get('user')
+
+  if (!user.coupleId) {
+    return c.json({ error: 'Access restricted to couple members only' }, 403)
+  }
+
+  await next()
+})

@@ -1,0 +1,17 @@
+FROM oven/bun:latest
+
+WORKDIR /app
+
+# Copiar arquivos de configuração
+COPY package.json bun.lockx ./
+COPY tsconfig.json ./
+COPY drizzle.config.ts ./
+
+# Instalar dependências
+RUN bun install
+
+# Copiar migrations
+COPY drizzle/ ./drizzle/
+
+# CMD será substituído no docker-compose
+CMD ["bun", "run", "db:migrate"]

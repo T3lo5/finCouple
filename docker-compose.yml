@@ -1,0 +1,68 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: fincouple-frontend-full
+    ports:
+      - "5173:80"
+    environment:
+      VITE_API_URL: http://backend:3000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fincouple-backend-full
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/fincouple
+      NODE_ENV: production
+      PORT: 3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: fincouple-postgres-full
+    environment:
+      POSTGRES_DB: fincouple
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/drizzle:/app/backend/drizzle
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.migrate
+    container_name: fincouple-migrate-full
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/fincouple
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "
+        bun install &&
+        bun run db:generate &&
+        bun run db:migrate
+      "
+
+volumes:
+  postgres_data:

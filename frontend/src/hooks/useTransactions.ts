@@ -14,12 +14,12 @@ export function useTransactions({ context, category, autoFetch = true }: UseTran
   const [summary, setSummary] = useState<{ income: number; expenses: number; balance: number } | null>(null)
   const [categorySummary, setCategorySummary] = useState<{ totalExpenses: number; byCategory: { category: Category; amount: number; count: number; percentage: number }[] } | null>(null)
 
-  const fetch = useCallback(async () => {
+  const fetch = useCallback(async (search?: string) => {
     setLoading(true)
     setError(null)
     try {
       const [txRes, summaryRes, categoryRes] = await Promise.all([
-        transactionsApi.list({ context, category, limit: 50 }),
+        transactionsApi.list({ context, category, search, limit: 50 }), // Adicionando suporte a busca textual
         transactionsApi.monthlySummary(context),
         transactionsApi.byCategorySummary(context),
       ])
@@ -46,6 +46,7 @@ export function useTransactions({ context, category, autoFetch = true }: UseTran
     accountId?: string
     notes?: string
     date?: string
+    tagIds?: string[]  // Novo campo: IDs das tags
   }) => {
     const { data } = await transactionsApi.create(body)
     setTransactions(prev => [data, ...prev])
@@ -69,6 +70,7 @@ export function useTransactions({ context, category, autoFetch = true }: UseTran
     date?: string
     isRecurring?: boolean
     accountId?: string
+    tagIds?: string[]  // Novo campo: IDs das tags
   }>) => {
     const { data } = await transactionsApi.update(id, body)
     setTransactions(prev => prev.map(t => t.id === id ? data : t))
@@ -76,7 +78,72 @@ export function useTransactions({ context, category, autoFetch = true }: UseTran
     return data
   }
 
-  return { transactions, loading, error, summary, categorySummary, refetch: fetch, create, remove, edit }
+  // Nova funcionalidade: busca textual
+  const search = useCallback(async (searchTerm: string) => {
+    await fetch(searchTerm)
+  }, [fetch])
+
+  // Nova funcionalidade: gerenciamento de tags
+  const fetchTags = async () => {
+    return await transactionsApi.tags.list()
+  }
+
+  const createTag = async (name: string, color?: string) => {
+    return await transactionsApi.tags.create({ name, color })
+  }
+
+  const deleteTag = async (id: string) => {
+    return await transactionsApi.tags.delete(id)
+  }
+
+  const associateTags = async (transactionId: string, tagIds: string[]) => {
+    return await transactionsApi.tags.associate(transactionId, tagIds)
+  }
+
+  const getTransactionTags = async (transactionId: string) => {
+    return await transactionsApi.tags.get(transactionId)
+  }
+
+  // Nova funcionalidade: gerenciamento de anexos
+  const uploadAttachment = async (transactionId: string, file: File) => {
+    return await transactionsApi.attachments.upload(transactionId, file)
+  }
+
+  const fetchAttachments = async (transactionId: string) => {
+    return await transactionsApi.attachments.list(transactionId)
+  }
+
+  const downloadAttachment = async (transactionId: string, attachmentId: string) => {
+    return await transactionsApi.attachments.get(transactionId, attachmentId)
+  }
+
+  const deleteAttachment = async (transactionId: string, attachmentId: string) => {
+    return await transactionsApi.attachments.delete(transactionId, attachmentId)
+  }
+
+  return {
+    transactions,
+    loading,
+    error,
+    summary,
+    categorySummary,
+    refetch: fetch,
+    search,
+    create,
+    remove,
+    edit,
+    // Tags
+    fetchTags,
+    createTag,
+    deleteTag,
+    associateTags,
+    getTransactionTags,
+    // Anexos
+    uploadAttachment,
+    fetchAttachments,
+    downloadAttachment,
+    deleteAttachment,
+  }
 }
 
 import { savingsApi, type SavingsGoal } from '../lib/api'

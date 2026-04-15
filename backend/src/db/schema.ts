@@ -61,7 +61,7 @@ export const transactions = pgTable('transactions', {
   accountId:   text('account_id').references(() => accounts.id, { onDelete: 'set null' }),
   coupleId:    text('couple_id').references(() => couples.id, { onDelete: 'set null' }),
   title:       text('title').notNull(),
-  amount:      numeric('amount', { precision: 12, scale: 2 }).notNull(), 
+  amount:      numeric('amount', { precision: 12, scale: 2 }).notNull(),
   type:        transactionTypeEnum('type').notNull(),
   category:    categoryEnum('category').notNull().default('other'),
   context:     contextEnum('context').notNull().default('individual'),
@@ -70,6 +70,35 @@ export const transactions = pgTable('transactions', {
   isRecurring: boolean('is_recurring').notNull().default(false),
   recurringId: text('recurring_id').references(() => recurringBills.id, { onDelete: 'set null' }),
   createdAt:   timestamp('created_at').defaultNow().notNull(),
+})
+
+// Tabela para anexos/comprovantes de transações
+export const transactionAttachments = pgTable('transaction_attachments', {
+  id:          text('id').primaryKey().$defaultFn(() => nanoid()),
+  transactionId: text('transaction_id').notNull().references(() => transactions.id, { onDelete: 'cascade' }),
+  fileName:    text('file_name').notNull(),
+  filePath:    text('file_path').notNull(),
+  fileType:    text('file_type').notNull(), // mime type
+  fileSize:    integer('file_size').notNull(),
+  uploadedBy:  text('uploaded_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt:   timestamp('created_at').defaultNow().notNull(),
+})
+
+// Tabela para tags personalizadas
+export const transactionTags = pgTable('transaction_tags', {
+  id:          text('id').primaryKey().$defaultFn(() => nanoid()),
+  userId:      text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  name:        text('name').notNull().unique(), // nome da tag
+  color:       text('color').default('#6366f1'), // cor para UI
+  createdAt:   timestamp('created_at').defaultNow().notNull(),
+})
+
+// Tabela intermediária para relacionamento entre transações e tags
+export const transactionTagMappings = pgTable('transaction_tag_mappings', {
+  id:            text('id').primaryKey().$defaultFn(() => nanoid()),
+  transactionId: text('transaction_id').notNull().references(() => transactions.id, { onDelete: 'cascade' }),
+  tagId:         text('tag_id').notNull().references(() => transactionTags.id, { onDelete: 'cascade' }),
+  createdAt:     timestamp('created_at').defaultNow().notNull(),
 })
 
 export const recurringBills = pgTable('recurring_bills', {
@@ -141,11 +170,28 @@ export const accountsRelations = relations(accounts, ({ one, many }) => ({
   transactions: many(transactions),
 }))
 
-export const transactionsRelations = relations(transactions, ({ one }) => ({
+export const transactionsRelations = relations(transactions, ({ one, many }) => ({
   user:      one(users, { fields: [transactions.userId], references: [users.id] }),
   account:   one(accounts, { fields: [transactions.accountId], references: [accounts.id] }),
   couple:    one(couples, { fields: [transactions.coupleId], references: [couples.id] }),
   recurring: one(recurringBills, { fields: [transactions.recurringId], references: [recurringBills.id] }),
+  attachments: many(transactionAttachments),
+  tagMappings: many(transactionTagMappings),
+}))
+
+export const transactionAttachmentsRelations = relations(transactionAttachments, ({ one }) => ({
+  transaction: one(transactions, { fields: [transactionAttachments.transactionId], references: [transactions.id] }),
+  uploadedByUser: one(users, { fields: [transactionAttachments.uploadedBy], references: [users.id] }),
+}))
+
+export const transactionTagsRelations = relations(transactionTags, ({ one, many }) => ({
+  user: one(users, { fields: [transactionTags.userId], references: [users.id] }),
+  mappings: many(transactionTagMappings),
+}))
+
+export const transactionTagMappingsRelations = relations(transactionTagMappings, ({ one }) => ({
+  transaction: one(transactions, { fields: [transactionTagMappings.transactionId], references: [transactions.id] }),
+  tag: one(transactionTags, { fields: [transactionTagMappings.tagId], references: [transactionTags.id] }),
 }))
 
 export const savingsGoalsRelations = relations(savingsGoals, ({ one }) => ({
@@ -234,4 +280,26 @@ export const monthlyBudgetsRelations = relations(monthlyBudgets, ({ one, many })
 
 export const budgetCategoriesRelations = relations(budgetCategories, ({ one }) => ({
   budget: one(monthlyBudgets, { fields: [budgetCategories.budgetId], references: [monthlyBudgets.id] }),
+}))
+
+// Tabela para convites de casal por link
+export const coupleInvites = pgTable('couple_invites', {
+  id:          text('id').primaryKey().$defaultFn(() => nanoid()),
+  coupleId:    text('couple_id').notNull().references(() => couples.id, { onDelete: 'cascade' }),
+  token:       text('token').notNull().unique(), // Token para o convite por link
+  createdBy:   text('created_by').notNull().references(() => users.id, { onDelete: 'cascade' }), // Usuário que criou o convite
+  expiresAt:   timestamp('expires_at').notNull(), // Data de expiração do convite
+  maxUses:     integer('max_uses').notNull().default(2), // Número máximo de usos (padrão 2 para casal)
+  currentUses: integer('current_uses').notNull().default(0), // Número de usos atuais
+  isActive:    boolean('is_active').notNull().default(true), // Se o convite ainda é válido
+  revokedAt:   timestamp('revoked_at'), // Quando foi revogado (se aplicável)
+  revokedBy:   text('revoked_by').references(() => users.id, { onDelete: 'set null' }), // Quem revogou (se aplicável)
+  createdAt:   timestamp('created_at').defaultNow().notNull(),
+  updatedAt:   timestamp('updated_at').defaultNow().notNull(),
+})
+
+export const coupleInvitesRelations = relations(coupleInvites, ({ one }) => ({
+  couple: one(couples, { fields: [coupleInvites.coupleId], references: [couples.id] }),
+  createdByUser: one(users, { fields: [coupleInvites.createdBy], references: [users.id] }),
+  revokedByUser: one(users, { fields: [coupleInvites.revokedBy], references: [users.id] }),
 }))

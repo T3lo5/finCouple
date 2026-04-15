@@ -15,6 +15,20 @@
       "when": 1776187940060,
       "tag": "0001_remarkable_scourge",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776281882321,
+      "tag": "0002_wealthy_wonder_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1776282283616,
+      "tag": "0003_chemical_wendell_rand",
+      "breakpoints": true
     }
   ]
 }

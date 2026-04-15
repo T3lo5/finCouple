@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: fincouple-postgres
+    environment:
+      POSTGRES_DB: fincouple
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend:/app/backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    image: oven/bun:latest
+    container_name: fincouple-migrate
+    working_dir: /app/backend
+    volumes:
+      - ./backend:/app/backend
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/fincouple
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "
+        bun install &&
+        bun run db:generate &&
+        bun run db:migrate
+      "
+
+volumes:
+  postgres_data:

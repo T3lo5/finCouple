@@ -26,10 +26,10 @@ Este documento lista o que está implementado e o que seria útil implementar no
 |---------|--------|-------------|
 | Criar casal | ✅ | Gera código de convite único (nanoid 10) |
 | Entrar em casal | ✅ | Via código de convite |
-| Sair do casal | ❌ | Não implementado |
-| Dissolver casal | ❌ | Não implementado |
-| Configurações do casal | ❌ | Nome, visibilidade, etc |
-| Convite por link | ❌ | Apenas código manual |
+| Sair do casal | ✅ | Endpoint POST /api/couples/leave implementado com auditoria |
+| Dissolver casal | ✅ | Endpoint DELETE /api/couples implementado com auditoria |
+| Configurações do casal | ✅ | Nome, visibilidade implementados (endpoints GET/PUT /api/couples) |
+| Convite por link | ✅ | Sistema completo com geração/revogação de links de convite |
 | Múltiplos casais | ❌ | Limitado a 1 casal por usuário |
 
 ### Transações
@@ -43,10 +43,10 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Filtrar por período | ✅ | From/to dates |
 | Editar transação | ✅ | UI implementada via ActionModal no App.tsx |
 | Deletar transação | ✅ | Endpoint DELETE existe no backend + hook useTransactions.delete() |
-| Transferências entre contas | ❌ | Tipo 'transfer' definido, não implementado |
-| Anexos/comprovantes | ❌ | Não implementado |
-| Tags personalizadas | ❌ | Não implementado |
-| Busca textual | ❌ | Não implementado |
+| Transferências entre contas | ✅ | Tipo 'transfer' implementado com atualização de saldo entre contas |
+| Anexos/comprovantes | ✅ | Upload, listagem e download de anexos por transação |
+| Tags personalizadas | ✅ | Criação, associação e gerenciamento de tags por transação |
+| Busca textual | ✅ | Busca por título e notas nas transações |
 | Exportar transações | ✅ | CSV implementado (backend + frontend) |
 
 ### Metas de Economia
@@ -214,8 +214,6 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | **Metas múltiplas fotos** | Baixo | Médio | Upload de imagens para metas |
 | **Compartilhar via link** | Médio | Médio | Gerar link compartilhável |
 | **Modo light theme** | Baixo | Baixo | Alternar temas |
-| **Busca de transações** | Médio | Baixo | Search por título/notas |
-| **Tags customizadas** | Baixo | Médio | Organizar transações livremente |
 
 ### Baixa Prioridade / Nice to Have
 
@@ -256,26 +254,26 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Categoria | Implementado | Parcial | Não Implementado | Total Features |
 |-----------|--------------|---------|------------------|----------------|
 | Autenticação | 4 | 0 | 6 | 10 |
-| Casais | 2 | 0 | 5 | 7 |
-| Transações | 6 | 2 | 6 | 14 |
+| Casais | 6 | 0 | 1 | 7 |
+| Transações | 10 | 2 | 2 | 14 |
 | Metas | 6 | 0 | 4 | 10 |
 | Contas | 5 | 1 | 5 | 11 |
 | Bills Recorrentes | 1 | 1 | 5 | 7 |
 | **Orçamento Mensal** | **10** | **0** | **0** | **10** |
-| Dashboard | 3 | 0 | 5 | 8 |
+| Dashboard | 4 | 0 | 4 | 8 |
 | Onboarding | 2 | 1 | 2 | 5 |
-| UI/UX | 9 | 0 | 4 | 13 |
-| Backend | 6 | 1 | 4 | 11 |
-| Segurança | 4 | 1 | 3 | 8 |
+| UI/UX | 10 | 0 | 3 | 13 |
+| Backend | 7 | 1 | 3 | 11 |
+| Segurança | 5 | 1 | 2 | 8 |
 
-**Total Geral:** 56 implementados, 7 parciais, 50 não implementados
+**Total Geral:** 65 implementados, 7 parciais, 41 não implementados
 
 ### Progresso Geral
 
 ```
-Implementado:      ████████████████░░░░░░░░  48%
-Parcial:           ███░░░░░░░░░░░░░░░░░░░░░   6%
-Não Implementado:  ██████████████████░░░░░░  46%
+Implementado:      ████████████████████░░░░  58%
+Parcial:           ██░░░░░░░░░░░░░░░░░░░░░░   6%
+Não Implementado:  ████████░░░░░░░░░░░░░  36%
 ```
 
 ---
@@ -289,9 +287,9 @@ Não Implementado:  ██████████████████░░
 - [x] Configurações de perfil (implementado conforme PROFILE_SETTINGS_KANBAN.md)
 
 ### Sprint 2 - Dashboard Rico (2-3 semanas)
-- [ ] Gráficos por categoria
+- [x] Gráficos por categoria (Resumo por categoria com gráfico de barra já implementado)
 - [ ] Comparativo mensal
-- [ ] Exportar CSV
+- [x] Exportar CSV (Implementado para transações em /api/transactions/export)
 - [ ] Busca de transações
 
 ### Sprint 3 - Engajamento (2-3 semanas)
