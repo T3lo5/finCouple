@@ -15,6 +15,7 @@ import { budgetApi, type Budget, type BudgetCategory } from '../../lib/api'
 import BudgetCard from '../BudgetCard'
 import CategoryBudgetItem from '../CategoryBudgetItem'
 import BudgetModal from '../BudgetModal'
+import BudgetAlert from '../BudgetAlert'
 import { CATEGORIES_META } from '../BudgetModal'
 
 interface BudgetScreenProps {
@@ -43,6 +44,7 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
   const [remainingTotal, setRemainingTotal] = useState(0)
   const [percentageUsed, setPercentageUsed] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showAlert, setShowAlert] = useState(true)
 
   const fetchBudget = useCallback(async () => {
     setLoading(true)
@@ -54,6 +56,8 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
       setSpentTotal(response.data.spentTotal)
       setRemainingTotal(response.data.remainingTotal)
       setPercentageUsed(response.data.percentageUsed)
+      // Reset alert visibility when month/year changes
+      setShowAlert(true)
     } catch (err: any) {
       if (err.status === 404) {
         setBudget(null)
@@ -176,6 +180,17 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
       {/* Budget Display */}
       {!loading && !error && budget && (
         <>
+          {/* Alerta de Orçamento - Toast/Banner quando >80% utilizado */}
+          <BudgetAlert
+            percentageUsed={percentageUsed}
+            totalBudget={parseFloat(budget.totalBudget)}
+            spent={spentTotal}
+            remaining={remainingTotal}
+            visible={showAlert && percentageUsed >= 80}
+            onDismiss={() => setShowAlert(false)}
+            onAdjustBudget={() => setIsModalOpen(true)}
+          />
+
           {/* Card de Resumo do Orçamento - Usando componente BudgetCard */}
           <BudgetCard
             totalBudget={parseFloat(budget.totalBudget)}
