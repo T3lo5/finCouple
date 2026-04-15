@@ -408,10 +408,25 @@
     - Reutilizar metadata das categorias no BudgetScreen
     - Manter consistência visual entre componentes
 
-- [ ] **TASK 3.5:** Integrar BudgetScreen no App.tsx
+- [x] **TASK 3.5:** Integrar BudgetScreen no App.tsx ✅ **CONCLUÍDA**
   - Adicionar ícone de orçamento no menu inferior
   - Navegação via screen state
   - Context toggle compartilhado
+  
+  **Subtasks quebradas para melhor gerenciamento:**
+  - [x] **TASK 3.5.1:** Importar BudgetScreen no App.tsx
+    - Import do componente na linha 31
+  - [x] **TASK 3.5.2:** Adicionar ícone Wallet ao navItems
+    - Ícone adicionado na linha 1377: `{ screen: 'budget', icon: <Wallet size={24} /> }`
+  - [x] **TASK 3.5.3:** Implementar navegação via screen state para budget
+    - Condicional `activeScreen === 'budget'` na linha 1496
+    - Renderização do BudgetScreen com key dinâmica
+  - [x] **TASK 3.5.4:** Passar context como prop para BudgetScreen
+    - Prop `context={context}` passada na linha 1497
+    - Contexto compartilhado do App.tsx para controle individual/joint
+  - [x] **TASK 3.5.5:** Verificar integração com ContextToggle
+    - BudgetScreen responde às mudanças de contexto
+    - Cores e labels atualizados conforme contexto
 
 #### Média Prioridade
 
