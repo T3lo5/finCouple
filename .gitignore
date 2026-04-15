@@ -1,1 +1,7 @@
-Nothing should be ignored based on the provided file changes, as they consist only of source code files (.tsx) and documentation files (.md).
+```
+# Dependencies
+node_modules/
+
+# Temp files
+.tmp/
+```
