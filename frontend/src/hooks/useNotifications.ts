@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { notificationsApi, type Notification } from '../lib/api'
 
 interface UseNotificationsOptions {
@@ -52,6 +52,16 @@ export function useNotifications({ autoFetch = true, pollInterval = 30000 }: Use
     }
   }, [])
 
+  // Filtra apenas notificações de budget_alert
+  const budgetAlerts = useMemo(() => {
+    return notifications.filter(n => n.type === 'budget_alert')
+  }, [notifications])
+
+  // Conta alerts não lidos
+  const unreadBudgetAlertsCount = useMemo(() => {
+    return budgetAlerts.filter(n => !n.read).length
+  }, [budgetAlerts])
+
   useEffect(() => {
     if (autoFetch) {
       fetchNotifications()
@@ -75,5 +85,7 @@ export function useNotifications({ autoFetch = true, pollInterval = 30000 }: Use
     refetch: fetchNotifications,
     markAsRead,
     markAllAsRead,
+    budgetAlerts,
+    unreadBudgetAlertsCount,
   }
 }
