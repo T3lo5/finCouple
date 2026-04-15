@@ -11,8 +11,8 @@ import {
   Settings,
 } from 'lucide-react'
 import { type Context } from '../../lib/api'
-import { budgetApi, type Budget, type BudgetCategory } from '../../lib/api'
 import { useBudgetPreferences } from '../../hooks/useBudgetPreferences'
+import { useBudget } from '../../hooks/useBudget'
 import BudgetCard from '../BudgetCard'
 import CategoryBudgetItem from '../CategoryBudgetItem'
 import BudgetModal from '../BudgetModal'
@@ -41,46 +41,40 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
     loading: prefsLoading,
   } = useBudgetPreferences({ autoSync: true })
   
-  const [budget, setBudget] = useState<Budget | null>(null)
-  const [categories, setCategories] = useState<BudgetCategory[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const {
+    budget,
+    categories,
+    loading,
+    error,
+    validationErrors,
+    fetchBudget,
+    clearBudget,
+  } = useBudget({ context, autoFetch: false })
+  
   const [spentTotal, setSpentTotal] = useState(0)
   const [remainingTotal, setRemainingTotal] = useState(0)
   const [percentageUsed, setPercentageUsed] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showAlert, setShowAlert] = useState(true)
 
-  const fetchBudget = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await budgetApi.get(preferences.selectedMonth, preferences.selectedYear, context)
-      setBudget(response.data.budget)
-      setCategories(response.data.categories)
-      setSpentTotal(response.data.spentTotal)
-      setRemainingTotal(response.data.remainingTotal)
-      setPercentageUsed(response.data.percentageUsed)
-      // Reset alert visibility when month/year changes
+  const handleFetchBudget = useCallback(async () => {
+    const result = await fetchBudget(preferences.selectedMonth, preferences.selectedYear, context)
+    if (result) {
+      setSpentTotal(result.spentTotal)
+      setRemainingTotal(result.remainingTotal)
+      setPercentageUsed(result.percentageUsed)
       setShowAlert(true)
-    } catch (err: any) {
-      if (err.status === 404) {
-        setBudget(null)
-        setCategories([])
-        setSpentTotal(0)
-        setRemainingTotal(0)
-        setPercentageUsed(0)
-      } else {
-        setError(err.message)
-      }
-    } finally {
-      setLoading(false)
+    } else if (!budget) {
+      // 404 - no budget for this month/year
+      setSpentTotal(0)
+      setRemainingTotal(0)
+      setPercentageUsed(0)
     }
-  }, [preferences.selectedMonth, preferences.selectedYear, context])
+  }, [preferences.selectedMonth, preferences.selectedYear, context, fetchBudget, budget])
 
   useEffect(() => {
-    fetchBudget()
-  }, [fetchBudget])
+    handleFetchBudget()
+  }, [handleFetchBudget])
 
   const handlePrevMonth = () => {
     prevMonth()
@@ -141,7 +135,16 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
         <div className="p-4 bg-negative/10 border border-negative/20 rounded-2xl">
           <div className="flex items-center gap-3">
             <AlertTriangle size={20} className="text-negative" />
-            <p className="text-negative text-sm">{error}</p>
+            <div className="flex-1">
+              <p className="text-negative text-sm font-medium">{error}</p>
+              {validationErrors && (
+                <ul className="mt-2 space-y-1">
+                  {Object.entries(validationErrors).map(([field, message]) => (
+                    <li key={field} className="text-negative/80 text-xs">• {message}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -156,7 +159,7 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
             Nenhum orçamento definido
           </h3>
           <p className="text-muted text-sm mb-6 max-w-xs mx-auto">
-            Crie um orçamento para {MONTHS[selectedMonth - 1]} de {selectedYear} para acompanhar seus gastos
+            Crie um orçamento para {MONTHS[preferences.selectedMonth - 1]} de {preferences.selectedYear} para acompanhar seus gastos
           </p>
           <button
             onClick={() => setIsModalOpen(true)}
@@ -243,12 +246,12 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         context={context}
-        selectedMonth={selectedMonth}
-        selectedYear={selectedYear}
+        selectedMonth={preferences.selectedMonth}
+        selectedYear={preferences.selectedYear}
         existingBudget={budget}
         existingCategories={categories}
         onBudgetSaved={() => {
-          fetchBudget()
+          handleFetchBudget()
         }}
       />
     </motion.div>
