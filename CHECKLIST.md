@@ -104,6 +104,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Endpoint DELETE /api/budget/:id | ❌ | Não implementado |
 | Endpoint GET /api/budget/history | ✅ | Histórico de orçamentos com paginação e filtro por ano |
 | **Endpoint POST /api/budget/calculate** | ✅ | Cálculo de gastos do mês e atualização automática de spentAmount |
+| **Registro de rotas no index.ts** | ✅ | Rotas registradas em /api/budget |
 | Cálculo automático de gastos | ✅ | Implementado nos endpoints GET, PATCH, history e calculate |
 | Sistema de alertas | ❌ | Não implementado |
 | UI de orçamento | ❌ | Não implementada |

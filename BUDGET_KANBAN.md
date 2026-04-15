@@ -220,9 +220,14 @@
     - [x] **TASK 2.7.6:** Implementar logging de auditoria
     - [x] **TASK 2.7.7:** Retornar resposta no padrão da API
 
-- [ ] **TASK 2.8:** Criar rota no index.ts para registrar todas as rotas de budget
-  - Importar router de budget
-  - Registrar em `/api/budget`
+- [x] **TASK 2.8:** Criar rota no index.ts para registrar todas as rotas de budget
+  - [x] **TASK 2.8.1:** Importar router de budget no index.ts
+    - Adicionar `import budgetRoutes from './routes/budget'`
+  - [x] **TASK 2.8.2:** Registrar rota em `/api/budget`
+    - Adicionar `app.route('/api/budget', budgetRoutes)`
+  - [x] **TASK 2.8.3:** Verificar integração com outras rotas
+    - Validar ordem de registro das rotas
+    - Testar conflitação de rotas
 
 ### Frontend - Componentes UI
 
