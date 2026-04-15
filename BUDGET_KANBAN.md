@@ -172,10 +172,38 @@
     - Formato: `{ data: { budgets: [...], meta: { limit, offset, year, total } } }`
     - Status 200 OK
 
-- [ ] **TASK 2.6:** Criar endpoint `POST /api/budget/calculate` para calcular gastos do mês
+- [x] **TASK 2.6:** Criar endpoint `POST /api/budget/calculate` para calcular gastos do mês
   - Calcula spentAmount baseado nas transações do usuário/casal
   - Atualiza automaticamente budget_categories.spentAmount
   - Retorna: `{ data: { categories: [...], totalSpent, percentageUsed } }`
+  - [x] **TASK 2.6.1:** Criar schema Zod para validação do body (month, year, context)
+    - Validação de month (1-12), year (2020-2100), context (enum)
+  - [x] **TASK 2.6.2:** Implementar middleware de autenticação e validação de permissões
+    - requireAuth já aplicado no router
+    - Validação de contexto joint (usuário precisa estar em casal)
+  - [x] **TASK 2.6.3:** Implementar busca do orçamento no banco
+    - Query na tabela monthly_budgets com filters: userId, month, year, context
+    - Retorno 404 se orçamento não encontrado
+  - [x] **TASK 2.6.4:** Buscar categorias do orçamento
+    - Query na tabela budget_categories filtrando por budgetId
+  - [x] **TASK 2.6.5:** Calcular gastos totais baseado nas transações do mês
+    - Definir período do mês (startDate, endDate)
+    - Query de agregação com SUM nas transações (type=expense)
+    - Filtros: userId, type, date range, context, coupleId (se joint)
+    - Agrupamento por categoria
+  - [x] **TASK 2.6.6:** Processar e formatar dados das categorias
+    - Mapear expenses por categoria usando Map
+    - Calcular spentAmount, remainingAmount, percentageUsed por categoria
+    - Calcular totalSpent somando todas as categorias
+  - [x] **TASK 2.6.7:** Atualizar spentAmount no banco de dados
+    - Update em budget_categories.spentAmount para cada categoria
+    - Atualizar updatedAt
+  - [x] **TASK 2.6.8:** Implementar logging de auditoria
+    - Log action 'update' para entidade 'monthly_budget'
+    - Registrar parâmetros e categorias atualizadas
+  - [x] **TASK 2.6.9:** Retornar resposta no padrão da API
+    - Formato: `{ data: { categories: [...], totalSpent, percentageUsed } }`
+    - Status 200 OK
 
 #### Média Prioridade
 
