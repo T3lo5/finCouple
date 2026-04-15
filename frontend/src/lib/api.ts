@@ -370,3 +370,88 @@ export const notificationsApi = {
   getSubscriptions: () =>
     request<{ data: Array<{ id: string; endpoint: string; userAgent: string | null; createdAt: string; updatedAt: string }> }>('/api/notifications/subscriptions'),
 }
+
+export interface Budget {
+  id:          string
+  userId:      string
+  coupleId:    string | null
+  month:       number
+  year:        number
+  totalBudget: string
+  context:     Context
+  createdAt:   string
+  updatedAt:   string
+}
+
+export interface BudgetCategory {
+  id:            string
+  budgetId:      string
+  category:      Category
+  limitAmount:   string
+  spentAmount:   string
+  alertThreshold: number
+  createdAt:     string
+  updatedAt:     string
+}
+
+export const budgetApi = {
+  get: (month: number, year: number, context: Context) =>
+    request<{ 
+      data: { 
+        budget: Budget
+        categories: BudgetCategory[]
+        spentTotal: number
+        remainingTotal: number
+        percentageUsed: number
+      } 
+    }>(`/api/budget/${month}/${year}?context=${context}`),
+
+  create: (body: {
+    month: number
+    year: number
+    totalBudget: number
+    context: Context
+    categories?: Array<{
+      category: Category
+      limitAmount: number
+      alertThreshold?: number
+    }>
+  }) =>
+    request<{ data: { budget: Budget; categories: BudgetCategory[] } }>('/api/budget', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  update: (id: string, body: Partial<{
+    totalBudget: number
+    categories: Array<{
+      category: Category
+      limitAmount: number
+      alertThreshold?: number
+    }>
+  }>) =>
+    request<{ data: { budget: Budget; categories: BudgetCategory[]; spentTotal: number; remainingTotal: number; percentageUsed: number } }>(`/api/budget/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  delete: (id: string, confirm: boolean) =>
+    request<{ data: { message: string; deletedBudget: Budget } }>(`/api/budget/${id}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ confirm }),
+    }),
+
+  history: (params?: { limit?: number; offset?: number; year?: number }) => {
+    const qs = params ? new URLSearchParams(params as any).toString() : ''
+    return request<{ data: Array<{ budget: Budget; categories: BudgetCategory[]; spentTotal: number; remainingTotal: number; percentageUsed: number }>; meta: { limit: number; offset: number; year?: number; total: number } }>(`/api/budget/history${qs ? `?${qs}` : ''}`)
+  },
+
+  calculate: (body: { month: number; year: number; context: Context }) =>
+    request<{ data: { categories: BudgetCategory[]; totalSpent: number; percentageUsed: number } }>('/api/budget/calculate', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  alerts: () =>
+    request<{ data: { alerts: Array<{ category: Category; limit: number; spent: number; percentage: number }> } }>('/api/budget/alerts'),
+}

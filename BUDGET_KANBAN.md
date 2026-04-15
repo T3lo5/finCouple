@@ -233,12 +233,45 @@
 
 #### Alta Prioridade
 
-- [ ] **TASK 3.1:** Criar componente `BudgetScreen.tsx`
+- [x] **TASK 3.1:** Criar componente `BudgetScreen.tsx` ✅ **CONCLUÍDA**
   - Layout similar ao Dashboard
   - Toggle de contexto (individual/joint)
   - Seletor de mês/ano
   - Display do orçamento total vs gasto total
   - Lista de categorias com limites e gastos
+  
+  **Subtasks quebradas para melhor gerenciamento:**
+  - [x] **TASK 3.1.1:** Criar estrutura básica do componente BudgetScreen.tsx
+    - Imports e types
+    - Interface BudgetScreenProps
+    - Motion animations conforme SPEC.md
+  - [x] **TASK 3.1.2:** Implementar seletor de mês/ano
+    - Navegação entre meses (prev/next)
+    - Display do mês/ano atual
+    - Labels contextuais (individual/joint)
+  - [x] **TASK 3.1.3:** Implementar estados de loading, error e empty state
+    - Loading spinner
+    - Error handling com mensagens claras
+    - Empty state com call-to-action
+  - [x] **TASK 3.1.4:** Implementar card de resumo do orçamento
+    - Display do orçamento total
+    - Gasto total e restante
+    - Barra de progresso animada
+    - Alerta visual quando >80% utilizado
+  - [x] **TASK 3.1.5:** Implementar lista de categorias
+    - Ícone, nome e limite por categoria
+    - Gasto atual e porcentagem utilizada
+    - Barra de progresso por categoria
+    - Cores contextuais (<80%, 80-100%, >100%)
+  - [x] **TASK 3.1.6:** Adicionar tipos Budget e BudgetCategory no api.ts
+  - [x] **TASK 3.1.7:** Criar budgetApi com endpoints
+    - GET /api/budget/:month/:year
+    - POST /api/budget
+    - PATCH /api/budget/:id
+    - DELETE /api/budget/:id
+    - GET /api/budget/history
+    - POST /api/budget/calculate
+    - GET /api/budget/alerts
 
 - [ ] **TASK 3.2:** Criar componente `BudgetCard.tsx` para exibição do orçamento
   - Mostra: total budget, spent, remaining
