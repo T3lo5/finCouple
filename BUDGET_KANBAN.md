@@ -651,16 +651,35 @@
     - Logging de auditoria em todas as operações (logAudit)
     - Tratamento de erros consistente com status codes apropriados (401, 403, 404, 409)
 
-- [ ] **TASK 5.2:** Validação Zod completa nos endpoints
-  - Month: 1-12
-  - Year: 2020-2100
-  - Amounts: positivos, máximo 999999.99
-  - Categories: enum válido
-  - Threshold: 0-100
+- [x] **TASK 5.2:** Validação Zod completa nos endpoints ✅ **CONCLUÍDA**
+  - Month: 1-12 (monthSchema, linhas 73-76)
+  - Year: 2020-2100 (yearSchema, linhas 79-82)
+  - Amounts: positivos, máximo 999999.99 (amountSchema, linhas 68-70)
+  - Categories: enum válido (dining, home, transport, shopping, health, travel, bills, salary, investment, other)
+  - Threshold: 0-100 (thresholdSchema, linhas 85-87)
 
-- [ ] **TASK 5.3:** Rate limiting nos endpoints de budget
+- [x] **TASK 5.3:** Rate limiting nos endpoints de budget ✅ **CONCLUÍDA**
   - Prevenir abuso de criação/atualização
   - Máximo 10 requisições/minuto
+  - Implementado middleware `budgetWriteRateLimit` usando rateLimit do middleware/rateLimit.ts
+  - Aplicado nos endpoints POST /api/budget e PATCH /api/budget/:id
+  - Headers de rate limit incluídos na resposta (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset)
+  - Retorno 429 Too Many Requests quando limite excedido
+  - Cleanup automático de entradas antigas a cada 5 minutos
+
+  **Subtasks quebradas para melhor gerenciamento:**
+  - [x] **TASK 5.3.1:** Importar middleware rateLimit no budget.ts
+    - Import `rateLimit` from '../middleware/rateLimit' (linha 8)
+  - [x] **TASK 5.3.2:** Configurar rate limiter para escrita (10 req/min)
+    - Criar `budgetWriteRateLimit` com maxRequests: 10, windowMs: 60000 (linhas 16-20)
+    - Mensagem customizada: 'Too many budget operations, please try again in a minute'
+  - [x] **TASK 5.3.3:** Aplicar rate limiting no endpoint POST /api/budget
+    - Adicionar `budgetWriteRateLimit` antes do zValidator (linha 286)
+  - [x] **TASK 5.3.4:** Aplicar rate limiting no endpoint PATCH /api/budget/:id
+    - Adicionar `budgetWriteRateLimit` antes do zValidator (linha 507)
+  - [x] **TASK 5.3.5:** Verificar headers de rate limit nas respostas
+    - X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+    - Retry-After quando limite excedido
 
 - [ ] **TASK 5.4:** Logging de auditoria para mudanças de orçamento
   - Registrar no audit_logs
