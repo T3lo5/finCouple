@@ -630,10 +630,26 @@
 
 #### Alta Prioridade
 
-- [ ] **TASK 5.1:** Validar permissões de acesso ao orçamento
-  - Usuário só pode ver/editar seus próprios orçamentos
-  - Em contexto joint, ambos podem editar
-  - Middleware requireAuth em todas as rotas
+- [x] **TASK 5.1:** Validar permissões de acesso ao orçamento ✅ **CONCLUÍDA**
+  - [x] **TASK 5.1.1:** Middleware requireAuth em todas as rotas de budget
+    - Implementado na linha 11 do budget.ts: `router.use(requireAuth)`
+    - Aplica autenticação em todos os endpoints (POST, GET, PATCH, DELETE, /calculate, /history, /alerts)
+  - [x] **TASK 5.1.2:** Usuário só pode ver/editar seus próprios orçamentos
+    - Todas as queries filtram por `userId` (linhas 93, 228, 325, 747, 901)
+    - Validação de propriedade no PATCH (linha 454): `if (budget.userId !== user.id)`
+    - Validação de propriedade no DELETE (linha 648): `if (budget.userId !== user.id)`
+    - Retorno 403 Forbidden quando usuário tenta acessar orçamento de outro
+  - [x] **TASK 5.1.3:** Em contexto joint, ambos podem editar
+    - Validação de coupleId no POST (linha 218): verifica se usuário está em casal
+    - Validação de coupleId no GET (linha 315): verifica permissão para joint
+    - Validação de coupleId no PATCH (linha 459): permite edição se estiver em casal
+    - Validação de coupleId no DELETE (linha 653): permite deleção se estiver em casal
+    - Transações joint incluem coupleId nas queries (linhas 128, 361, 540, 791, 942)
+  - [x] **TASK 5.1.4:** Segurança e escalabilidade das validações
+    - Queries otimizadas com índices implícitos do Drizzle ORM
+    - Validações early-return para evitar processamento desnecessário
+    - Logging de auditoria em todas as operações (logAudit)
+    - Tratamento de erros consistente com status codes apropriados (401, 403, 404, 409)
 
 - [ ] **TASK 5.2:** Validação Zod completa nos endpoints
   - Month: 1-12
