@@ -489,13 +489,38 @@
     - Callbacks: onAdjustBudget (abre modal), onDismiss (fecha alerta)
     - Controle de visibilidade baseado em showAlert e percentageUsed >= 80
 
-- [ ] **TASK 3.7:** Criar hook `useBudget.ts` para gerenciamento de estado
-  - fetchBudget(month, year, context)
-  - createBudget(data)
-  - updateBudget(id, data)
-  - deleteBudget(id)
-  - calculateSpent(month, year)
-  - checkAlerts()
+- [x] **TASK 3.7:** Criar hook `useBudget.ts` para gerenciamento de estado ✅ **CONCLUÍDA**
+  - [x] **TASK 3.7.1:** Criar interfaces TypeScript para BudgetWithDetails, BudgetAlert, CreateBudgetData, UpdateBudgetData
+  - [x] **TASK 3.7.2:** Implementar fetchBudget(month, year, context)
+    - Busca orçamento via budgetApi.get()
+    - Atualiza estado local com budget, categories, spentTotal, remainingTotal, percentageUsed
+    - Tratamento de erros e loading state
+  - [x] **TASK 3.7.3:** Implementar createBudget(data)
+    - Cria orçamento via budgetApi.create()
+    - Inicializa spentTotal=0, remainingTotal=totalBudget, percentageUsed=0
+    - Atualiza estado local com budget criado
+  - [x] **TASK 3.7.4:** Implementar updateBudget(id, data)
+    - Atualiza orçamento via budgetApi.update()
+    - Sincroniza estado local com dados retornados
+    - Mantém spentTotal, remainingTotal, percentageUsed atualizados
+  - [x] **TASK 3.7.5:** Implementar deleteBudget(id)
+    - Deleta orçamento via budgetApi.delete() com confirmação
+    - Limpa estado local (setBudget(null))
+  - [x] **TASK 3.7.6:** Implementar calculateSpent(month, year)
+    - Calcula gastos via budgetApi.calculate()
+    - Atualiza categorias com spentAmount calculado
+    - Recalcula spentTotal, remainingTotal, percentageUsed
+  - [x] **TASK 3.7.7:** Implementar checkAlerts()
+    - Verifica alertas via budgetApi.alerts()
+    - Retorna categorias que ultrapassaram threshold
+    - Armazena alertas em estado local
+  - [x] **TASK 3.7.8:** Implementar clearBudget() utilitário
+    - Limpa estado do budget ao desmontar ou trocar contexto
+  - [x] **TASK 3.7.9:** Adicionar tipos e interfaces exportáveis
+    - BudgetWithDetails: Budget + categories + campos calculados
+    - BudgetAlert: categoria, limite, gasto, porcentagem
+    - CreateBudgetData: dados para criação
+    - UpdateBudgetData: dados para atualização
 
 ### Frontend - Integração
 
