@@ -311,13 +311,49 @@
     - Substituição do card inline pelo componente reutilizável
     - Passagem de props: totalBudget, spent, remaining, percentageUsed, context, showAlert
 
-- [ ] **TASK 3.3:** Criar componente `CategoryBudgetItem.tsx`
+- [x] **TASK 3.3:** Criar componente `CategoryBudgetItem.tsx` ✅ **CONCLUÍDA**
   - Ícone da categoria
   - Nome da categoria
   - Limite definido
   - Gasto atual
   - Barra de progresso por categoria
   - Alerta visual se próximo do limite
+  
+  **Subtasks quebradas para melhor gerenciamento:**
+  - [x] **TASK 3.3.1:** Criar estrutura básica do componente CategoryBudgetItem.tsx
+    - Imports (React, Motion, Lucide)
+    - Interface CategoryBudgetItemProps tipada
+    - Export default do componente
+  - [x] **TASK 3.3.2:** Implementar formatação de valores monetários
+    - Função formatCurrency com locale pt-BR
+    - Separação de inteiros e decimais para exibição elegante
+  - [x] **TASK 3.3.3:** Implementar lógica de cores contextuais
+    - getProgressColor: retorna classes text-muted, text-amber-400, text-negative
+    - getProgressBarColor: retorna classes bg-positive, bg-amber-400, bg-negative
+    - getBackgroundColor: retorna classes para o ícone da categoria
+    - Thresholds: <80% verde, 80-100% amarelo, >100% vermelho
+  - [x] **TASK 3.3.4:** Implementar exibição do ícone e nome da categoria
+    - Ícone contextual com background colorido
+    - Label da categoria
+    - Limite definido em formato monetário
+  - [x] **TASK 3.3.5:** Implementar exibição do gasto atual e porcentagem
+    - Valor gasto formatado em BRL
+    - Porcentagem utilizada com cor contextual
+  - [x] **TASK 3.3.6:** Implementar barra de progresso animada
+    - Motion.div com animate de width
+    - Transição easeOut com delay
+    - Limite máximo de 100% na largura
+  - [x] **TASK 3.3.7:** Implementar exibição do valor restante
+    - Condicional: mostra restante quando >0 e <80%
+    - Mensagem de alerta quando limite ultrapassado
+  - [x] **TASK 3.3.8:** Implementar alertas visuais
+    - Alerta amarelo para 80-100% (isNearLimit)
+    - Alerta vermelho para >100% (isOverBudget)
+    - Animações de entrada com scale e opacity
+  - [x] **TASK 3.3.9:** Integrar CategoryBudgetItem no BudgetScreen
+    - Import do componente
+    - Substituição do código inline pelo componente reutilizável
+    - Passagem de props: category, icon, label, delay, showRemaining, showAlerts
 
 - [ ] **TASK 3.4:** Criar modal `BudgetModal.tsx` para criar/editar orçamento
   - Bottom sheet (seguir padrão do ActionModal)
