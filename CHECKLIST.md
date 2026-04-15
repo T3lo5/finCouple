@@ -111,6 +111,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | **Componente BudgetCard** | ✅ | Componente reutilizável criado com: total budget, spent, remaining, barra de progresso animada, porcentagem utilizada, cores contextuais (verde <80%, amarelo 80-100%, vermelho >100%), alertas visuais integrados |
 | **Componente CategoryBudgetItem** | ✅ | Componente reutilizável criado com: ícone da categoria, nome, limite definido, gasto atual, barra de progresso animada por categoria, alertas visuais (>80% amarelo, >100% vermelho), exibição de valor restante, animações de entrada suaves |
 | **Componente BudgetModal** | ✅ | Bottom sheet modal para criar/editar orçamento com: input de valor total, lista de categorias com toggle, limites individuais por categoria, toggle de alertas, slider de threshold (50-100%), resumo de alocação orçamentária, alerta de overbudget, botões Cancelar/Salvar, integração completa com BudgetScreen |
+| **Integração BudgetScreen no App.tsx** | ✅ | BudgetScreen integrado ao fluxo de navegação principal: ícone Wallet no menu inferior, navegação via screen state ('budget'), context toggle compartilhado entre todas as telas |
 
 ### Dashboard & Visualização
 
@@ -257,7 +258,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Metas | 6 | 0 | 4 | 10 |
 | Contas | 5 | 1 | 5 | 11 |
 | Bills Recorrentes | 1 | 1 | 5 | 7 |
-| **Orçamento Mensal** | **7** | **0** | **2** | **9** |
+| **Orçamento Mensal** | **8** | **0** | **2** | **10** |
 | Dashboard | 3 | 0 | 5 | 8 |
 | Onboarding | 2 | 1 | 2 | 5 |
 | UI/UX | 9 | 0 | 4 | 13 |
