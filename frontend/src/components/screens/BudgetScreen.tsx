@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   Plus,
   X,
+  Settings,
 } from 'lucide-react'
 import { type Context } from '../../lib/api'
 import { budgetApi, type Budget, type BudgetCategory } from '../../lib/api'

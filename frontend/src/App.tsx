@@ -28,9 +28,10 @@ import { type Context, type Category, type TransactionType, type Transaction, ty
 import AuthScreen from './components/screens/AuthScreen'
 import OnboardingCouple from './components/screens/OnboardingCouple'
 import ResetPasswordScreen from './components/screens/ResetPasswordScreen'
+import BudgetScreen from './components/screens/BudgetScreen'
 import { SettingsSkeleton } from './components/Skeleton'
 
-type Screen = 'dashboard' | 'accounts' | 'savings' | 'recurring' | 'settings'
+type Screen = 'dashboard' | 'accounts' | 'savings' | 'budget' | 'recurring' | 'settings'
 
 const ContextToggle = ({ context, setContext, hasCouple }: {
   context: Context
@@ -1373,6 +1374,7 @@ export default function App() {
   const navItems: { screen: Screen; icon: React.ReactNode }[] = [
     { screen: 'dashboard', icon: <LayoutDashboard size={24} /> },
     { screen: 'accounts',  icon: <CreditCard size={24} /> },
+    { screen: 'budget',    icon: <Wallet size={24} /> },
     { screen: 'savings',   icon: <TrendingUp size={24} /> },
     { screen: 'settings',  icon: <ShieldCheck size={24} /> },
   ]
@@ -1491,6 +1493,9 @@ export default function App() {
               openEditModal={openEditModal}
             />
           )}
+          {activeScreen === 'budget' && (
+            <BudgetScreen key={`budget-${refreshKey}`} context={context} />
+          )}
           {activeScreen === 'savings' && (
             <SavingsScreen key={`savings-${refreshKey}`} context={context} />
           )}
@@ -1500,7 +1505,7 @@ export default function App() {
               setIsIndividualVisibleToPartner={setIsIndividualVisibleToPartner}
             />
           )}
-=          {activeScreen === 'accounts' && (
+          {activeScreen === 'accounts' && (
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="pt-28 pb-28 px-4 sm:px-6 text-center text-muted"
