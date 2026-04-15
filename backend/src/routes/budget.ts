@@ -1103,4 +1103,18 @@ router.get('/alerts', zValidator('query', budgetAlertsQuerySchema), async (c) =>
   )
 
   // Formata resposta
-  const formattedAlerts = all
+  const formattedAlerts = allAlerts.map(alert => ({
+    category: alert.category,
+    limit: alert.limit,
+    spent: alert.spent,
+    percentage: alert.percentage,
+  }))
+
+  return c.json({
+    data: {
+      alerts: formattedAlerts
+    }
+  })
+})
+
+export default router

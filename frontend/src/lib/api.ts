@@ -19,6 +19,12 @@ export interface User {
   budgetDefaultContext?: 'individual' | 'joint' | null
 }
 
+export interface BudgetPreferences {
+  selectedMonth: number
+  selectedYear: number
+  budgetContext: Context
+}
+
 export interface Account {
   id:          string
   userId:      string

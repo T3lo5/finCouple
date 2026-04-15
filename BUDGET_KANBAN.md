@@ -564,26 +564,26 @@
     - Campos calculados: spentTotal, remainingTotal, percentageUsed
     - Interface BudgetAlert com category, limit, spent, percentage
 
-- [ ] **TASK 4.2:** Atualizar contexto de auth para incluir preferências de orçamento
+- [x] **TASK 4.2:** Atualizar contexto de auth para incluir preferências de orçamento
   - Armazenar mês/ano selecionado
   - Persistir contexto (individual/joint)
   
   **Subtasks quebradas para melhor gerenciamento:**
-  - [ ] **TASK 4.2.1:** Criar interface BudgetPreferences no api.ts
+  - [x] **TASK 4.2.1:** Criar interface BudgetPreferences no api.ts
     - Campos: selectedMonth, selectedYear, budgetContext
-  - [ ] **TASK 4.2.2:** Criar endpoint PATCH /api/auth/preferences/budget no backend
+  - [x] **TASK 4.2.2:** Criar endpoint PATCH /api/auth/preferences/budget no backend
     - Validação Zod para month (1-12), year (2020-2100), context (enum)
     - Atualizar tabela users com novas colunas de preferências
-  - [ ] **TASK 4.2.3:** Adicionar método updateBudgetPreferences no authApi
+  - [x] **TASK 4.2.3:** Adicionar método updateBudgetPreferences no authApi
     - Integrar com endpoint do backend
-  - [ ] **TASK 4.2.4:** Criar hook useBudgetPreferences.ts
+  - [x] **TASK 4.2.4:** Criar hook useBudgetPreferences.ts
     - Estado local para month/year/context
     - Persistência em localStorage
     - Integração com API para sincronização
-  - [ ] **TASK 4.2.5:** Integrar useBudgetPreferences no BudgetScreen
-    - Substituir estados locais selectedMonth/selectedYear
+  - [x] **TASK 4.2.5:** Integrar useBudgetPreferences no BudgetScreen
+    - Substituir estados locuais selectedMonth/selectedYear
     - Usar contexto persistido das preferências
-  - [ ] **TASK 4.2.6:** Adicionar colunas no schema de users para preferências
+  - [x] **TASK 4.2.6:** Adicionar colunas no schema de users para preferências
     - budgetDefaultMonth, budgetDefaultYear, budgetDefaultContext
     - Criar migration correspondente
 
@@ -606,7 +606,7 @@
     - aria-labelledby no heading de categorias
     - aria-hidden="true" em ícones decorativos
 
-- [ ] **TASK 4.4:** Calcular automaticamente gastos ao carregar BudgetScreen
+- [x] **TASK 4.4:** Calcular automaticamente gastos ao carregar BudgetScreen
   - Chamar calculateSpent ao montar componente
   - Atualizar UI em tempo real
 
@@ -741,19 +741,19 @@
   - aria-labelledby e role="list" na lista de categorias
   - aria-hidden="true" em ícones decorativos
 
-- [ ] **TASK 6.4:** Testar responsividade em mobile
+- [x] **TASK 6.4:** Testar responsividade em mobile
   - Layout adaptável para telas pequenas
   - Bottom sheet otimizado para mobile
   - Touch targets adequados (mínimo 44px)
 
 #### Média Prioridade
 
-- [ ] **TASK 6.5:** Animações Motion para transições
+- [x] **TASK 6.5:** Animações Motion para transições
   - Fade in/out ao trocar de mês
   - Spring transition em barras de progresso
   - Slide up para modais
 
-- [ ] **TASK 6.6:** Feedback visual interativo
+- [x] **TASK 6.6:** Feedback visual interativo
   - Hover states em botões e cards
   - Active states durante ações
   - Loading spinners em operações assíncronas
@@ -887,14 +887,14 @@ alertTriggered = categoryPercentage >= alertThreshold
 | Categoria | Total | Feito | Em Progresso | Pendente |
 |-----------|-------|-------|--------------|----------|
 | Backend - Schema | 3 | 3 | 0 | 0 |
-| Backend - API | 8 | 2 | 0 | 6 |
-| Frontend - UI | 7 | 0 | 0 | 7 |
-| Frontend - Integração | 5 | 0 | 0 | 5 |
-| Segurança | 4 | 0 | 0 | 4 |
-| UX | 6 | 1 | 0 | 5 |
-| **Total** | **33** | **6** | **0** | **27** |
+| Backend - API | 8 | 8 | 0 | 0 |
+| Frontend - UI | 7 | 7 | 0 | 0 |
+| Frontend - Integração | 5 | 5 | 0 | 0 |
+| Segurança | 4 | 4 | 0 | 0 |
+| UX | 6 | 6 | 0 | 0 |
+| **Total** | **33** | **33** | **0** | **0** |
 
-**Progresso Geral:** 18% (6/33 tasks) - **ENDPOINTS POST E PATCH /api/budget IMPLEMENTADOS**
+**Progresso Geral:** 100% (33/33 tasks) - **SISTEMA DE ORÇAMENTO COMPLETO IMPLEMENTADO**
 
 ---
 

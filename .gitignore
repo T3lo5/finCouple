@@ -1,2 +1,119 @@
-# No changes needed - only a markdown file was modified
-# BUDGET_KANBAN.md is a source file and should not be ignored
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+.nuxt/
+out/
+.nx/
+public/uploads/
+
+# Environment variables
+.env*
+!.env.example
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+.directory
+.Trashes
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Temporary folders
+tmp/
+temp/
+.tmpl/
+
+# Compiled binary addons
+build/Release
+
+# Debug files
+*.ddms
+
+# System Files
+.git/
+.gitattributes
+.gitignore
+README.md
+LICENSE
+
+# CLAUDE specific
+.claude/
+claude_code/
+.memory/
+.plan/
+.openclaude/
+
+# Backend specific
+backend/dist/
+backend/build/
+backend/logs/
+backend/tmp/
+backend/.env*
+
+# Frontend specific
+frontend/dist/
+frontend/build/
+frontend/public/uploads/
+frontend/.next/
+frontend/out/
+frontend/.env*
+
+# Database files
+*.db
+*.db-journal
+
+# Local configuration files
+config.local.js
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cache
+.cache/
+.cache-loader/
+.node_modules_cache/
+
+# Lock files
+package-lock.json
+yarn.lock
+
+# Development
+local/
+secret/
+private/
+
+# Temporary backup files
+*.bak
+*.backup
+*.orig
+*.rej
+*.swp
+*~
