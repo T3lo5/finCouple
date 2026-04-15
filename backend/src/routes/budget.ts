@@ -5,10 +5,19 @@ import { db } from '../db/client'
 import { monthlyBudgets, budgetCategories, transactions, pushNotifications } from '../db/schema'
 import { eq, and, sum, gte, lte, inArray, sql } from 'drizzle-orm'
 import { requireAuth, logAudit } from '../middleware/auth'
+import { rateLimit } from '../middleware/rateLimit'
 import { nanoid } from 'nanoid'
 
 const router = new Hono()
 router.use(requireAuth)
+
+// Rate limiting para endpoints de escrita (criação/atualização)
+// 10 requisições por minuto (60000ms)
+const budgetWriteRateLimit = rateLimit({
+  maxRequests: 10,
+  windowMs: 60 * 1000, // 1 minute
+  message: 'Too many budget operations, please try again in a minute',
+})
 
 // Schema para criação de orçamento mensal
 const createBudgetSchema = z.object({
@@ -274,7 +283,7 @@ router.post('/calculate', zValidator('json', calculateBudgetSchema), async (c) =
  * POST /api/budget
  * Cria um novo orçamento mensal com categorias opcionais
  */
-router.post('/', zValidator('json', createBudgetSchema), async (c) => {
+router.post('/', budgetWriteRateLimit, zValidator('json', createBudgetSchema), async (c) => {
   const user = c.get('user')
   const body = c.req.valid('json')
 
@@ -495,7 +504,7 @@ router.get('/:month/:year', zValidator('param', budgetParamsSchema), zValidator(
  * PATCH /api/budget/:id
  * Atualiza orçamento existente (totalBudget e/ou categorias)
  */
-router.patch('/:id', zValidator('param', budgetIdParamsSchema), zValidator('json', updateBudgetSchema), async (c) => {
+router.patch('/:id', budgetWriteRateLimit, zValidator('param', budgetIdParamsSchema), zValidator('json', updateBudgetSchema), async (c) => {
   const user = c.get('user')
   const params = c.req.valid('param')
   const body = c.req.valid('json')
