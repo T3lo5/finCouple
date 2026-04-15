@@ -273,11 +273,43 @@
     - POST /api/budget/calculate
     - GET /api/budget/alerts
 
-- [ ] **TASK 3.2:** Criar componente `BudgetCard.tsx` para exibição do orçamento
+- [x] **TASK 3.2:** Criar componente `BudgetCard.tsx` para exibição do orçamento ✅ **CONCLUÍDA**
   - Mostra: total budget, spent, remaining
   - Barra de progresso visual
   - Porcentagem utilizada
   - Cores: verde (<80%), amarelo (80-100%), vermelho (>100%)
+  
+  **Subtasks quebradas para melhor gerenciamento:**
+  - [x] **TASK 3.2.1:** Criar estrutura básica do componente BudgetCard.tsx
+    - Imports (React, Motion, Lucide)
+    - Interface BudgetCardProps tipada
+    - Export default do componente
+  - [x] **TASK 3.2.2:** Implementar formatação de valores monetários
+    - Função formatCurrency com locale pt-BR
+    - Separação de inteiros e decimais para exibição elegante
+  - [x] **TASK 3.2.3:** Implementar lógica de cores contextuais
+    - getProgressColor: retorna classes text-negative, text-amber-400, text-positive
+    - getProgressBarColor: retorna classes bg-negative, bg-amber-400, bg-positive
+    - Thresholds: <80% verde, 80-100% amarelo, >100% vermelho
+  - [x] **TASK 3.2.4:** Implementar exibição do orçamento total
+    - Display com font-headings
+    - Formatação em duas partes (inteiro e decimal)
+  - [x] **TASK 3.2.5:** Implementar grid de gasto e restante
+    - Layout grid-cols-2
+    - Valores coloridos conforme porcentagem
+    - Labels uppercase tracking-widest
+  - [x] **TASK 3.2.6:** Implementar barra de progresso animada
+    - Motion.div com animate de width
+    - Transição easeOut com delay
+    - Limite máximo de 100% na largura
+  - [x] **TASK 3.2.7:** Implementar alertas visuais
+    - Alerta amarelo para 80-100% (isNearLimit)
+    - Alerta vermelho para >100% (isOverBudget)
+    - Animações de entrada com scale e opacity
+  - [x] **TASK 3.2.8:** Integrar BudgetCard no BudgetScreen
+    - Import do componente
+    - Substituição do card inline pelo componente reutilizável
+    - Passagem de props: totalBudget, spent, remaining, percentageUsed, context, showAlert
 
 - [ ] **TASK 3.3:** Criar componente `CategoryBudgetItem.tsx`
   - Ícone da categoria

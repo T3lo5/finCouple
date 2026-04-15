@@ -108,6 +108,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Cálculo automático de gastos | ✅ | Implementado nos endpoints GET, PATCH, history e calculate |
 | Sistema de alertas | ❌ | Não implementado |
 | UI de orçamento | ✅ | BudgetScreen.tsx implementado com layout similar ao Dashboard, seletor de mês/ano, display de orçamento total vs gasto total, e lista de categorias com limites e gastos |
+| **Componente BudgetCard** | ✅ | Componente reutilizável criado com: total budget, spent, remaining, barra de progresso animada, porcentagem utilizada, cores contextuais (verde <80%, amarelo 80-100%, vermelho >100%), alertas visuais integrados |
 
 ### Dashboard & Visualização
 
@@ -254,14 +255,14 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Metas | 6 | 0 | 4 | 10 |
 | Contas | 5 | 1 | 5 | 11 |
 | Bills Recorrentes | 1 | 1 | 5 | 7 |
-| **Orçamento Mensal** | **6** | **0** | **2** | **8** |
+| **Orçamento Mensal** | **7** | **0** | **2** | **9** |
 | Dashboard | 3 | 0 | 5 | 8 |
 | Onboarding | 2 | 1 | 2 | 5 |
 | UI/UX | 9 | 0 | 4 | 13 |
 | Backend | 6 | 1 | 4 | 11 |
 | Segurança | 4 | 1 | 3 | 8 |
 
-**Total Geral:** 53 implementados, 7 parciais, 52 não implementados
+**Total Geral:** 54 implementados, 7 parciais, 52 não implementados
 
 ### Progresso Geral
 
