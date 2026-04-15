@@ -207,10 +207,18 @@
 
 #### Média Prioridade
 
-- [ ] **TASK 2.7:** Criar endpoint `GET /api/budget/alerts` para verificar alertas de orçamento
+- [x] **TASK 2.7:** Criar endpoint `GET /api/budget/alerts` para verificar alertas de orçamento
   - Verifica categorias que ultrapassaram threshold (ex: 80%, 100%)
   - Cria notificações do tipo `budget_alert` automaticamente
   - Retorno: `{ data: { alerts: [{ category, limit, spent, percentage }] } }`
+  - **Subtasks concluídas:**
+    - [x] **TASK 2.7.1:** Importar pushNotifications do schema
+    - [x] **TASK 2.7.2:** Implementar busca de orçamentos dos últimos 3 meses
+    - [x] **TASK 2.7.3:** Calcular gastos por categoria baseado nas transações
+    - [x] **TASK 2.7.4:** Verificar categorias que ultrapassaram o threshold
+    - [x] **TASK 2.7.5:** Criar notificações budget_alert automaticamente
+    - [x] **TASK 2.7.6:** Implementar logging de auditoria
+    - [x] **TASK 2.7.7:** Retornar resposta no padrão da API
 
 - [ ] **TASK 2.8:** Criar rota no index.ts para registrar todas as rotas de budget
   - Importar router de budget

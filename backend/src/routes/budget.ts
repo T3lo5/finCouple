@@ -2,8 +2,8 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { db } from '../db/client'
-import { monthlyBudgets, budgetCategories, transactions } from '../db/schema'
-import { eq, and, sum, gte, lte, inArray } from 'drizzle-orm'
+import { monthlyBudgets, budgetCategories, transactions, pushNotifications } from '../db/schema'
+import { eq, and, sum, gte, lte, inArray, sql } from 'drizzle-orm'
 import { requireAuth, logAudit } from '../middleware/auth'
 import { nanoid } from 'nanoid'
 
@@ -876,6 +876,164 @@ router.get('/history', zValidator('query', budgetHistoryQuerySchema), async (c) 
         year: year ?? null,
         total: budgetsWithSummary.length,
       }
+    }
+  })
+})
+
+/**
+ * GET /api/budget/alerts
+ * Verifica categorias que ultrapassaram o threshold (ex: 80%, 100%)
+ * Cria notificações do tipo budget_alert automaticamente
+ * Retorno: { data: { alerts: [{ category, limit, spent, percentage }] } }
+ */
+router.get('/alerts', async (c) => {
+  const user = c.get('user')
+
+  // Busca todos os orçamentos ativos do usuário (últimos 3 meses para eficiência)
+  const threeMonthsAgo = new Date()
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
+
+  const budgets = await db
+    .select()
+    .from(monthlyBudgets)
+    .where(
+      and(
+        eq(monthlyBudgets.userId, user.id),
+        gte(monthlyBudgets.year, threeMonthsAgo.getFullYear()),
+        sql`(${monthlyBudgets.year} > ${threeMonthsAgo.getFullYear()} OR (${monthlyBudgets.year} = ${threeMonthsAgo.getFullYear()} AND ${monthlyBudgets.month} >= ${threeMonthsAgo.getMonth() + 1}))`
+      )
+    )
+    .orderBy(monthlyBudgets.year, monthlyBudgets.month)
+
+  const allAlerts: Array<{
+    category: string
+    limit: number
+    spent: number
+    percentage: number
+    threshold: number
+    budgetId: string
+    month: number
+    year: number
+  }> = []
+
+  // Para cada orçamento, verifica categorias que ultrapassaram o threshold
+  for (const budget of budgets) {
+    // Busca categorias do orçamento
+    const categories = await db
+      .select()
+      .from(budgetCategories)
+      .where(eq(budgetCategories.budgetId, budget.id))
+
+    // Define período do mês para cálculo de gastos
+    const startDate = new Date(budget.year, budget.month - 1, 1)
+    const endDate = new Date(budget.year, budget.month, 0, 23, 59, 59, 999)
+
+    // Monta condições para transações
+    const transactionWhereConditions = [
+      eq(transactions.userId, user.id),
+      eq(transactions.type, 'expense'),
+      gte(transactions.date, startDate),
+      lte(transactions.date, endDate),
+      eq(transactions.context, budget.context)
+    ]
+
+    // Se for contexto joint, inclui transações do casal
+    if (budget.context === 'joint' && budget.coupleId) {
+      transactionWhereConditions.push(eq(transactions.coupleId, budget.coupleId))
+    }
+
+    // Busca despesas por categoria
+    const expensesByCategory = await db
+      .select({
+        category: transactions.category,
+        total: sum(transactions.amount).as('total_spent')
+      })
+      .from(transactions)
+      .where(and(...transactionWhereConditions))
+      .groupBy(transactions.category)
+
+    // Converte para mapa
+    const expensesMap = new Map<string, string>()
+    expensesByCategory.forEach(exp => {
+      if (exp.category && exp.total) {
+        expensesMap.set(exp.category, exp.total)
+      }
+    })
+
+    // Verifica cada categoria contra seu threshold
+    for (const cat of categories) {
+      const spent = parseFloat(expensesMap.get(cat.category) || '0')
+      const limit = parseFloat(cat.limitAmount)
+      const threshold = parseFloat(cat.alertThreshold || '80')
+
+      // Calcula porcentagem usada
+      const percentage = limit > 0 ? (spent / limit) * 100 : 0
+
+      // Se ultrapassou o threshold, cria alerta
+      if (percentage >= threshold) {
+        allAlerts.push({
+          category: cat.category,
+          limit,
+          spent,
+          percentage: Math.min(percentage, 100),
+          threshold,
+          budgetId: budget.id,
+          month: budget.month,
+          year: budget.year,
+        })
+      }
+    }
+  }
+
+  // Cria notificações para cada alerta encontrado
+  const notificationsToCreate = allAlerts.map(alert => ({
+    id: nanoid(),
+    userId: user.id,
+    type: 'budget_alert' as const,
+    title: `Alerta de Orçamento: ${alert.category}`,
+    message: `Você gastou ${alert.percentage.toFixed(1)}% do limite de ${alert.category} (R$ ${alert.spent.toFixed(2)} de R$ ${alert.limit.toFixed(2)})`,
+    data: JSON.stringify({
+      category: alert.category,
+      limit: alert.limit,
+      spent: alert.spent,
+      percentage: alert.percentage,
+      threshold: alert.threshold,
+      budgetId: alert.budgetId,
+      month: alert.month,
+      year: alert.year,
+    }),
+  }))
+
+  // Insere notificações se houver alertas
+  if (notificationsToCreate.length > 0) {
+    await db
+      .insert(pushNotifications)
+      .values(notificationsToCreate)
+  }
+
+  // Log de auditoria
+  await logAudit(
+    user.id,
+    'read',
+    'budget_alerts',
+    'check',
+    null,
+    { alertsCount: allAlerts.length, notificationsCreated: notificationsToCreate.length },
+    c.req.header('X-Forwarded-For'),
+    c.req.header('User-Agent')
+  )
+
+  // Formata resposta
+  const formattedAlerts = allAlerts.map(alert => ({
+    category: alert.category,
+    limit: alert.limit,
+    spent: alert.spent,
+    percentage: parseFloat(alert.percentage.toFixed(2)),
+  }))
+
+  return c.json({
+    data: {
+      alerts: formattedAlerts,
     }
   })
 })
