@@ -147,9 +147,9 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Animações Motion | ✅ | Spring transitions, fade, slide |
 | Bottom sheet modal | ✅ | Para nova transação |
 | Loading states | ✅ | Spinners em botões e listas |
-| Error handling | ✅ | Mensagens de erro na UI |
-| Empty states | ✅ | "Nenhuma transação ainda" |
-| Skeleton screens | ❌ | Apenas loading spinner |
+| Error handling | ✅ | Mensagens de erro na UI com validação Zod, status codes específicos e ARIA labels |
+| Empty states | ✅ | "Nenhuma transação ainda" e "Nenhum orçamento definido" |
+| Skeleton screens | ✅ | BudgetSkeleton, BudgetCardSkeleton, CategoryBudgetSkeleton implementados |
 | Toast notifications | ✅ | Componente BudgetAlert implementado com toast/banner para alertas de orçamento (>80%, >100%) |
 | Confirmações de ação | ❌ | Não implementado |
 | Pull to refresh | ❌ | Não implementado |
