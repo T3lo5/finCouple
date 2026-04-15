@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { budgetApi, type Budget, type BudgetCategory, type Context, type Category, ApiError } from '../lib/api'
 
 export interface BudgetWithDetails extends Budget {
@@ -39,9 +39,11 @@ export interface UpdateBudgetData {
 interface UseBudgetOptions {
   context?: Context
   autoFetch?: boolean
+  pollAlerts?: boolean
+  alertPollInterval?: number // em ms, para polling de alertas de orçamento
 }
 
-export function useBudget({ context = 'individual', autoFetch = true }: UseBudgetOptions = {}) {
+export function useBudget({ context = 'individual', autoFetch = true, pollAlerts = false, alertPollInterval = 60000 }: UseBudgetOptions = {}) {
   const [budget, setBudget] = useState<BudgetWithDetails | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -198,6 +200,22 @@ export function useBudget({ context = 'individual', autoFetch = true }: UseBudge
     setValidationErrors(null)
     setAlerts([])
   }, [])
+
+  // Polling para alertas de orçamento
+  useEffect(() => {
+    if (pollAlerts) {
+      // Check inicial
+      checkAlerts()
+      
+      // Polling periódico
+      const interval = setInterval(() => {
+        checkAlerts()
+          .catch(console.error)
+      }, alertPollInterval)
+      
+      return () => clearInterval(interval)
+    }
+  }, [pollAlerts, alertPollInterval, checkAlerts])
 
   return { 
     budget, 
