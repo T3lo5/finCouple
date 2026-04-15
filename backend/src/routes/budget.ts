@@ -12,14 +12,14 @@ router.use(requireAuth)
 
 // Schema para criação de orçamento mensal
 const createBudgetSchema = z.object({
-  month: z.number().int().min(1).max(12, 'Month must be between 1 and 12'),
-  year: z.number().int().min(2020).max(2100, 'Year must be between 2020 and 2100'),
-  totalBudget: z.number().positive('Total budget must be positive').max(999999.99, 'Total budget exceeds maximum allowed'),
+  month: monthSchema,
+  year: yearSchema,
+  totalBudget: amountSchema,
   context: z.enum(['individual', 'joint'], { errorMap: () => ({ message: 'Context must be individual or joint' }) }),
   categories: z.array(z.object({
     category: z.enum(['dining', 'home', 'transport', 'shopping', 'health', 'travel', 'bills', 'salary', 'investment', 'other']),
-    limitAmount: z.number().positive('Limit amount must be positive').max(999999.99, 'Limit amount exceeds maximum allowed'),
-    alertThreshold: z.number().min(0).max(100, 'Alert threshold must be between 0 and 100').default(80.00),
+    limitAmount: amountSchema,
+    alertThreshold: thresholdSchema.default(80.00),
   })).optional(),
 })
 
@@ -49,11 +49,11 @@ const budgetIdParamsSchema = z.object({
 
 // Schema para atualização de orçamento (apenas campos atualizáveis)
 const updateBudgetSchema = z.object({
-  totalBudget: z.number().positive('Total budget must be positive').max(999999.99, 'Total budget exceeds maximum allowed').optional(),
+  totalBudget: amountSchema.optional(),
   categories: z.array(z.object({
     category: z.enum(['dining', 'home', 'transport', 'shopping', 'health', 'travel', 'bills', 'salary', 'investment', 'other']),
-    limitAmount: z.number().positive('Limit amount must be positive').max(999999.99, 'Limit amount exceeds maximum allowed'),
-    alertThreshold: z.number().min(0).max(100, 'Alert threshold must be between 0 and 100').default(80.00),
+    limitAmount: amountSchema,
+    alertThreshold: thresholdSchema.default(80.00),
   })).optional(),
 })
 
@@ -64,24 +64,73 @@ const deleteConfirmationSchema = z.object({
   }),
 }).optional()
 
+// Schema reutilizável para valores monetários (positivos, máximo 999999.99)
+const amountSchema = z.number()
+  .positive('Amount must be positive')
+  .max(999999.99, 'Amount exceeds maximum allowed (999999.99)')
+
+// Schema reutilizável para month (1-12)
+const monthSchema = z.number()
+  .int()
+  .min(1, 'Month must be at least 1')
+  .max(12, 'Month must be at most 12')
+
+// Schema reutilizável para year (2020-2100)
+const yearSchema = z.number()
+  .int()
+  .min(2020, 'Year must be at least 2020')
+  .max(2100, 'Year must be at most 2100')
+
+// Schema reutilizável para threshold (0-100)
+const thresholdSchema = z.number()
+  .min(0, 'Threshold must be at least 0')
+  .max(100, 'Threshold must be at most 100')
+
 // Schema para query params do histórico
 const budgetHistoryQuerySchema = z.object({
-  limit: z.string().optional().default('10'),
-  offset: z.string().optional().default('0'),
-  year: z.string().optional(),
+  limit: z.string()
+    .optional()
+    .default('10')
+    .transform(val => parseInt(val, 10))
+    .refine(val => !isNaN(val) && val >= 1 && val <= 100, {
+      message: 'Limit must be between 1 and 100',
+    }),
+  offset: z.string()
+    .optional()
+    .default('0')
+    .transform(val => parseInt(val, 10))
+    .refine(val => !isNaN(val) && val >= 0, {
+      message: 'Offset must be non-negative',
+    }),
+  year: z.string()
+    .optional()
+    .transform(val => val ? parseInt(val, 10) : undefined)
+    .refine(val => val === undefined || (!isNaN(val) && val >= 2020 && val <= 2100), {
+      message: 'Year must be between 2020 and 2100',
+    }),
 })
 
 // Schema para cálculo de gastos
 const calculateBudgetSchema = z.object({
-  month: z.number().int().min(1).max(12, 'Month must be between 1 and 12'),
-  year: z.number().int().min(2020).max(2100, 'Year must be between 2020 and 2100'),
+  month: monthSchema,
+  year: yearSchema,
   context: z.enum(['individual', 'joint']).optional().default('individual'),
 })
 
 // Schema para query params de alerts (opcional, para filtrar por mês/ano)
 const budgetAlertsQuerySchema = z.object({
-  month: z.string().optional(),
-  year: z.string().optional(),
+  month: z.string()
+    .optional()
+    .transform(val => val ? parseInt(val, 10) : undefined)
+    .refine(val => val === undefined || (!isNaN(val) && val >= 1 && val <= 12), {
+      message: 'Month must be between 1 and 12',
+    }),
+  year: z.string()
+    .optional()
+    .transform(val => val ? parseInt(val, 10) : undefined)
+    .refine(val => val === undefined || (!isNaN(val) && val >= 2020 && val <= 2100), {
+      message: 'Year must be between 2020 and 2100',
+    }),
   context: z.enum(['individual', 'joint']).optional().default('individual'),
 })
 
@@ -739,23 +788,10 @@ router.get('/history', zValidator('query', budgetHistoryQuerySchema), async (c) 
   const user = c.get('user')
   const query = c.req.valid('query')
 
-  // Parse e validação dos parâmetros
-  const limit = parseInt(query.limit, 10)
-  const offset = parseInt(query.offset, 10)
-  const year = query.year ? parseInt(query.year, 10) : undefined
-
-  // Validação dos limites
-  if (limit < 1 || limit > 100) {
-    return c.json({ error: 'Limit must be between 1 and 100' }, 400)
-  }
-
-  if (offset < 0) {
-    return c.json({ error: 'Offset must be non-negative' }, 400)
-  }
-
-  if (year !== undefined && (year < 2020 || year > 2100)) {
-    return c.json({ error: 'Year must be between 2020 and 2100' }, 400)
-  }
+  // Validação já feita pelo Zod - extrair valores diretamente
+  const limit = query.limit
+  const offset = query.offset
+  const year = query.year
 
   // Monta as condições da query
   const whereConditions = [
@@ -904,21 +940,12 @@ router.get('/history', zValidator('query', budgetHistoryQuerySchema), async (c) 
 router.get('/alerts', zValidator('query', budgetAlertsQuerySchema), async (c) => {
   const user = c.get('user')
   const query = c.req.valid('query')
-  
-  // Parse e validação dos parâmetros opcionais
-  const month = query.month ? parseInt(query.month, 10) : undefined
-  const year = query.year ? parseInt(query.year, 10) : undefined
+
+  // Validação já feita pelo Zod - extrair valores diretamente
+  const month = query.month
+  const year = query.year
+
   const context = query.context
-  
-  // Validação dos parâmetros se fornecidos
-  if (month !== undefined && (month < 1 || month > 12)) {
-    return c.json({ error: 'Month must be between 1 and 12' }, 400)
-  }
-
-  if (year !== undefined && (year < 2020 || year > 2100)) {
-    return c.json({ error: 'Year must be between 2020 and 2100' }, 400)
-  }
-
   // Busca todos os orçamentos ativos do usuário (últimos 3 meses para eficiência)
   const threeMonthsAgo = new Date()
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
