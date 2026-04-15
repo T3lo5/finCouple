@@ -149,7 +149,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Error handling | ✅ | Mensagens de erro na UI |
 | Empty states | ✅ | "Nenhuma transação ainda" |
 | Skeleton screens | ❌ | Apenas loading spinner |
-| Toast notifications | ❌ | Não implementado |
+| Toast notifications | ✅ | Componente BudgetAlert implementado com toast/banner para alertas de orçamento (>80%, >100%) |
 | Confirmações de ação | ❌ | Não implementado |
 | Pull to refresh | ❌ | Não implementado |
 | Infinite scroll | ❌ | Paginação tradicional apenas |
@@ -206,7 +206,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Feature | Impacto | Esforço | Descrição |
 |---------|---------|---------|-----------|
 | ~~**Orçamento mensal**~~ | ~~Alto~~ | ~~Alto~~ | ~~Definir limites por categoria - Schema implementado (TASK 1.1, 1.2) + Endpoint POST /api/budget implementado~~ |
-| **Alertas de orçamento** | Médio | Médio | Notificar quando próximo do limite |
+| ~~**Alertas de orçamento**~~ | ~~Médio~~ | ~~Médio~~ | ~~Notificar quando próximo do limite - Componente BudgetAlert implementado com toast/banner para >80% e >100%~~ |
 | **Relatórios mensais** | Médio | Médio | Email com resumo do mês |
 | **Metas múltiplas fotos** | Baixo | Médio | Upload de imagens para metas |
 | **Compartilhar via link** | Médio | Médio | Gerar link compartilhável |
@@ -293,7 +293,7 @@ Não Implementado:  ██████████████████░░
 
 ### Sprint 3 - Engajamento (2-3 semanas)
 - [x] Notificações push
-- [ ] Alertas de orçamento
+- [x] Alertas de orçamento
 - [ ] Relatórios mensais por email
 - [ ] Light theme toggle
 
