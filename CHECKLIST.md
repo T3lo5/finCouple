@@ -112,6 +112,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | **Componente CategoryBudgetItem** | ✅ | Componente reutilizável criado com: ícone da categoria, nome, limite definido, gasto atual, barra de progresso animada por categoria, alertas visuais (>80% amarelo, >100% vermelho), exibição de valor restante, animações de entrada suaves |
 | **Componente BudgetModal** | ✅ | Bottom sheet modal para criar/editar orçamento com: input de valor total, lista de categorias com toggle, limites individuais por categoria, toggle de alertas, slider de threshold (50-100%), resumo de alocação orçamentária, alerta de overbudget, botões Cancelar/Salvar, integração completa com BudgetScreen |
 | **Integração BudgetScreen no App.tsx** | ✅ | BudgetScreen integrado ao fluxo de navegação principal: ícone Wallet no menu inferior, navegação via screen state ('budget'), context toggle compartilhado entre todas as telas |
+| **Hook useBudget.ts** | ✅ | Hook customizado criado com: fetchBudget, createBudget, updateBudget, deleteBudget, calculateSpent, checkAlerts, clearBudget - seguindo padrões do SPEC.md para hooks customizados |
 
 ### Dashboard & Visualização
 
