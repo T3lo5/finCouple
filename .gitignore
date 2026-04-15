@@ -1,1 +1,1 @@
-Nothing needs to be added to the .gitignore file based on the provided changes, as only TypeScript React source files (.tsx) were added and modified.
+Nothing should be ignored since only markdown files (.md) were modified and no build artifacts, dependencies, or temporary files are present in the changes.

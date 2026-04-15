@@ -430,10 +430,64 @@
 
 #### Média Prioridade
 
-- [ ] **TASK 3.6:** Criar componente `BudgetAlert.tsx` para notificações visuais
+- [x] **TASK 3.6:** Criar componente `BudgetAlert.tsx` para notificações visuais ✅ **CONCLUÍDA**
   - Toast ou banner quando orçamento está próximo do limite
   - Exibir quando >80% do orçamento utilizado
   - Link rápido para ajustar orçamento
+  
+  **Subtasks quebradas para melhor gerenciamento:**
+  - [x] **TASK 3.6.1:** Criar estrutura básica do componente BudgetAlert.tsx
+    - Imports (React, Motion, Lucide)
+    - Interface BudgetAlertProps tipada
+    - Export default do componente
+  - [x] **TASK 3.6.2:** Implementar lógica de detecção de alertas
+    - isOverBudget: >= 100%
+    - isNearLimit: 80-100%
+    - isWarning: 70-80%
+  - [x] **TASK 3.6.3:** Implementar configurações de alerta baseadas no nível
+    - getAlertConfig: retorna bgColor, borderColor, iconColor, textColor, title, message
+    - Cores: negative (vermelho), amber-500 (âmbar), blue-500 (azul)
+  - [x] **TASK 3.6.4:** Implementar exibição condicional
+    - Retorna null se não estiver em nenhuma faixa de alerta
+    - Respeita prop visible para controle externo
+  - [x] **TASK 3.6.5:** Implementar formatação de valores monetários
+    - Função formatCurrency com locale pt-BR
+    - Separação de inteiros e decimais
+  - [x] **TASK 3.6.6:** Implementar layout do toast/banner
+    - Posição fixed top-4 left-4 right-4
+    - Z-index 50 para sobreposição
+    - Backdrop blur e shadow
+    - Border-radius 2xl
+  - [x] **TASK 3.6.7:** Implementar ícone com animação
+    - AlertTriangle para alertas críticos/aviso
+    - Wallet para informativo
+    - Animação de pulso infinita para overBudget
+  - [x] **TASK 3.6.8:** Implementar resumo dos valores
+    - Grid com Total, Gasto e Restante
+    - Cores contextuais
+    - Valor restante negativo destacado em red
+  - [x] **TASK 3.6.9:** Implementar barra de progresso animada
+    - Motion.div com animate de width
+    - Limite máximo de 100%
+    - Cores baseadas no nível de alerta
+  - [x] **TASK 3.6.10:** Implementar ações do alerta
+    - Botão "Ajustar Orçamento" com callback onAdjustBudget
+    - Botão "Entendi" com callback onDismiss
+    - Animações hover e tap
+  - [x] **TASK 3.6.11:** Implementar botão de dismiss
+    - Ícone X no canto superior direito
+    - Animações hover e tap
+    - Aria-label para acessibilidade
+  - [x] **TASK 3.6.12:** Implementar animações de entrada/saída
+    - AnimatePresence do Motion
+    - Initial: opacity 0, y -20, scale 0.95
+    - Animate: opacity 1, y 0, scale 1
+    - Exit: opacity 0, y -20, scale 0.95
+  - [x] **TASK 3.6.13:** Integrar BudgetAlert no BudgetScreen
+    - Import do componente
+    - Passagem de props: percentageUsed, totalBudget, spent, remaining
+    - Callbacks: onAdjustBudget (abre modal), onDismiss (fecha alerta)
+    - Controle de visibilidade baseado em showAlert e percentageUsed >= 80
 
 - [ ] **TASK 3.7:** Criar hook `useBudget.ts` para gerenciamento de estado
   - fetchBudget(month, year, context)
