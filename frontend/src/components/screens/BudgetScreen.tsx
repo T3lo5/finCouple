@@ -8,23 +8,16 @@ import {
   AlertTriangle,
   Plus,
   X,
-  Utensils,
-  LayoutDashboard,
-  Car,
-  Receipt,
-  ShieldCheck,
-  Settings,
-  CreditCard,
-  ArrowDownLeft,
 } from 'lucide-react'
 import { type Context } from '../../lib/api'
 import { budgetApi, type Budget, type BudgetCategory } from '../../lib/api'
 import BudgetCard from '../BudgetCard'
 import CategoryBudgetItem from '../CategoryBudgetItem'
+import BudgetModal from '../BudgetModal'
+import { CATEGORIES_META } from '../BudgetModal'
 
 interface BudgetScreenProps {
   context: Context
-  onOpenModal?: () => void
 }
 
 const MONTHS = [
@@ -32,23 +25,10 @@ const MONTHS = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ]
 
-const CATEGORIES_META: { id: string; label: string; icon: React.ReactNode }[] = [
-  { id: 'dining',     label: 'Alimentação', icon: <Utensils size={18} /> },
-  { id: 'home',       label: 'Casa',        icon: <LayoutDashboard size={18} /> },
-  { id: 'transport',  label: 'Transporte',  icon: <Car size={18} /> },
-  { id: 'shopping',   label: 'Compras',     icon: <Receipt size={18} /> },
-  { id: 'health',     label: 'Saúde',       icon: <ShieldCheck size={18} /> },
-  { id: 'travel',     label: 'Viagem',      icon: <TrendingUp size={18} /> },
-  { id: 'bills',      label: 'Contas',      icon: <CreditCard size={18} /> },
-  { id: 'salary',     label: 'Salário',     icon: <ArrowDownLeft size={18} /> },
-  { id: 'investment', label: 'Investimento', icon: <TrendingUp size={18} /> },
-  { id: 'other',      label: 'Outros',      icon: <Settings size={18} /> },
-]
-
 const getCategoryMeta = (catId: string) => 
   CATEGORIES_META.find(c => c.id === catId) || { label: catId, icon: <Settings size={18} /> }
 
-export default function BudgetScreen({ context, onOpenModal }: BudgetScreenProps) {
+export default function BudgetScreen({ context }: BudgetScreenProps) {
   const currentYear = new Date().getFullYear()
   const currentMonth = new Date().getMonth() + 1
   
@@ -61,6 +41,7 @@ export default function BudgetScreen({ context, onOpenModal }: BudgetScreenProps
   const [spentTotal, setSpentTotal] = useState(0)
   const [remainingTotal, setRemainingTotal] = useState(0)
   const [percentageUsed, setPercentageUsed] = useState(0)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const fetchBudget = useCallback(async () => {
     setLoading(true)
@@ -178,7 +159,7 @@ export default function BudgetScreen({ context, onOpenModal }: BudgetScreenProps
             Crie um orçamento para {MONTHS[selectedMonth - 1]} de {selectedYear} para acompanhar seus gastos
           </p>
           <button
-            onClick={onOpenModal}
+            onClick={() => setIsModalOpen(true)}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-medium transition-all active:scale-95"
             style={{ 
               backgroundColor: context === 'individual' ? 'var(--color-individual)' : 'var(--color-primary)',
@@ -232,7 +213,7 @@ export default function BudgetScreen({ context, onOpenModal }: BudgetScreenProps
 
           {/* Botão de Ação */}
           <button
-            onClick={onOpenModal}
+            onClick={() => setIsModalOpen(true)}
             className="w-full py-4 rounded-2xl font-medium transition-all active:scale-95 flex items-center justify-center gap-2"
             style={{ 
               backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -245,6 +226,20 @@ export default function BudgetScreen({ context, onOpenModal }: BudgetScreenProps
           </button>
         </>
       )}
+
+      {/* Budget Modal */}
+      <BudgetModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        context={context}
+        selectedMonth={selectedMonth}
+        selectedYear={selectedYear}
+        existingBudget={budget}
+        existingCategories={categories}
+        onBudgetSaved={() => {
+          fetchBudget()
+        }}
+      />
     </motion.div>
   )
 }

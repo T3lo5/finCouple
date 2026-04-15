@@ -1,10 +1,1 @@
-```
-# Dependencies
-node_modules/
-
-# Build artifacts
-frontend/dist/
-
-# Temporary files
-frontend/node_modules/.tmp/
-```
+Nothing should be ignored based on the provided file changes, as they consist only of source code files (.tsx) and documentation files (.md).

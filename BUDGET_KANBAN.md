@@ -355,12 +355,58 @@
     - Substituição do código inline pelo componente reutilizável
     - Passagem de props: category, icon, label, delay, showRemaining, showAlerts
 
-- [ ] **TASK 3.4:** Criar modal `BudgetModal.tsx` para criar/editar orçamento
+- [x] **TASK 3.4:** Criar modal `BudgetModal.tsx` para criar/editar orçamento ✅ **CONCLUÍDA**
   - Bottom sheet (seguir padrão do ActionModal)
   - Input de valor total do orçamento
   - Lista de categorias para definir limites individuais
   - Toggle para ativar/desativar alertas
   - Botões: Cancelar, Salvar
+  
+  **Subtasks quebradas para melhor gerenciamento:**
+  - [x] **TASK 3.4.1:** Criar estrutura básica do componente BudgetModal.tsx
+    - Imports e types
+    - Interface BudgetModalProps
+    - Motion animations conforme SPEC.md
+  - [x] **TASK 3.4.2:** Implementar bottom sheet modal com backdrop blur
+    - Slide up animation com spring damping 25
+    - Backdrop com blur e opacity
+    - Handle superior decorativo
+    - Altura máxima 85vh
+  - [x] **TASK 3.4.3:** Implementar input de valor total do orçamento
+    - Input numérico com formatação R$
+    - Validação de valor positivo
+    - Focus border primary/30
+  - [x] **TASK 3.4.4:** Implementar lista de categorias com toggle
+    - Checkbox customizado para ativar/desativar categorias
+    - Ícone e label por categoria
+    - Animação de expand/retract ao ativar
+  - [x] **TASK 3.4.5:** Implementar input de limite por categoria
+    - Input numérico com prefixo R$
+    - Validação de valor positivo
+    - Cálculo em tempo real do total alocado
+  - [x] **TASK 3.4.6:** Implementar toggle de alertas global
+    - Switch animado com spring transition
+    - Controle se alertas são exibidos por categoria
+    - Ícone contextual
+  - [x] **TASK 3.4.7:** Implementar slider de threshold por categoria
+    - Slider visual com barra de progresso
+    - Botões de incremento/decremento (±5%)
+    - Range 50-100%
+  - [x] **TASK 3.4.8:** Implementar resumo de alocação orçamentária
+    - Display do total alocado nas categorias
+    - Display do restante para alocar
+    - Alerta visual quando ultrapassa orçamento (isOverBudget)
+  - [x] **TASK 3.4.9:** Implementar botões de ação (Cancelar, Salvar)
+    - Grid 2 colunas no footer
+    - Estados disabled e loading
+    - Cores contextuais (individual/joint)
+  - [x] **TASK 3.4.10:** Integrar BudgetModal no BudgetScreen
+    - Import do componente
+    - Estado isModalOpen no BudgetScreen
+    - Callback onBudgetSaved para refresh dos dados
+  - [x] **TASK 3.4.11:** Exportar CATEGORIES_META do BudgetModal
+    - Reutilizar metadata das categorias no BudgetScreen
+    - Manter consistência visual entre componentes
 
 - [ ] **TASK 3.5:** Integrar BudgetScreen no App.tsx
   - Adicionar ícone de orçamento no menu inferior
