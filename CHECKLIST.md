@@ -102,7 +102,8 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Endpoint GET /api/budget/:month/:year | ✅ | Busca orçamento do mês com cálculos de gastos |
 | Endpoint PATCH /api/budget/:id | ✅ | Atualização de totalBudget e categorias com cálculo automático de spentAmount |
 | Endpoint DELETE /api/budget/:id | ❌ | Não implementado |
-| Cálculo automático de gastos | ✅ | Implementado nos endpoints GET e PATCH |
+| Endpoint GET /api/budget/history | ✅ | Histórico de orçamentos com paginação e filtro por ano |
+| Cálculo automático de gastos | ✅ | Implementado nos endpoints GET, PATCH e history |
 | Sistema de alertas | ❌ | Não implementado |
 | UI de orçamento | ❌ | Não implementada |
 
@@ -251,7 +252,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Metas | 6 | 0 | 4 | 10 |
 | Contas | 5 | 1 | 5 | 11 |
 | Bills Recorrentes | 1 | 1 | 5 | 7 |
-| **Orçamento Mensal** | **3** | **0** | **5** | **8** |
+| **Orçamento Mensal** | **4** | **0** | **4** | **8** |
 | Dashboard | 3 | 0 | 5 | 8 |
 | Onboarding | 2 | 1 | 2 | 5 |
 | UI/UX | 8 | 0 | 5 | 13 |
