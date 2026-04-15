@@ -42,6 +42,7 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
     error,
     validationErrors,
     fetchBudget,
+    calculateSpent,
     clearBudget,
   } = useBudget({ context, autoFetch: false })
   
@@ -50,6 +51,7 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
   const [percentageUsed, setPercentageUsed] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showAlert, setShowAlert] = useState(true)
+  const [isCalculating, setIsCalculating] = useState(false)
 
   const handleFetchBudget = useCallback(async () => {
     const result = await fetchBudget(preferences.selectedMonth, preferences.selectedYear, context)
@@ -66,9 +68,30 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
     }
   }, [preferences.selectedMonth, preferences.selectedYear, context, fetchBudget, budget])
 
+  const handleCalculateSpent = useCallback(async () => {
+    if (!budget) return
+    
+    setIsCalculating(true)
+    const result = await calculateSpent(preferences.selectedMonth, preferences.selectedYear)
+    if (result) {
+      setSpentTotal(result.totalSpent)
+      setRemainingTotal(parseFloat(budget.totalBudget) - result.totalSpent)
+      setPercentageUsed(result.percentageUsed)
+      setShowAlert(true)
+    }
+    setIsCalculating(false)
+  }, [budget, preferences.selectedMonth, preferences.selectedYear, calculateSpent])
+
   useEffect(() => {
-    handleFetchBudget()
-  }, [handleFetchBudget])
+    const loadBudgetData = async () => {
+      await handleFetchBudget()
+      // Calcular gastos automaticamente após carregar o orçamento
+      if (budget) {
+        await handleCalculateSpent()
+      }
+    }
+    loadBudgetData()
+  }, [preferences.selectedMonth, preferences.selectedYear, context])
 
   // Use prefsLoading for initial skeleton loading
   const isLoading = prefsLoading || loading
@@ -226,9 +249,24 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
               color: 'var(--color-text)',
               border: '1px solid rgba(255, 255, 255, 0.1)'
             }}
+            disabled={isCalculating}
           >
-            <Plus size={20} />
-            Editar Orçamento
+            {isCalculating ? (
+              <>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                >
+                  <Settings size={20} />
+                </motion.div>
+                Calculando...
+              </>
+            ) : (
+              <>
+                <Plus size={20} />
+                Editar Orçamento
+              </>
+            )}
           </button>
         </>
       )}
