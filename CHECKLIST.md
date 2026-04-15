@@ -113,6 +113,8 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | **Componente BudgetModal** | ✅ | Bottom sheet modal para criar/editar orçamento com: input de valor total, lista de categorias com toggle, limites individuais por categoria, toggle de alertas, slider de threshold (50-100%), resumo de alocação orçamentária, alerta de overbudget, botões Cancelar/Salvar, integração completa com BudgetScreen |
 | **Integração BudgetScreen no App.tsx** | ✅ | BudgetScreen integrado ao fluxo de navegação principal: ícone Wallet no menu inferior, navegação via screen state ('budget'), context toggle compartilhado entre todas as telas |
 | **Hook useBudget.ts** | ✅ | Hook customizado criado com: fetchBudget, createBudget, updateBudget, deleteBudget, calculateSpent, checkAlerts, clearBudget - seguindo padrões do SPEC.md para hooks customizados |
+| **Integração notificações budget_alert** | ✅ | useNotifications atualizado com filtro budgetAlerts e contador unreadBudgetAlertsCount, polling de alertas implementado no useBudget.ts (60s padrão) |
+| **Sistema de alertas** | ✅ | Endpoint GET /api/budget/alerts cria notificações budget_alert automaticamente, frontend exibe no painel de notificações com polling |
 
 ### Dashboard & Visualização
 

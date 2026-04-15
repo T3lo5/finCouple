@@ -612,10 +612,19 @@
 
 #### Média Prioridade
 
-- [ ] **TASK 4.5:** Integrar sistema de notificações com alertas de orçamento
-  - Usar useNotifications existente
-  - Exibir budget_alerts no painel de notificações
-  - Polling para novos alertas
+- [x] **TASK 4.5:** Integrar sistema de notificações com alertas de orçamento ✅ **CONCLUÍDA**
+  - [x] **TASK 4.5.1:** Atualizar useBudget.ts com polling de alertas
+    - Adicionar opção `pollAlerts` e `alertPollInterval` nas opções do hook
+    - Implementar useEffect para polling periódico de alertas
+    - Manter intervalo padrão de 60 segundos para eficiência
+  - [x] **TASK 4.5.2:** Atualizar useNotifications.ts para filtrar budget_alerts
+    - Adicionar filtro useMemo para `budgetAlerts` (type === 'budget_alert')
+    - Adicionar contador `unreadBudgetAlertsCount` para alerts não lidos
+    - Exportar novas propriedades no retorno do hook
+  - [x] **TASK 4.5.3:** Integração backend já existente
+    - Endpoint GET /api/budget/alerts já cria notificações budget_alert automaticamente
+    - Notificações são persistidas na tabela push_notifications
+    - Frontend já consome via budgetApi.alerts()
 
 ### Segurança & Validação
 
