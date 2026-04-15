@@ -1,1 +1,10 @@
-Nothing should be ignored based on the provided file changes, as they only include source code files (.tsx) and documentation/markdown files (.md). No build artifacts, dependencies, or temporary files are present in the change list.
+```
+# Dependencies
+node_modules/
+
+# Build artifacts
+frontend/dist/
+
+# Temporary files
+frontend/node_modules/.tmp/
+```

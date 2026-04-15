@@ -20,6 +20,7 @@ import {
 import { type Context } from '../../lib/api'
 import { budgetApi, type Budget, type BudgetCategory } from '../../lib/api'
 import BudgetCard from '../BudgetCard'
+import CategoryBudgetItem from '../CategoryBudgetItem'
 
 interface BudgetScreenProps {
   context: Context
@@ -46,9 +47,6 @@ const CATEGORIES_META: { id: string; label: string; icon: React.ReactNode }[] = 
 
 const getCategoryMeta = (catId: string) => 
   CATEGORIES_META.find(c => c.id === catId) || { label: catId, icon: <Settings size={18} /> }
-
-const fmt = (n: number) =>
-  n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 export default function BudgetScreen({ context, onOpenModal }: BudgetScreenProps) {
   const currentYear = new Date().getFullYear()
@@ -215,66 +213,17 @@ export default function BudgetScreen({ context, onOpenModal }: BudgetScreenProps
               <AnimatePresence>
                 {categories.map((category, index) => {
                   const categoryMeta = getCategoryMeta(category.category)
-                  const spentAmount = parseFloat(category.spentAmount)
-                  const limitAmount = parseFloat(category.limitAmount)
-                  const percentage = limitAmount > 0 ? (spentAmount / limitAmount) * 100 : 0
-                  const remaining = limitAmount - spentAmount
 
                   return (
-                    <motion.div
+                    <CategoryBudgetItem
                       key={category.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ delay: index * 0.05, duration: 0.3 }}
-                      className="p-4 bg-surface rounded-2xl border border-white/5"
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                          percentage >= 100 ? 'bg-negative/10 text-negative' :
-                          percentage >= 80 ? 'bg-amber-500/10 text-amber-400' :
-                          'bg-white/5 text-muted'
-                        }`}>
-                          {categoryMeta.icon}
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-sm">{categoryMeta.label}</h4>
-                          <p className="text-xs text-muted">
-                            Limite: R${fmt(limitAmount)}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className={`font-headings font-medium text-sm ${getProgressColor(percentage)}`}>
-                            R${fmt(spentAmount)}
-                          </p>
-                          <p className="text-xs text-muted">
-                            {percentage.toFixed(0)}%
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Barra de Progresso da Categoria */}
-                      <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${Math.min(percentage, 100)}%` }}
-                          transition={{ delay: index * 0.05 + 0.2, duration: 0.6, ease: 'easeOut' }}
-                          className={`h-full rounded-full ${getProgressBarColor(percentage)}`}
-                        />
-                      </div>
-
-                      {/* Restante */}
-                      {remaining > 0 && (
-                        <p className="text-xs text-muted mt-2">
-                          Restante: R${fmt(remaining)}
-                        </p>
-                      )}
-                      {remaining <= 0 && (
-                        <p className="text-xs text-negative mt-2">
-                          Limite ultrapassado!
-                        </p>
-                      )}
-                    </motion.div>
+                      category={category}
+                      icon={categoryMeta.icon}
+                      label={categoryMeta.label}
+                      delay={index * 0.05}
+                      showRemaining={true}
+                      showAlerts={true}
+                    />
                   )
                 })}
               </AnimatePresence>
