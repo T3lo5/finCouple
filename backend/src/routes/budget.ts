@@ -63,6 +63,149 @@ const budgetHistoryQuerySchema = z.object({
   year: z.string().optional(),
 })
 
+// Schema para cálculo de gastos
+const calculateBudgetSchema = z.object({
+  month: z.number().int().min(1).max(12, 'Month must be between 1 and 12'),
+  year: z.number().int().min(2020).max(2100, 'Year must be between 2020 and 2100'),
+  context: z.enum(['individual', 'joint']).optional().default('individual'),
+})
+
+/**
+ * POST /api/budget/calculate
+ * Calcula gastos do mês baseado nas transações e atualiza budget_categories.spentAmount
+ */
+router.post('/calculate', zValidator('json', calculateBudgetSchema), async (c) => {
+  const user = c.get('user')
+  const body = c.req.valid('json')
+  const { month, year, context } = body
+
+  // Validação: usuário precisa estar em casal para contexto joint
+  if (context === 'joint' && !user.coupleId) {
+    return c.json({ error: 'You must be in a couple to calculate joint budget' }, 403)
+  }
+
+  // Busca o orçamento do mês/ano/contexto
+  const budgetResult = await db
+    .select()
+    .from(monthlyBudgets)
+    .where(
+      and(
+        eq(monthlyBudgets.userId, user.id),
+        eq(monthlyBudgets.month, month),
+        eq(monthlyBudgets.year, year),
+        eq(monthlyBudgets.context, context)
+      )
+    )
+    .limit(1)
+
+  if (budgetResult.length === 0) {
+    return c.json({ error: 'Budget not found for this month/year/context' }, 404)
+  }
+
+  const budget = budgetResult[0]
+
+  // Busca as categorias do orçamento
+  const categories = await db
+    .select()
+    .from(budgetCategories)
+    .where(eq(budgetCategories.budgetId, budget.id))
+
+  // Define o período do mês
+  const startDate = new Date(year, month - 1, 1)
+  const endDate = new Date(year, month, 0, 23, 59, 59, 999)
+
+  // Monta a condição WHERE para transações
+  const transactionWhereConditions = [
+    eq(transactions.userId, user.id),
+    eq(transactions.type, 'expense'),
+    gte(transactions.date, startDate),
+    lte(transactions.date, endDate),
+    eq(transactions.context, context)
+  ]
+
+  // Se for contexto joint, inclui transações do casal
+  if (context === 'joint' && user.coupleId) {
+    transactionWhereConditions.push(eq(transactions.coupleId, user.coupleId))
+  }
+
+  // Busca todas as despesas do mês agrupadas por categoria
+  const expensesByCategory = await db
+    .select({
+      category: transactions.category,
+      total: sum(transactions.amount).as('total_spent')
+    })
+    .from(transactions)
+    .where(and(...transactionWhereConditions))
+    .groupBy(transactions.category)
+
+  // Converte para um mapa fácil de consultar
+  const expensesMap = new Map<string, string>()
+  expensesByCategory.forEach(exp => {
+    if (exp.category && exp.total) {
+      expensesMap.set(exp.category, exp.total)
+    }
+  })
+
+  // Calcula o total gasto no mês e prepara atualização das categorias
+  let totalSpent = 0
+  const categoriesWithSpent = categories.map(cat => {
+    const spent = parseFloat(expensesMap.get(cat.category) || '0')
+    totalSpent += spent
+    
+    return {
+      ...cat,
+      spentAmount: String(spent),
+      remainingAmount: String(parseFloat(cat.limitAmount) - spent),
+      percentageUsed: cat.limitAmount !== '0' 
+        ? Math.min(((spent / parseFloat(cat.limitAmount)) * 100).toFixed(2), '100.00')
+        : '0.00',
+    }
+  })
+
+  // Atualiza spentAmount no banco de dados para cada categoria
+  for (const cat of categoriesWithSpent) {
+    await db
+      .update(budgetCategories)
+      .set({ 
+        spentAmount: cat.spentAmount,
+        updatedAt: new Date()
+      })
+      .where(eq(budgetCategories.id, cat.id))
+  }
+
+  // Calcula porcentagem total utilizada
+  const budgetTotal = parseFloat(budget.totalBudget)
+  const percentageUsed = budgetTotal > 0 
+    ? Math.min(((totalSpent / budgetTotal) * 100).toFixed(2), '100.00')
+    : '0.00'
+
+  // Log de auditoria
+  await logAudit(
+    user.id,
+    'update',
+    'monthly_budget',
+    budget.id,
+    null,
+    { 
+      month, 
+      year, 
+      context, 
+      totalSpent,
+      categoriesUpdated: categoriesWithSpent.length 
+    },
+    c.req.header('X-Forwarded-For'),
+    c.req.header('User-Agent')
+  )
+
+  return c.json({
+    data: {
+      categories: categoriesWithSpent,
+      totalSpent,
+      percentageUsed,
+    }
+  })
+})
+
 /**
  * POST /api/budget
  * Cria um novo orçamento mensal com categorias opcionais
