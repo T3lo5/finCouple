@@ -142,9 +142,35 @@
     - Formato: `{ data: { message, deletedBudget } }`
     - Status 200 OK
 
-- [ ] **TASK 2.5:** Criar endpoint `GET /api/budget/history` para histórico de orçamentos
+- [x] **TASK 2.5:** Criar endpoint `GET /api/budget/history` para histórico de orçamentos
   - Query: limit, offset, year (opcional)
   - Retorno: lista de orçamentos com resumo
+  - [x] **TASK 2.5.1:** Criar schema Zod para validação dos query params (limit, offset, year)
+    - limit: string opcional, default '10', convertido para número
+    - offset: string opcional, default '0', convertido para número
+    - year: string opcional, convertido para número
+  - [x] **TASK 2.5.2:** Implementar validação dos parâmetros
+    - limit: entre 1 e 100
+    - offset: não negativo
+    - year: entre 2020 e 2100 (se fornecido)
+  - [x] **TASK 2.5.3:** Implementar busca de orçamentos no banco
+    - Filtrar por userId
+    - Filtrar por year (opcional)
+    - Aplicar limit e offset
+    - Ordenar por ano/mês
+  - [x] **TASK 2.5.4:** Calcular resumo para cada orçamento
+    - Buscar categorias de cada orçamento
+    - Calcular gastos totais do mês baseado nas transações
+    - Calcular spentTotal, remainingTotal, percentageUsed
+  - [x] **TASK 2.5.5:** Processar e ordenar resultados
+    - Ordenar por ano/mês decrescente (mais recentes primeiro)
+    - Retornar metadados de paginação
+  - [x] **TASK 2.5.6:** Implementar logging de auditoria
+    - Log action 'read' para entidade 'monthly_budget'
+    - Registrar parâmetros da requisição
+  - [x] **TASK 2.5.7:** Retornar resposta no padrão da API
+    - Formato: `{ data: { budgets: [...], meta: { limit, offset, year, total } } }`
+    - Status 200 OK
 
 - [ ] **TASK 2.6:** Criar endpoint `POST /api/budget/calculate` para calcular gastos do mês
   - Calcula spentAmount baseado nas transações do usuário/casal

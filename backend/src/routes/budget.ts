@@ -56,6 +56,13 @@ const deleteConfirmationSchema = z.object({
   }),
 }).optional()
 
+// Schema para query params do histórico
+const budgetHistoryQuerySchema = z.object({
+  limit: z.string().optional().default('10'),
+  offset: z.string().optional().default('0'),
+  year: z.string().optional(),
+})
+
 /**
  * POST /api/budget
  * Cria um novo orçamento mensal com categorias opcionais
@@ -564,6 +571,170 @@ router.delete('/:id', zValidator('param', budgetIdParamsSchema), zValidator('jso
       deletedBudget: deletedBudgetData,
     }
   }, 200)
+})
+
+/**
+ * GET /api/budget/history
+ * Retorna histórico de orçamentos com resumo
+ */
+router.get('/history', zValidator('query', budgetHistoryQuerySchema), async (c) => {
+  const user = c.get('user')
+  const query = c.req.valid('query')
+
+  // Parse e validação dos parâmetros
+  const limit = parseInt(query.limit, 10)
+  const offset = parseInt(query.offset, 10)
+  const year = query.year ? parseInt(query.year, 10) : undefined
+
+  // Validação dos limites
+  if (limit < 1 || limit > 100) {
+    return c.json({ error: 'Limit must be between 1 and 100' }, 400)
+  }
+
+  if (offset < 0) {
+    return c.json({ error: 'Offset must be non-negative' }, 400)
+  }
+
+  if (year !== undefined && (year < 2020 || year > 2100)) {
+    return c.json({ error: 'Year must be between 2020 and 2100' }, 400)
+  }
+
+  // Monta as condições da query
+  const whereConditions = [
+    eq(monthlyBudgets.userId, user.id),
+  ]
+
+  // Filtra por ano se fornecido
+  if (year !== undefined) {
+    whereConditions.push(eq(monthlyBudgets.year, year))
+  }
+
+  // Busca orçamentos ordenados por ano/mês decrescente (mais recentes primeiro)
+  const budgets = await db
+    .select()
+    .from(monthlyBudgets)
+    .where(and(...whereConditions))
+    .orderBy(
+      monthlyBudgets.year,
+      monthlyBudgets.month
+    )
+    .limit(limit)
+    .offset(offset)
+
+  // Para cada orçamento, busca categorias e calcula gastos
+  const budgetsWithSummary = await Promise.all(
+    budgets.map(async (budget) => {
+      // Busca categorias do orçamento
+      const categories = await db
+        .select()
+        .from(budgetCategories)
+        .where(eq(budgetCategories.budgetId, budget.id))
+
+      // Define período do mês para cálculo de gastos
+      const startDate = new Date(budget.year, budget.month - 1, 1)
+      const endDate = new Date(budget.year, budget.month, 0, 23, 59, 59, 999)
+
+      // Monta condições para transações
+      const transactionWhereConditions = [
+        eq(transactions.userId, user.id),
+        eq(transactions.type, 'expense'),
+        gte(transactions.date, startDate),
+        lte(transactions.date, endDate),
+        eq(transactions.context, budget.context)
+      ]
+
+      // Se for contexto joint, inclui transações do casal
+      if (budget.context === 'joint' && budget.coupleId) {
+        transactionWhereConditions.push(eq(transactions.coupleId, budget.coupleId))
+      }
+
+      // Busca despesas por categoria
+      const expensesByCategory = await db
+        .select({
+          category: transactions.category,
+          total: sum(transactions.amount).as('total_spent')
+        })
+        .from(transactions)
+        .where(and(...transactionWhereConditions))
+        .groupBy(transactions.category)
+
+      // Converte para mapa
+      const expensesMap = new Map<string, string>()
+      expensesByCategory.forEach(exp => {
+        if (exp.category && exp.total) {
+          expensesMap.set(exp.category, exp.total)
+        }
+      })
+
+      // Calcula totais
+      let spentTotal = 0
+      const categoriesWithSpent = categories.map(cat => {
+        const spent = parseFloat(expensesMap.get(cat.category) || '0')
+        spentTotal += spent
+        
+        return {
+          ...cat,
+          spentAmount: String(spent),
+          remainingAmount: String(parseFloat(cat.limitAmount) - spent),
+          percentageUsed: cat.limitAmount !== '0' 
+            ? Math.min(((spent / parseFloat(cat.limitAmount)) * 100).toFixed(2), '100.00')
+            : '0.00',
+        }
+      })
+
+      const budgetTotal = parseFloat(budget.totalBudget)
+      const remainingTotal = budgetTotal - spentTotal
+
+      // Retorna resumo do orçamento
+      return {
+        id: budget.id,
+        month: budget.month,
+        year: budget.year,
+        context: budget.context,
+        totalBudget: budgetTotal,
+        spentTotal,
+        remainingTotal,
+        percentageUsed: budgetTotal > 0 
+          ? Math.min(((spentTotal / budgetTotal) * 100).toFixed(2), '100.00')
+          : '0.00',
+        categoriesCount: categories.length,
+        createdAt: budget.createdAt,
+        updatedAt: budget.updatedAt,
+      }
+    })
+  )
+
+  // Ordena por ano/mês decrescente (mais recentes primeiro)
+  budgetsWithSummary.sort((a, b) => {
+    if (b.year !== a.year) {
+      return b.year - a.year
+    }
+    return b.month - a.month
+  })
+
+  // Log de auditoria
+  await logAudit(
+    user.id,
+    'read',
+    'monthly_budget',
+    'history',
+    null,
+    { limit, offset, year, count: budgetsWithSummary.length },
+    c.req.header('X-Forwarded-For'),
+    c.req.header('User-Agent')
+  )
+
+  return c.json({
+    data: {
+      budgets: budgetsWithSummary,
+      meta: {
+        limit,
+        offset,
+        year: year ?? null,
+        total: budgetsWithSummary.length,
+      }
+    }
+  })
 })
 
 export default router
