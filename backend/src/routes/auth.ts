@@ -503,6 +503,9 @@ auth.patch('/preferences',
     theme: z.enum(['dark', 'light']).optional(),
     language: z.string().optional(),
     notifications: z.boolean().optional(),
+    budgetDefaultMonth: z.number().int().min(1).max(12).optional().nullable(),
+    budgetDefaultYear: z.number().int().min(2020).max(2100).optional().nullable(),
+    budgetDefaultContext: z.enum(['individual', 'joint']).optional().nullable(),
   })),
   async (c) => {
     const user = c.get('user')
@@ -514,6 +517,9 @@ auth.patch('/preferences',
         theme: users.theme,
         language: users.language,
         notifications: users.notifications,
+        budgetDefaultMonth: users.budgetDefaultMonth,
+        budgetDefaultYear: users.budgetDefaultYear,
+        budgetDefaultContext: users.budgetDefaultContext,
       })
       .from(users)
       .where(eq(users.id, user.id))
@@ -534,6 +540,18 @@ auth.patch('/preferences',
     if (updates.notifications !== undefined && updates.notifications !== currentPrefs.notifications) {
       oldValues.notifications = currentPrefs.notifications
       newValues.notifications = updates.notifications
+    }
+    if (updates.budgetDefaultMonth !== undefined && updates.budgetDefaultMonth !== currentPrefs.budgetDefaultMonth) {
+      oldValues.budgetDefaultMonth = currentPrefs.budgetDefaultMonth
+      newValues.budgetDefaultMonth = updates.budgetDefaultMonth
+    }
+    if (updates.budgetDefaultYear !== undefined && updates.budgetDefaultYear !== currentPrefs.budgetDefaultYear) {
+      oldValues.budgetDefaultYear = currentPrefs.budgetDefaultYear
+      newValues.budgetDefaultYear = updates.budgetDefaultYear
+    }
+    if (updates.budgetDefaultContext !== undefined && updates.budgetDefaultContext !== currentPrefs.budgetDefaultContext) {
+      oldValues.budgetDefaultContext = currentPrefs.budgetDefaultContext
+      newValues.budgetDefaultContext = updates.budgetDefaultContext
     }
 
     // Update preferences if there are any changes
@@ -572,6 +590,9 @@ auth.patch('/preferences',
         theme: users.theme,
         language: users.language,
         notifications: users.notifications,
+        budgetDefaultMonth: users.budgetDefaultMonth,
+        budgetDefaultYear: users.budgetDefaultYear,
+        budgetDefaultContext: users.budgetDefaultContext,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
       })

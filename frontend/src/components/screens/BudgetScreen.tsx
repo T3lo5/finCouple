@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { type Context } from '../../lib/api'
 import { budgetApi, type Budget, type BudgetCategory } from '../../lib/api'
+import { useBudgetPreferences } from '../../hooks/useBudgetPreferences'
 import BudgetCard from '../BudgetCard'
 import CategoryBudgetItem from '../CategoryBudgetItem'
 import BudgetModal from '../BudgetModal'
@@ -31,11 +32,15 @@ const getCategoryMeta = (catId: string) =>
   CATEGORIES_META.find(c => c.id === catId) || { label: catId, icon: <Settings size={18} /> }
 
 export default function BudgetScreen({ context }: BudgetScreenProps) {
-  const currentYear = new Date().getFullYear()
-  const currentMonth = new Date().getMonth() + 1
+  const { 
+    preferences, 
+    setSelectedMonth, 
+    setSelectedYear, 
+    prevMonth, 
+    nextMonth,
+    loading: prefsLoading,
+  } = useBudgetPreferences({ autoSync: true })
   
-  const [selectedMonth, setSelectedMonth] = useState(currentMonth)
-  const [selectedYear, setSelectedYear] = useState(currentYear)
   const [budget, setBudget] = useState<Budget | null>(null)
   const [categories, setCategories] = useState<BudgetCategory[]>([])
   const [loading, setLoading] = useState(false)
@@ -50,7 +55,7 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
     setLoading(true)
     setError(null)
     try {
-      const response = await budgetApi.get(selectedMonth, selectedYear, context)
+      const response = await budgetApi.get(preferences.selectedMonth, preferences.selectedYear, context)
       setBudget(response.data.budget)
       setCategories(response.data.categories)
       setSpentTotal(response.data.spentTotal)
@@ -71,28 +76,18 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
     } finally {
       setLoading(false)
     }
-  }, [selectedMonth, selectedYear, context])
+  }, [preferences.selectedMonth, preferences.selectedYear, context])
 
   useEffect(() => {
     fetchBudget()
   }, [fetchBudget])
 
   const handlePrevMonth = () => {
-    if (selectedMonth === 1) {
-      setSelectedMonth(12)
-      setSelectedYear(selectedYear - 1)
-    } else {
-      setSelectedMonth(selectedMonth - 1)
-    }
+    prevMonth()
   }
 
   const handleNextMonth = () => {
-    if (selectedMonth === 12) {
-      setSelectedMonth(1)
-      setSelectedYear(selectedYear + 1)
-    } else {
-      setSelectedMonth(selectedMonth + 1)
-    }
+    nextMonth()
   }
 
   const accentColor = context === 'individual' ? 'var(--color-individual)' : 'var(--color-primary)'
@@ -117,7 +112,7 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
         
         <div className="text-center">
           <h2 className="text-xl sm:text-2xl font-headings font-semibold">
-            {MONTHS[selectedMonth - 1]} {selectedYear}
+            {MONTHS[preferences.selectedMonth - 1]} {preferences.selectedYear}
           </h2>
           <span className="text-xs text-muted uppercase tracking-widest">
             {context === 'individual' ? 'Orçamento Pessoal' : 'Orçamento Conjunto'}
