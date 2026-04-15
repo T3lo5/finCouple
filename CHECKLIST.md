@@ -107,7 +107,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | **Registro de rotas no index.ts** | ✅ | Rotas registradas em /api/budget |
 | Cálculo automático de gastos | ✅ | Implementado nos endpoints GET, PATCH, history e calculate |
 | Sistema de alertas | ❌ | Não implementado |
-| UI de orçamento | ❌ | Não implementada |
+| UI de orçamento | ✅ | BudgetScreen.tsx implementado com layout similar ao Dashboard, seletor de mês/ano, display de orçamento total vs gasto total, e lista de categorias com limites e gastos |
 
 ### Dashboard & Visualização
 
@@ -254,21 +254,21 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Metas | 6 | 0 | 4 | 10 |
 | Contas | 5 | 1 | 5 | 11 |
 | Bills Recorrentes | 1 | 1 | 5 | 7 |
-| **Orçamento Mensal** | **5** | **0** | **3** | **8** |
+| **Orçamento Mensal** | **6** | **0** | **2** | **8** |
 | Dashboard | 3 | 0 | 5 | 8 |
 | Onboarding | 2 | 1 | 2 | 5 |
-| UI/UX | 8 | 0 | 5 | 13 |
+| UI/UX | 9 | 0 | 4 | 13 |
 | Backend | 6 | 1 | 4 | 11 |
 | Segurança | 4 | 1 | 3 | 8 |
 
-**Total Geral:** 51 implementados, 7 parciais, 54 não implementados
+**Total Geral:** 53 implementados, 7 parciais, 52 não implementados
 
 ### Progresso Geral
 
 ```
-Implementado:      ████████████████░░░░░░░░  46%
+Implementado:      ████████████████░░░░░░░░  48%
 Parcial:           ███░░░░░░░░░░░░░░░░░░░░░   6%
-Não Implementado:  ██████████████████░░░░░░  48%
+Não Implementado:  ██████████████████░░░░░░  46%
 ```
 
 ---
