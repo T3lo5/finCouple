@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { type Context } from '../../lib/api'
 import { budgetApi, type Budget, type BudgetCategory } from '../../lib/api'
+import BudgetCard from '../BudgetCard'
 
 interface BudgetScreenProps {
   context: Context
@@ -110,18 +111,6 @@ export default function BudgetScreen({ context, onOpenModal }: BudgetScreenProps
     }
   }
 
-  const getProgressColor = (percentage: number) => {
-    if (percentage >= 100) return 'text-negative'
-    if (percentage >= 80) return 'text-amber-400'
-    return 'text-positive'
-  }
-
-  const getProgressBarColor = (percentage: number) => {
-    if (percentage >= 100) return 'bg-negative'
-    if (percentage >= 80) return 'bg-amber-400'
-    return 'bg-positive'
-  }
-
   const accentColor = context === 'individual' ? 'var(--color-individual)' : 'var(--color-primary)'
 
   return (
@@ -207,67 +196,15 @@ export default function BudgetScreen({ context, onOpenModal }: BudgetScreenProps
       {/* Budget Display */}
       {!loading && !error && budget && (
         <>
-          {/* Card de Resumo do Orçamento */}
-          <div className="p-6 bg-surface rounded-3xl border border-white/5 shadow-xl">
-            <div className="text-center space-y-4">
-              <div>
-                <span className="text-muted text-xs uppercase tracking-widest font-medium">
-                  Orçamento Total
-                </span>
-                <div className="flex items-baseline justify-center gap-1 mt-1">
-                  <span className="text-3xl sm:text-4xl font-headings font-medium">
-                    R${fmt(parseFloat(budget.totalBudget)).split('.')[0]}
-                  </span>
-                  <span className="text-lg sm:text-xl font-headings text-muted">
-                    ,{fmt(parseFloat(budget.totalBudget)).split('.')[1]}
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
-                <div className="text-center">
-                  <p className="text-[10px] text-muted uppercase tracking-widest">Gasto</p>
-                  <p className={`text-lg font-headings font-medium ${getProgressColor(percentageUsed)}`}>
-                    -R${fmt(spentTotal)}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-[10px] text-muted uppercase tracking-widest">Restante</p>
-                  <p className={`text-lg font-headings font-medium ${getProgressColor(percentageUsed)}`}>
-                    R${fmt(remainingTotal)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Barra de Progresso */}
-              <div className="pt-4">
-                <div className="flex justify-between text-xs mb-2">
-                  <span className="text-muted">Utilizado</span>
-                  <span className={`font-medium ${getProgressColor(percentageUsed)}`}>
-                    {percentageUsed.toFixed(1)}%
-                  </span>
-                </div>
-                <div className="h-3 bg-white/5 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(percentageUsed, 100)}%` }}
-                    transition={{ duration: 0.8, ease: 'easeOut' }}
-                    className={`h-full rounded-full ${getProgressBarColor(percentageUsed)}`}
-                  />
-                </div>
-              </div>
-
-              {/* Alerta se próximo do limite */}
-              {percentageUsed >= 80 && (
-                <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center gap-2">
-                  <AlertTriangle size={16} className="text-amber-400" />
-                  <p className="text-amber-400 text-xs">
-                    Atenção: Você já utilizou {percentageUsed.toFixed(1)}% do seu orçamento
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
+          {/* Card de Resumo do Orçamento - Usando componente BudgetCard */}
+          <BudgetCard
+            totalBudget={parseFloat(budget.totalBudget)}
+            spent={spentTotal}
+            remaining={remainingTotal}
+            percentageUsed={percentageUsed}
+            context={context}
+            showAlert={true}
+          />
 
           {/* Lista de Categorias */}
           <div>
