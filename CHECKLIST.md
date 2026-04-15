@@ -101,7 +101,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Logging de auditoria | ✅ | Audit logs para criação de orçamento |
 | Endpoint GET /api/budget/:month/:year | ✅ | Busca orçamento do mês com cálculos de gastos |
 | Endpoint PATCH /api/budget/:id | ✅ | Atualização de totalBudget e categorias com cálculo automático de spentAmount |
-| Endpoint DELETE /api/budget/:id | ❌ | Não implementado |
+| Endpoint DELETE /api/budget/:id | ✅ | Implementado com confirmação de segurança, deleção em cascata e logging de auditoria |
 | Endpoint GET /api/budget/history | ✅ | Histórico de orçamentos com paginação e filtro por ano |
 | **Endpoint POST /api/budget/calculate** | ✅ | Cálculo de gastos do mês e atualização automática de spentAmount |
 | **Registro de rotas no index.ts** | ✅ | Rotas registradas em /api/budget |

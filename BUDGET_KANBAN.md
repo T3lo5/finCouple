@@ -526,12 +526,43 @@
 
 #### Alta Prioridade
 
-- [ ] **TASK 4.1:** Integrar endpoints de budget no useBudget hook
-  - GET /budget/:month/:year
-  - POST /budget
-  - PATCH /budget/:id
-  - DELETE /budget/:id
-  - POST /budget/calculate
+- [x] **TASK 4.1:** Integrar endpoints de budget no useBudget hook
+  - [x] **TASK 4.1.1:** Implementar método fetchBudget no useBudget hook
+    - Integração com GET /api/budget/:month/:year
+    - Suporte a query params context (individual/joint)
+    - Tratamento de loading e error states
+    - Retorno formatado com budget, categories, spentTotal, remainingTotal, percentageUsed
+  - [x] **TASK 4.1.2:** Implementar método createBudget no useBudget hook
+    - Integração com POST /api/budget
+    - Validação de dados de entrada (month, year, totalBudget, context, categories)
+    - Tratamento de erros de duplicidade (409 Conflict)
+    - Atualização do estado local após criação
+  - [x] **TASK 4.1.3:** Implementar método updateBudget no useBudget hook
+    - Integração com PATCH /api/budget/:id
+    - Suporte a atualização parcial (totalBudget e/ou categories)
+    - Recálculo automático de spentTotal, remainingTotal, percentageUsed
+    - Atualização otimista do estado local
+  - [x] **TASK 4.1.4:** Implementar método deleteBudget no useBudget hook
+    - Integração com DELETE /api/budget/:id
+    - Confirmação de segurança obrigatória
+    - Limpeza do estado local após deleção
+    - Tratamento de erros de permissão
+  - [x] **TASK 4.1.5:** Implementar método calculateSpent no useBudget hook
+    - Integração com POST /api/budget/calculate
+    - Atualização automática dos spentAmount das categorias
+    - Sincronização com estado local do budget
+    - Retorno de totalSpent e percentageUsed
+  - [x] **TASK 4.1.6:** Implementar método checkAlerts no useBudget hook
+    - Integração com GET /api/budget/alerts
+    - Verificação de categorias que ultrapassaram threshold
+    - Armazenamento de alertas no estado local
+  - [x] **TASK 4.1.7:** Implementar método clearBudget no useBudget hook
+    - Limpeza de estado ao desmontar componente
+    - Reset de alerts e error states
+  - [x] **TASK 4.1.8:** Adicionar tipos BudgetWithDetails e BudgetAlert no hook
+    - Interface BudgetWithDetails estendendo Budget
+    - Campos calculados: spentTotal, remainingTotal, percentageUsed
+    - Interface BudgetAlert com category, limit, spent, percentage
 
 - [ ] **TASK 4.2:** Atualizar contexto de auth para incluir preferências de orçamento
   - Armazenar mês/ano selecionado
