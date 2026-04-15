@@ -97,8 +97,8 @@ Este documento lista o que está implementado e o que seria útil implementar no
 |---------|--------|-------------|
 | Schema no banco | ✅ | Tabelas monthly_budgets e budget_categories criadas |
 | Endpoint POST /api/budget | ✅ | Criação de orçamento com validação Zod completa |
-| Validações de segurança | ✅ | requireAuth, permissão joint, duplicidade |
-| Logging de auditoria | ✅ | Audit logs para criação de orçamento |
+| Validações de segurança | ✅ | requireAuth, permissão joint, duplicidade, filtro por userId, validação de propriedade (userId !== user.id) |
+| Logging de auditoria | ✅ | Audit logs implementados via logAudit() para todas as operações (create, read, update, delete, calculate, history, alerts) |
 | Endpoint GET /api/budget/:month/:year | ✅ | Busca orçamento do mês com cálculos de gastos |
 | Endpoint PATCH /api/budget/:id | ✅ | Atualização de totalBudget e categorias com cálculo automático de spentAmount |
 | Endpoint DELETE /api/budget/:id | ✅ | Implementado com confirmação de segurança, deleção em cascata e logging de auditoria |
@@ -106,7 +106,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | **Endpoint POST /api/budget/calculate** | ✅ | Cálculo de gastos do mês e atualização automática de spentAmount |
 | **Registro de rotas no index.ts** | ✅ | Rotas registradas em /api/budget |
 | Cálculo automático de gastos | ✅ | Implementado nos endpoints GET, PATCH, history e calculate |
-| Sistema de alertas | ❌ | Não implementado |
+| Sistema de alertas | ✅ | Endpoint GET /api/budget/alerts verifica thresholds e cria notificações budget_alert automaticamente |
 | UI de orçamento | ✅ | BudgetScreen.tsx implementado com layout similar ao Dashboard, seletor de mês/ano, display de orçamento total vs gasto total, e lista de categorias com limites e gastos |
 | **Componente BudgetCard** | ✅ | Componente reutilizável criado com: total budget, spent, remaining, barra de progresso animada, porcentagem utilizada, cores contextuais (verde <80%, amarelo 80-100%, vermelho >100%), alertas visuais integrados |
 | **Componente CategoryBudgetItem** | ✅ | Componente reutilizável criado com: ícone da categoria, nome, limite definido, gasto atual, barra de progresso animada por categoria, alertas visuais (>80% amarelo, >100% vermelho), exibição de valor restante, animações de entrada suaves |
@@ -185,7 +185,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | SQL injection protection | ✅ | Drizzle ORM parametrizado |
 | XSS protection | ⚠️ | React protege, headers não configurados |
 | CSRF protection | ❌ | Cookies HttpOnly, mas sem token CSRF |
-| Audit log | ❌ | Não implementado |
+| Audit log | ✅ | Implementado via logAudit() no middleware/auth.ts - usado em todas as rotas de budget (create, read, update, delete, calculate, history, alerts) |
 | Criptografia de dados sensíveis | ❌ | Dados em texto puro no DB |
 
 ---
@@ -261,14 +261,14 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Metas | 6 | 0 | 4 | 10 |
 | Contas | 5 | 1 | 5 | 11 |
 | Bills Recorrentes | 1 | 1 | 5 | 7 |
-| **Orçamento Mensal** | **8** | **0** | **2** | **10** |
+| **Orçamento Mensal** | **10** | **0** | **0** | **10** |
 | Dashboard | 3 | 0 | 5 | 8 |
 | Onboarding | 2 | 1 | 2 | 5 |
 | UI/UX | 9 | 0 | 4 | 13 |
 | Backend | 6 | 1 | 4 | 11 |
 | Segurança | 4 | 1 | 3 | 8 |
 
-**Total Geral:** 54 implementados, 7 parciais, 52 não implementados
+**Total Geral:** 56 implementados, 7 parciais, 50 não implementados
 
 ### Progresso Geral
 
