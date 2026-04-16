@@ -6,6 +6,9 @@ import authRoutes from './routes/auth'
 import transactionRoutes from './routes/transactions'
 import savingsRoutes from './routes/savings'
 import accountRoutes from './routes/accounts'
+import creditCardStatementsRoutes from './routes/credit-card-statements'
+import bankReconciliationRoutes from './routes/bank-reconciliation'
+import importTransactionsRoutes from './routes/import-transactions'
 import recurringRoutes from './routes/recurring'
 import notificationRoutes from './routes/notifications'
 import budgetRoutes from './routes/budget'
@@ -28,6 +31,9 @@ app.route('/api/auth', authRoutes)
 app.route('/api/transactions', transactionRoutes)
 app.route('/api/savings', savingsRoutes)
 app.route('/api/accounts', accountRoutes)
+app.route('/api/credit-card-statements', creditCardStatementsRoutes)
+app.route('/api/bank-reconciliation', bankReconciliationRoutes)
+app.route('/api/import-transactions', importTransactionsRoutes)
 app.route('/api/recurring', recurringRoutes)
 app.route('/api/notifications', notificationRoutes)
 app.route('/api/budget', budgetRoutes)

@@ -48,6 +48,8 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Tags personalizadas | ✅ | Criação, associação e gerenciamento de tags por transação |
 | Busca textual | ✅ | Busca por título e notas nas transações |
 | Exportar transações | ✅ | CSV implementado (backend + frontend) |
+| Edição de data da transação | ✅ | Funcionalidade adicionada no modal de edição |
+| Associação de tags na criação/edição | ✅ | Funcionalidade de selecionar tags ao criar ou editar transações |
 
 ### Metas de Economia
 
@@ -60,9 +62,12 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Editar meta | ✅ | UI implementada com modal bottom sheet |
 | Deletar meta | ✅ | UI implementada com confirmação (handleDelete + remove hook) |
 | Pausar/retomar meta | ✅ | Status é atualizado automaticamente ao completar meta |
-| Histórico de contribuições | ❌ | Não implementado |
-| Metas recorrentes | ❌ | Não implementado |
-| Compartilhamento de progresso | ❌ | Notificações não implementadas |
+| Histórico de contribuições | ✅ | Implementado com detalhes de quem contribuiu e quando |
+| Metas recorrentes | ✅ | Suporte a metas que se repetem com diferentes frequências |
+| Compartilhamento de progresso | ✅ | Notificações quando parceiro contribui para meta conjunta |
+| Detalhes da meta | ✅ | Visualização de informações detalhadas incluindo histórico de contribuições |
+| Frequências personalizadas | ✅ | Opções diária, semanal, mensal e anual para metas recorrentes |
+| Reinício automático de metas | ✅ | Metas recorrentes reiniciam automaticamente após atingirem a meta |
 
 ### Contas
 
@@ -73,12 +78,12 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Atualizar saldo | ✅ | Endpoint PATCH /:id/balance |
 | Inativar conta | ✅ | Soft delete com isActive |
 | Tipos de conta | ✅ | Checking, savings, credit, investment, benefit |
-| Editar conta | ❌ | Apenas balance, outros campos não |
-| Excluir permanentemente | ❌ | Apenas soft delete |
-| Limites de crédito | ❌ | Não implementado |
-| Faturas de cartão | ❌ | Não implementado |
-| Conciliação bancária | ❌ | Não implementado |
-| Importação OFX/CSV | ❌ | Não implementado |
+| Editar conta | ✅ | Agora permite edição de outros campos além do saldo |
+| Excluir permanentemente | ✅ | Opção de exclusão permanente com parâmetro ?permanent=true |
+| Limites de crédito | ✅ | Suporte para limite de crédito em contas de crédito |
+| Faturas de cartão | ✅ | Sistema completo de faturas para cartões de crédito |
+| Conciliação bancária | ✅ | Funcionalidade de conciliação de transações |
+| Importação OFX/CSV | ✅ | Importação de transações de arquivos OFX e CSV |
 
 ### Contas Recorrentes (Bills)
 
@@ -257,7 +262,7 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Casais | 6 | 0 | 1 | 7 |
 | Transações | 10 | 2 | 2 | 14 |
 | Metas | 6 | 0 | 4 | 10 |
-| Contas | 5 | 1 | 5 | 11 |
+| Contas | 10 | 0 | 1 | 11 |
 | Bills Recorrentes | 1 | 1 | 5 | 7 |
 | **Orçamento Mensal** | **10** | **0** | **0** | **10** |
 | Dashboard | 4 | 0 | 4 | 8 |
@@ -266,14 +271,14 @@ Este documento lista o que está implementado e o que seria útil implementar no
 | Backend | 7 | 1 | 3 | 11 |
 | Segurança | 5 | 1 | 2 | 8 |
 
-**Total Geral:** 65 implementados, 7 parciais, 41 não implementados
+**Total Geral:** 70 implementados, 3 parciais, 39 não implementados
 
 ### Progresso Geral
 
 ```
-Implementado:      ████████████████████░░░░  58%
-Parcial:           ██░░░░░░░░░░░░░░░░░░░░░░   6%
-Não Implementado:  ████████░░░░░░░░░░░░░  36%
+Implementado:      ██████████████████████░░  62%
+Parcial:           █░░░░░░░░░░░░░░░░░░░░░░   3%
+Não Implementado:  ███████░░░░░░░░░░░░░░░  35%
 ```
 
 ---

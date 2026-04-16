@@ -179,7 +179,7 @@ export function useSavingsGoals(context?: Context) {
     return { goal: data, completed }
   }
 
-  const edit = async (id: string, body: Partial<{ title: string; targetAmount: number; emoji: string; deadline: string }>) => {
+  const edit = async (id: string, body: Partial<{ title: string; targetAmount: number; emoji: string; deadline: string; isRecurring: boolean; frequency: 'daily' | 'weekly' | 'monthly' | 'yearly'; nextTargetDate: string }>) => {
     const { data } = await savingsApi.update(id, body)
     setGoals(prev => prev.map(g => g.id === id ? data : g))
     return data
@@ -190,5 +190,31 @@ export function useSavingsGoals(context?: Context) {
     setGoals(prev => prev.filter(g => g.id !== id))
   }
 
-  return { goals, loading, error, refetch: fetch, create, contribute, edit, remove }
+  const checkAndReset = async (id: string) => {
+    const { data } = await savingsApi.checkAndReset(id)
+    setGoals(prev => prev.map(g => g.id === id ? data : g))
+    return data
+  }
+
+  const getRecurrenceInfo = async (id: string) => {
+    return await savingsApi.getRecurrenceInfo(id)
+  }
+
+  const getContributions = async (id: string) => {
+    return await savingsApi.getContributions(id)
+  }
+
+  return {
+    goals,
+    loading,
+    error,
+    refetch: fetch,
+    create,
+    contribute,
+    edit,
+    remove,
+    checkAndReset,
+    getRecurrenceInfo,
+    getContributions
+  }
 }

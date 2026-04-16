@@ -23,12 +23,14 @@ import {
 } from 'lucide-react'
 import { useAuth } from './hooks/useAuth'
 import { useTransactions, useSavingsGoals } from './hooks/useTransactions'
+import { useSavings } from './hooks/useSavings'
 import { useNotifications } from './hooks/useNotifications'
 import { type Context, type Category, type TransactionType, type Transaction, type SavingsGoal, transactionsApi } from './lib/api'
 import AuthScreen from './components/screens/AuthScreen'
 import OnboardingCouple from './components/screens/OnboardingCouple'
 import ResetPasswordScreen from './components/screens/ResetPasswordScreen'
 import BudgetScreen from './components/screens/BudgetScreen'
+import AccountsScreen from './components/screens/AccountsScreen'
 import { SettingsSkeleton } from './components/Skeleton'
 
 type Screen = 'dashboard' | 'accounts' | 'savings' | 'budget' | 'recurring' | 'settings'
@@ -520,9 +522,11 @@ const Dashboard = ({ context, isIndividualVisibleToPartner, openEditModal }: {
 }
 
 const SavingsScreen = ({ context }: { context: Context }) => {
-  const { goals, loading, contribute, edit, remove } = useSavingsGoals(context)
+  const { goals, loading, contributeToGoal, updateGoal, deleteGoal, checkAndResetGoal, getRecurrenceInfo } = useSavings({ context })
   const [editingGoal, setEditingGoal] = useState<SavingsGoal | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedGoalDetails, setSelectedGoalDetails] = useState<{ goal: SavingsGoal; contributions: any[] } | null>(null)
+  const [loadingContributions, setLoadingContributions] = useState(false)
   const accentColor = context === 'individual' ? 'var(--color-individual)' : 'var(--color-primary)'
 
   const handleEdit = (goal: SavingsGoal) => {
@@ -533,6 +537,20 @@ const SavingsScreen = ({ context }: { context: Context }) => {
   const handleDelete = async (goal: SavingsGoal) => {
     if (confirm(`Tem certeza que deseja excluir a meta "${goal.title}"?`)) {
       await remove(goal.id)
+    }
+  }
+
+  const handleViewDetails = async (goal: SavingsGoal) => {
+    setLoadingContributions(true)
+    try {
+      const contributionsResponse = await getContributions(goal.id)
+      setSelectedGoalDetails({ goal, contributions: contributionsResponse.data })
+    } catch (error) {
+      console.error('Erro ao carregar contribuições:', error)
+      // Even if we can't load contributions, show the goal details
+      setSelectedGoalDetails({ goal, contributions: [] })
+    } finally {
+      setLoadingContributions(false)
     }
   }
 
@@ -576,10 +594,22 @@ const SavingsScreen = ({ context }: { context: Context }) => {
                       <p className="text-xs text-muted">
                         Meta: R${parseFloat(goal.targetAmount).toLocaleString('pt-BR')}
                         {goal.context === 'joint' && <span className="ml-1 text-primary">• conjunto</span>}
+                        {goal.isRecurring && <span className="ml-1 text-positive">• recorrente</span>}
                       </p>
+                      {goal.isRecurring && goal.nextTargetDate && (
+                        <p className="text-xs text-muted">
+                          Próxima meta: {new Date(goal.nextTargetDate).toLocaleDateString('pt-BR')}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleViewDetails(goal)}
+                      className="p-2 rounded-full bg-white/5 text-muted hover:text-white transition-colors"
+                    >
+                      <Receipt size={16} />
+                    </button>
                     <button
                       onClick={() => handleEdit(goal)}
                       className="p-2 rounded-full bg-white/5 text-muted hover:text-white transition-colors"
@@ -605,17 +635,46 @@ const SavingsScreen = ({ context }: { context: Context }) => {
                   />
                 </div>
 
+                <div className="flex justify-between text-xs text-muted">
+                  <span>R${current.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  <span>R${target.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                </div>
+
                 {goal.status !== 'completed' && (
-                  <button
-                    onClick={() => contribute(goal.id, 100)}
-                    className="w-full py-3 rounded-xl border border-white/10 text-muted text-sm hover:bg-white/5 transition-colors"
-                  >
-                    + Adicionar R$100
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => contribute(goal.id, 10)}
+                      className="flex-1 py-2 rounded-xl border border-white/10 text-muted text-xs hover:bg-white/5 transition-colors"
+                    >
+                      + R$10
+                    </button>
+                    <button
+                      onClick={() => contribute(goal.id, 50)}
+                      className="flex-1 py-2 rounded-xl border border-white/10 text-muted text-xs hover:bg-white/5 transition-colors"
+                    >
+                      + R$50
+                    </button>
+                    <button
+                      onClick={() => contribute(goal.id, 100)}
+                      className="flex-1 py-2 rounded-xl border border-white/10 text-muted text-xs hover:bg-white/5 transition-colors"
+                    >
+                      + R$100
+                    </button>
+                  </div>
                 )}
 
                 {goal.status === 'completed' && (
-                  <div className="text-center text-positive text-sm font-medium">🎉 Meta concluída!</div>
+                  <div className="text-center text-positive text-sm font-medium">
+                    🎉 Meta concluída!
+                    {goal.isRecurring && (
+                      <button
+                        onClick={() => checkAndReset(goal.id)}
+                        className="block mt-1 text-xs text-primary hover:underline"
+                      >
+                        Reiniciar meta
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             )
@@ -645,7 +704,7 @@ const SavingsScreen = ({ context }: { context: Context }) => {
               className="fixed bottom-0 left-0 right-0 h-auto max-h-[80vh] bg-surface rounded-t-[32px] border-t border-white/10 z-[70] p-8 flex flex-col"
             >
               <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-8" />
-              
+
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-xl sm:text-2xl font-headings font-semibold">Editar Meta</h2>
                 <button onClick={() => setIsModalOpen(false)} className="p-2 bg-white/5 rounded-full text-muted">
@@ -665,19 +724,156 @@ const SavingsScreen = ({ context }: { context: Context }) => {
           </>
         )}
       </AnimatePresence>
+
+      {/* Goal Details Modal - Shows contribution history and recurrence info */}
+      <AnimatePresence>
+        {selectedGoalDetails && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setSelectedGoalDetails(null)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60]"
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed bottom-0 left-0 right-0 h-[80vh] bg-surface rounded-t-[32px] border-t border-white/10 z-[70] p-8 flex flex-col"
+            >
+              <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-8" />
+
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-xl sm:text-2xl font-headings font-semibold">Detalhes da Meta</h2>
+                <button onClick={() => setSelectedGoalDetails(null)} className="p-2 bg-white/5 rounded-full text-muted">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto space-y-6">
+                <div className="p-4 bg-white/5 rounded-2xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-xl">
+                      {selectedGoalDetails.goal.emoji}
+                    </div>
+                    <div>
+                      <h3 className="font-medium">{selectedGoalDetails.goal.title}</h3>
+                      <p className="text-xs text-muted">
+                        {selectedGoalDetails.goal.isRecurring ? 'Meta recorrente' : 'Meta única'}
+                        {selectedGoalDetails.goal.isRecurring && selectedGoalDetails.goal.frequency && (
+                          ` (${selectedGoalDetails.goal.frequency})`
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted">Progresso:</span>
+                      <span>
+                        R${parseFloat(selectedGoalDetails.goal.currentAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} /
+                        R${parseFloat(selectedGoalDetails.goal.targetAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    <div className="relative h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${Math.min((parseFloat(selectedGoalDetails.goal.currentAmount) / parseFloat(selectedGoalDetails.goal.targetAmount)) * 100, 100)}%`,
+                          backgroundColor: accentColor
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recurrence Info if applicable */}
+                {selectedGoalDetails.goal.isRecurring && (
+                  <div className="p-4 bg-white/5 rounded-2xl">
+                    <h4 className="font-medium mb-3">Informações de Recorrência</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted">Frequência:</span>
+                        <span className="capitalize">{selectedGoalDetails.goal.frequency}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted">Próxima data:</span>
+                        <span>
+                          {selectedGoalDetails.goal.nextTargetDate
+                            ? new Date(selectedGoalDetails.goal.nextTargetDate).toLocaleDateString('pt-BR')
+                            : 'Não definida'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted">Valor original:</span>
+                        <span>
+                          R${selectedGoalDetails.goal.originalTargetAmount
+                            ? parseFloat(selectedGoalDetails.goal.originalTargetAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+                            : 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Contribution History */}
+                <div className="p-4 bg-white/5 rounded-2xl">
+                  <h4 className="font-medium mb-3">Histórico de Contribuições</h4>
+
+                  {loadingContributions ? (
+                    <div className="flex justify-center py-4">
+                      <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                    </div>
+                  ) : selectedGoalDetails.contributions.length > 0 ? (
+                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                      {selectedGoalDetails.contributions.map(contribution => (
+                        <div key={contribution.id} className="flex justify-between items-center p-3 bg-surface/50 rounded-xl">
+                          <div>
+                            <p className="font-medium text-sm">{contribution.user.name}</p>
+                            <p className="text-xs text-muted">
+                              {new Date(contribution.createdAt).toLocaleDateString('pt-BR', {
+                                day: '2-digit',
+                                month: 'short',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                          <p className="font-headings font-medium text-sm text-positive">
+                            +R${parseFloat(contribution.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/5 mb-3">
+                        <Receipt size={20} className="text-muted" />
+                      </div>
+                      <p className="text-sm text-muted">Nenhuma contribuição registrada ainda</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
 
 const EditGoalForm = ({ goal, onSave, onClose }: {
   goal: SavingsGoal
-  onSave: (data: { title?: string; targetAmount?: number; emoji?: string; deadline?: string }) => void
+  onSave: (data: { title?: string; targetAmount?: number; emoji?: string; deadline?: string; isRecurring?: boolean; frequency?: 'daily' | 'weekly' | 'monthly' | 'yearly'; nextTargetDate?: string }) => void
   onClose: () => void
 }) => {
   const [title, setTitle] = useState(goal.title)
   const [targetAmount, setTargetAmount] = useState(String(goal.targetAmount))
   const [emoji, setEmoji] = useState(goal.emoji || '🎯')
   const [deadline, setDeadline] = useState(goal.deadline ? goal.deadline.split('T')[0] : '')
+  const [isRecurring, setIsRecurring] = useState(goal.isRecurring || false)
+  const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>(goal.frequency || 'monthly')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async () => {
@@ -689,6 +885,8 @@ const EditGoalForm = ({ goal, onSave, onClose }: {
         targetAmount: parseFloat(targetAmount),
         emoji,
         deadline: deadline ? new Date(deadline).toISOString() : undefined,
+        isRecurring,
+        frequency: isRecurring ? frequency : undefined,
       })
     } catch (e) {
       console.error(e)
@@ -743,6 +941,48 @@ const EditGoalForm = ({ goal, onSave, onClose }: {
           onChange={e => setDeadline(e.target.value)}
           className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-5 focus:outline-none focus:border-primary/30 placeholder:text-muted/40 text-sm text-white"
         />
+      </div>
+
+      {/* Recurring Goal Options */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <label className="text-muted text-xs uppercase tracking-widest">Meta Recorrente</label>
+          <button
+            onClick={() => setIsRecurring(!isRecurring)}
+            className={`w-14 h-8 rounded-full relative transition-colors duration-300 ${isRecurring ? 'bg-positive' : 'bg-white/10'}`}
+            role="switch"
+            aria-checked={isRecurring}
+          >
+            <motion.div
+              animate={{ x: isRecurring ? 24 : 4 }}
+              className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-lg"
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+
+        {isRecurring && (
+          <div className="space-y-3 p-4 bg-white/5 rounded-2xl">
+            <div>
+              <label className="text-muted text-xs uppercase tracking-widest block mb-2">Frequência</label>
+              <div className="grid grid-cols-2 gap-2">
+                {(['daily', 'weekly', 'monthly', 'yearly'] as const).map(freq => (
+                  <button
+                    key={freq}
+                    onClick={() => setFrequency(freq)}
+                    className={`py-2 rounded-xl text-xs capitalize ${
+                      frequency === freq
+                        ? 'bg-primary text-background'
+                        : 'bg-white/5 text-muted hover:bg-white/10'
+                    }`}
+                  >
+                    {freq}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <button

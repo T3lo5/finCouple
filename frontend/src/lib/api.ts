@@ -37,7 +37,25 @@ export interface Account {
   lastFour:    string | null
   context:     Context
   isActive:    boolean
+  creditLimit?: string | null  // Novo campo para limite de crédito
+  dueDate?:    string | null  // Novo campo para data de vencimento (contas de crédito)
+  closingDate?: string | null // Novo campo para data de fechamento (contas de crédito)
   createdAt:   string
+}
+
+export interface CreditCardStatement {
+  id:             string
+  accountId:      string
+  userId:         string
+  statementDate:  string
+  dueDate:        string
+  totalAmount:    string
+  minimumPayment?: string
+  paidAmount:     string
+  isPaid:         boolean
+  isClosed:       boolean
+  createdAt:      string
+  updatedAt:      string
 }
 
 export interface Transaction {
@@ -74,17 +92,22 @@ export interface Attachment {
 }
 
 export interface SavingsGoal {
-  id:            string
-  userId:        string
-  coupleId:      string | null
-  title:         string
-  targetAmount:  string
-  currentAmount: string
-  context:       Context
-  status:        GoalStatus
-  emoji:         string
-  deadline:      string | null
-  createdAt:     string
+  id:                 string
+  userId:             string
+  coupleId:           string | null
+  title:              string
+  targetAmount:       string
+  currentAmount:      string
+  context:            Context
+  status:             GoalStatus
+  emoji:              string
+  deadline:           string | null
+  // Campos para metas recorrentes
+  isRecurring:        boolean
+  frequency:          'daily' | 'weekly' | 'monthly' | 'yearly'
+  nextTargetDate:     string | null
+  originalTargetAmount: string | null
+  createdAt:          string
 }
 
 export interface PaginatedResponse<T> {
@@ -361,12 +384,19 @@ export const savingsApi = {
     return request<{ data: SavingsGoal[] }>(`/api/savings${qs}`)
   },
 
+  get: (id: string) =>
+    request<{ data: SavingsGoal }>(`/api/savings/${id}`),
+
   create: (body: {
     title: string
     targetAmount: number
     context: Context
     emoji?: string
     deadline?: string
+    // Campos para metas recorrentes
+    isRecurring?: boolean
+    frequency?: 'daily' | 'weekly' | 'monthly' | 'yearly'
+    nextTargetDate?: string
   }) =>
     request<{ data: SavingsGoal }>('/api/savings', {
       method: 'POST',
@@ -379,7 +409,16 @@ export const savingsApi = {
       body: JSON.stringify({ amount }),
     }),
 
-  update: (id: string, body: Partial<{ title: string; targetAmount: number; emoji: string; deadline: string }>) =>
+  update: (id: string, body: Partial<{
+    title: string
+    targetAmount: number
+    emoji: string
+    deadline: string
+    // Campos para metas recorrentes
+    isRecurring: boolean
+    frequency: 'daily' | 'weekly' | 'monthly' | 'yearly'
+    nextTargetDate: string
+  }>) =>
     request<{ data: SavingsGoal }>(`/api/savings/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(body),
@@ -387,6 +426,37 @@ export const savingsApi = {
 
   delete: (id: string) =>
     request<{ ok: boolean }>(`/api/savings/${id}`, { method: 'DELETE' }),
+
+  // Funções para metas recorrentes
+  checkAndReset: (id: string) =>
+    request<{ data: SavingsGoal }>(`/api/savings/${id}/check-and-reset`, {
+      method: 'POST',
+    }),
+
+  getRecurrenceInfo: (id: string) =>
+    request<{ data: {
+      isRecurring: boolean
+      originalTargetAmount: string | null
+      nextTargetDate: string | null
+      daysUntilNextTarget: number | null
+      frequency: 'daily' | 'weekly' | 'monthly' | 'yearly'
+    } }>(`/api/savings/${id}/recurrence-info`),
+
+  // Histórico de contribuições
+  getContributions: (id: string) =>
+    request<{ data: Array<{
+      id: string
+      goalId: string
+      userId: string
+      amount: string
+      notes: string | null
+      createdAt: string
+      user: {
+        id: string
+        name: string
+        email: string
+      }
+    }> }>(`/api/savings/${id}/contributions`),
 }
 
 export const accountsApi = {
@@ -403,9 +473,30 @@ export const accountsApi = {
     currency?: string
     lastFour?: string
     context: Context
+    creditLimit?: number  // Novo campo para limite de crédito
+    dueDate?: string     // Nova data de vencimento
+    closingDate?: string // Nova data de fechamento
   }) =>
     request<{ data: Account }>('/api/accounts', {
       method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  update: (id: string, body: Partial<{
+    name: string
+    institution?: string
+    type: AccountType
+    balance?: number
+    currency?: string
+    lastFour?: string
+    context: Context
+    isActive?: boolean
+    creditLimit?: number  // Novo campo para limite de crédito
+    dueDate?: string     // Nova data de vencimento
+    closingDate?: string // Nova data de fechamento
+  }>) =>
+    request<{ data: Account }>(`/api/accounts/${id}`, {
+      method: 'PATCH',
       body: JSON.stringify(body),
     }),
 
@@ -417,6 +508,113 @@ export const accountsApi = {
 
   delete: (id: string) =>
     request<{ ok: boolean }>(`/api/accounts/${id}`, { method: 'DELETE' }),
+
+  permanentDelete: (id: string) =>
+    request<{ ok: boolean }>(`/api/accounts/${id}?permanent=true`, { method: 'DELETE' }),
+
+  // Funções para faturas de cartão de crédito
+  statements: {
+    list: (params?: {
+      accountId?: string
+      month?: number
+      year?: number
+    }) => {
+      const qs = new URLSearchParams(params as any).toString()
+      return request<{ data: CreditCardStatement[] }>(`/api/credit-card-statements${qs ? `?${qs}` : ''}`)
+    },
+
+    get: (id: string) =>
+      request<{ data: CreditCardStatement }>(`/api/credit-card-statements/${id}`),
+
+    create: (body: {
+      accountId: string
+      statementDate: string
+      dueDate: string
+      totalAmount: number
+      minimumPayment?: number
+    }) =>
+      request<{ data: CreditCardStatement }>('/api/credit-card-statements', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+
+    update: (id: string, body: Partial<{
+      statementDate: string
+      dueDate: string
+      totalAmount: number
+      minimumPayment?: number
+      paidAmount: number
+      isPaid: boolean
+      isClosed: boolean
+    }>) =>
+      request<{ data: CreditCardStatement }>(`/api/credit-card-statements/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }),
+
+    delete: (id: string) =>
+      request<{ ok: boolean }>(`/api/credit-card-statements/${id}`, { method: 'DELETE' }),
+
+    pay: (id: string) =>
+      request<{ data: CreditCardStatement }>(`/api/credit-card-statements/${id}/pay`, {
+        method: 'PATCH',
+      }),
+  }
+}
+
+// API para conciliação bancária
+export const bankReconciliationApi = {
+  reconcile: (body: {
+    transactionIds: string[]
+    accountId: string
+    startDate: string
+    endDate: string
+  }) =>
+    request<{
+      message: string
+      reconciledTransactions: number
+      transactions: Transaction[]
+    }>('/api/bank-reconciliation', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  getUnreconciled: (accountId: string) =>
+    request<{
+      data: Transaction[]
+      total: number
+    }>(`/api/bank-reconciliation/unreconciled/${accountId}`),
+
+  reconcileTransaction: (id: string) =>
+    request<{
+      message: string
+      data: Transaction
+    }>(`/api/bank-reconciliation/reconcile-transaction/${id}`, {
+      method: 'PATCH',
+    }),
+}
+
+// API para importação de transações
+export const importApi = {
+  import: (formData: FormData) =>
+    request<{
+      message: string
+      importedCount: number
+      transactions: Transaction[]
+    }>('/api/import-transactions/import', {
+      method: 'POST',
+      body: formData,
+    }),
+
+  preview: (formData: FormData) =>
+    request<{
+      message: string
+      preview: Transaction[]
+      totalCount: number
+    }>('/api/import-transactions/preview', {
+      method: 'POST',
+      body: formData,
+    }),
 }
 
 export interface Notification {

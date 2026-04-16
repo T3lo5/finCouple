@@ -51,6 +51,26 @@ export const accounts = pgTable('accounts', {
   lastFour:    text('last_four'),
   context:     contextEnum('context').notNull().default('individual'),
   isActive:    boolean('is_active').notNull().default(true),
+  // Novos campos para contas de crédito
+  creditLimit: numeric('credit_limit', { precision: 12, scale: 2 }), // Limite de crédito
+  dueDate:     timestamp('due_date'), // Data de vencimento (para contas de crédito)
+  closingDate: timestamp('closing_date'), // Data de fechamento (para contas de crédito)
+  createdAt:   timestamp('created_at').defaultNow().notNull(),
+  updatedAt:   timestamp('updated_at').defaultNow().notNull(),
+})
+
+// Tabela para faturas de cartão de crédito
+export const creditCardStatements = pgTable('credit_card_statements', {
+  id:          text('id').primaryKey().$defaultFn(() => nanoid()),
+  accountId:   text('account_id').notNull().references(() => accounts.id, { onDelete: 'cascade' }),
+  userId:      text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  statementDate: timestamp('statement_date').notNull(), // Data de fechamento da fatura
+  dueDate:     timestamp('due_due_date').notNull(), // Data de vencimento da fatura
+  totalAmount: numeric('total_amount', { precision: 12, scale: 2 }).notNull(), // Valor total da fatura
+  minimumPayment: numeric('minimum_payment', { precision: 12, scale: 2 }), // Pagamento mínimo
+  paidAmount:  numeric('paid_amount', { precision: 12, scale: 2 }).default('0'), // Valor pago
+  isPaid:      boolean('is_paid').notNull().default(false), // Indica se a fatura foi paga
+  isClosed:    boolean('is_closed').notNull().default(false), // Indica se a fatura está fechada
   createdAt:   timestamp('created_at').defaultNow().notNull(),
   updatedAt:   timestamp('updated_at').defaultNow().notNull(),
 })
@@ -117,18 +137,32 @@ export const recurringBills = pgTable('recurring_bills', {
 })
 
 export const savingsGoals = pgTable('savings_goals', {
-  id:            text('id').primaryKey().$defaultFn(() => nanoid()),
-  userId:        text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  coupleId:      text('couple_id').references(() => couples.id, { onDelete: 'set null' }),
-  title:         text('title').notNull(),
-  targetAmount:  numeric('target_amount', { precision: 12, scale: 2 }).notNull(),
-  currentAmount: numeric('current_amount', { precision: 12, scale: 2 }).notNull().default('0'),
-  context:       contextEnum('context').notNull().default('individual'),
-  status:        goalStatusEnum('status').notNull().default('active'),
-  emoji:         text('emoji').default('🎯'),
-  deadline:      timestamp('deadline'),
-  createdAt:     timestamp('created_at').defaultNow().notNull(),
-  updatedAt:     timestamp('updated_at').defaultNow().notNull(),
+  id:                 text('id').primaryKey().$defaultFn(() => nanoid()),
+  userId:             text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  coupleId:           text('couple_id').references(() => couples.id, { onDelete: 'set null' }),
+  title:              text('title').notNull(),
+  targetAmount:       numeric('target_amount', { precision: 12, scale: 2 }).notNull(),
+  currentAmount:      numeric('current_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+  context:            contextEnum('context').notNull().default('individual'),
+  status:             goalStatusEnum('status').notNull().default('active'),
+  emoji:              text('emoji').default('🎯'),
+  deadline:           timestamp('deadline'),
+  // Campos para metas recorrentes
+  isRecurring:        boolean('is_recurring').notNull().default(false),
+  frequency:          frequencyEnum('frequency').default('monthly'),
+  nextTargetDate:     timestamp('next_target_date'),
+  originalTargetAmount: numeric('original_target_amount', { precision: 12, scale: 2 }),
+  createdAt:          timestamp('created_at').defaultNow().notNull(),
+  updatedAt:          timestamp('updated_at').defaultNow().notNull(),
+})
+
+export const savingsContributions = pgTable('savings_contributions', {
+  id:        text('id').primaryKey().$defaultFn(() => nanoid()),
+  goalId:    text('goal_id').notNull().references(() => savingsGoals.id, { onDelete: 'cascade' }),
+  userId:    text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  amount:    numeric('amount', { precision: 12, scale: 2 }).notNull(),
+  notes:     text('notes'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 })
 
 export const sessions = pgTable('sessions', {
@@ -168,6 +202,12 @@ export const accountsRelations = relations(accounts, ({ one, many }) => ({
   user:         one(users, { fields: [accounts.userId], references: [users.id] }),
   couple:       one(couples, { fields: [accounts.coupleId], references: [couples.id] }),
   transactions: many(transactions),
+  statements:   many(creditCardStatements),
+}))
+
+export const creditCardStatementsRelations = relations(creditCardStatements, ({ one, many }) => ({
+  account:      one(accounts, { fields: [creditCardStatements.accountId], references: [accounts.id] }),
+  user:         one(users, { fields: [creditCardStatements.userId], references: [users.id] }),
 }))
 
 export const transactionsRelations = relations(transactions, ({ one, many }) => ({
@@ -194,9 +234,15 @@ export const transactionTagMappingsRelations = relations(transactionTagMappings,
   tag: one(transactionTags, { fields: [transactionTagMappings.tagId], references: [transactionTags.id] }),
 }))
 
-export const savingsGoalsRelations = relations(savingsGoals, ({ one }) => ({
-  user:   one(users, { fields: [savingsGoals.userId], references: [users.id] }),
-  couple: one(couples, { fields: [savingsGoals.coupleId], references: [couples.id] }),
+export const savingsGoalsRelations = relations(savingsGoals, ({ one, many }) => ({
+  user:        one(users, { fields: [savingsGoals.userId], references: [users.id] }),
+  couple:      one(couples, { fields: [savingsGoals.coupleId], references: [couples.id] }),
+  contributions: many(savingsContributions),
+}))
+
+export const savingsContributionsRelations = relations(savingsContributions, ({ one }) => ({
+  goal: one(savingsGoals, { fields: [savingsContributions.goalId], references: [savingsGoals.id] }),
+  user: one(users, { fields: [savingsContributions.userId], references: [users.id] }),
 }))
 
 export const notificationTypeEnum = pgEnum('notification_type', [
