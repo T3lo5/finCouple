@@ -11,9 +11,13 @@ import Brevo from '@getbrevo/brevo'
 
 const auth = new Hono()
 
-// Initialize Brevo API client
-const brevoApi = new Brevo.TransactionalEmailsApi()
-brevoApi.setApiKey(process.env.BREVO_API_KEY || '')
+// Initialize Brevo API client (optional - only if API key is configured)
+const brevoApiKey = process.env.BREVO_API_KEY
+let brevoApi: Brevo.TransactionalEmailsApi | null = null
+if (brevoApiKey && brevoApiKey !== 'your-brevo-api-key-here') {
+  brevoApi = new Brevo.TransactionalEmailsApi()
+  brevoApi.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, brevoApiKey)
+}
 
 async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder()
@@ -31,6 +35,12 @@ function createResetToken(): string {
 }
 
 async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
+  // Skip sending email if Brevo is not configured
+  if (!brevoApi) {
+    console.log(`[DEV] Password reset email would be sent to ${email}. Reset URL: ${process.env.FRONTEND_URL}/reset-password?token=${token}`)
+    return
+  }
+
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`
   
   const sendSmtpEmail = new Brevo.SendSmtpEmail()
@@ -120,7 +130,7 @@ auth.post('/register',
       expiresAt,
     })
 
-    c.header('Set-Cookie', `session_token=${token}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${30 * 24 * 60 * 60}`)
+    c.header('Set-Cookie', `session_token=${token}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${30 * 24 * 60 * 60}; Domain=localhost`)
 
     return c.json({ user, token }, 201)
   }
@@ -159,7 +169,7 @@ auth.post('/login',
       expiresAt,
     })
 
-    c.header('Set-Cookie', `session_token=${token}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${30 * 24 * 60 * 60}`)
+    c.header('Set-Cookie', `session_token=${token}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${30 * 24 * 60 * 60}; Domain=localhost`)
 
     return c.json({
       token,

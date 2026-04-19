@@ -19,6 +19,28 @@ const budgetWriteRateLimit = rateLimit({
   message: 'Too many budget operations, please try again in a minute',
 })
 
+// Schema reutilizável para valores monetários (positivos, máximo 999999.99)
+const amountSchema = z.number()
+  .positive('Amount must be positive')
+  .max(999999.99, 'Amount exceeds maximum allowed (999999.99)')
+
+// Schema reutilizável para month (1-12)
+const monthSchema = z.number()
+  .int()
+  .min(1, 'Month must be at least 1')
+  .max(12, 'Month must be at most 12')
+
+// Schema reutilizável para year (2020-2100)
+const yearSchema = z.number()
+  .int()
+  .min(2020, 'Year must be at least 2020')
+  .max(2100, 'Year must be at most 2100')
+
+// Schema reutilizável para threshold (0-100)
+const thresholdSchema = z.number()
+  .min(0, 'Threshold must be at least 0')
+  .max(100, 'Threshold must be at most 100')
+
 // Schema para criação de orçamento mensal
 const createBudgetSchema = z.object({
   month: monthSchema,
@@ -72,28 +94,6 @@ const deleteConfirmationSchema = z.object({
     message: 'Confirmation is required to delete a budget',
   }),
 }).optional()
-
-// Schema reutilizável para valores monetários (positivos, máximo 999999.99)
-const amountSchema = z.number()
-  .positive('Amount must be positive')
-  .max(999999.99, 'Amount exceeds maximum allowed (999999.99)')
-
-// Schema reutilizável para month (1-12)
-const monthSchema = z.number()
-  .int()
-  .min(1, 'Month must be at least 1')
-  .max(12, 'Month must be at most 12')
-
-// Schema reutilizável para year (2020-2100)
-const yearSchema = z.number()
-  .int()
-  .min(2020, 'Year must be at least 2020')
-  .max(2100, 'Year must be at most 2100')
-
-// Schema reutilizável para threshold (0-100)
-const thresholdSchema = z.number()
-  .min(0, 'Threshold must be at least 0')
-  .max(100, 'Threshold must be at most 100')
 
 // Schema para query params do histórico
 const budgetHistoryQuerySchema = z.object({

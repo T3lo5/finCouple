@@ -1,13 +1,14 @@
-FROM oven/bun:latest
+FROM node:20-alpine
 
 WORKDIR /app
 
 # Copiar arquivos de configuração
-COPY package.json bun.lockx ./
+COPY package.json package-lock.json* ./
 COPY tsconfig.json ./
+COPY drizzle.config.ts ./
 
 # Instalar dependências
-RUN bun install
+RUN npm install --legacy-peer-deps --production=false
 
 # Copiar código-fonte
 COPY src/ ./src/
@@ -18,4 +19,4 @@ COPY drizzle.config.ts ./
 EXPOSE 3000
 
 # Rodar a aplicação
-CMD ["bun", "run", "dev"]
+CMD ["npm", "run", "dev"]

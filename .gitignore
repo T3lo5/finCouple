@@ -117,3 +117,5 @@ private/
 *.rej
 *.swp
 *~
+backend/.env
+backend/.env

@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "gqwen-auth": "^4.3.0"
+  }
+}

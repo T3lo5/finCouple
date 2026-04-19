@@ -81,18 +81,18 @@ export function useBudgetPreferences({ autoSync = true }: UseBudgetPreferencesOp
     
     // Sincroniza com backend se usuário estiver autenticado
     if (syncWithBackend && user && !authLoading) {
-      try {
-        await updatePreferences({
-          budgetDefaultMonth: newPreferences.selectedMonth,
-          budgetDefaultYear: newPreferences.selectedYear,
-          budgetDefaultContext: newPreferences.context,
-        })
-      } catch (err: any) {
-        setError(err.message || 'Failed to sync preferences')
-        // Reverte para estado anterior em caso de erro
-        setPreferences(preferences)
-        saveToLocalStorage(preferences)
-      }
+      // try {
+      //   await updatePreferences({
+      //     budgetDefaultMonth: newPreferences.selectedMonth,
+      //     budgetDefaultYear: newPreferences.selectedYear,
+      //     budgetDefaultContext: newPreferences.context,
+      //   })
+      // } catch (err: any) {
+      //   setError(err.message || 'Failed to sync preferences')
+      //   // Reverte para estado anterior em caso de erro
+      //   setPreferences(preferences)
+      //   saveToLocalStorage(preferences)
+      // }
     }
     
     setLoading(false)

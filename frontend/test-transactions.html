@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Transactions API</title>
+</head>
+<body>
+    <h1>Test Transactions API</h1>
+    <button onclick="testLogin()">Login</button>
+    <button onclick="getTransactions()">Get Transactions</button>
+    <button onclick="checkToken()">Check Token</button>
+    <div id="result"></div>
+
+    <script>
+        async function testLogin() {
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'newuser@test.com',
+                        password: '12345678'
+                    })
+                });
+
+                const data = await response.json();
+                localStorage.setItem('session_token', data.token);
+                document.getElementById('result').innerHTML = '<p>Login successful! Token saved.</p>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<p>Login failed: ' + error.message + '</p>';
+            }
+        }
+
+        async function getTransactions() {
+            const token = localStorage.getItem('session_token');
+            if (!token) {
+                document.getElementById('result').innerHTML = '<p>No token found. Please login first.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/transactions?limit=10', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Origin': 'http://localhost:5176'
+                    }
+                });
+
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<p>Transactions received: ' + JSON.stringify(data, null, 2) + '</p>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<p>Error getting transactions: ' + error.message + '</p>';
+            }
+        }
+
+        function checkToken() {
+            const token = localStorage.getItem('session_token');
+            document.getElementById('result').innerHTML = '<p>Token: ' + (token ? 'Found' : 'Not found') + '</p>';
+        }
+    </script>
+</body>
+</html>

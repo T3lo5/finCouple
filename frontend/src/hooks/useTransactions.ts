@@ -15,6 +15,7 @@ export function useTransactions({ context, category, autoFetch = true }: UseTran
   const [categorySummary, setCategorySummary] = useState<{ totalExpenses: number; byCategory: { category: Category; amount: number; count: number; percentage: number }[] } | null>(null)
 
   const fetch = useCallback(async (search?: string) => {
+    console.log('useTransactions: Fetching transactions with context:', context, 'category:', category, 'search:', search)
     setLoading(true)
     setError(null)
     try {
@@ -23,10 +24,13 @@ export function useTransactions({ context, category, autoFetch = true }: UseTran
         transactionsApi.monthlySummary(context),
         transactionsApi.byCategorySummary(context),
       ])
+      console.log('useTransactions: Received transactions:', txRes.data)
+      console.log('useTransactions: Received summary:', summaryRes)
       setTransactions(txRes.data)
       setSummary(summaryRes)
       setCategorySummary(categoryRes)
     } catch (err: any) {
+      console.error('useTransactions: Error fetching transactions:', err)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -34,7 +38,11 @@ export function useTransactions({ context, category, autoFetch = true }: UseTran
   }, [context, category])
 
   useEffect(() => {
-    if (autoFetch) fetch()
+    console.log('useTransactions: useEffect called, autoFetch:', autoFetch, 'context:', context)
+    if (autoFetch) {
+      console.log('useTransactions: Calling fetch()')
+      fetch()
+    }
   }, [fetch, autoFetch])
 
   const create = async (body: {

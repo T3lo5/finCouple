@@ -45,10 +45,11 @@ interface UseBudgetOptions {
 
 export function useBudget({ context = 'individual', autoFetch = true, pollAlerts = false, alertPollInterval = 60000 }: UseBudgetOptions = {}) {
   const [budget, setBudget] = useState<BudgetWithDetails | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true) // Start as true to prevent flash of "no budget" state
   const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string> | null>(null)
   const [alerts, setAlerts] = useState<BudgetAlert[]>([])
+  const [initialLoadDone, setInitialLoadDone] = useState(false)
 
   const handleApiError = useCallback((err: any): string => {
     if (err instanceof ApiError) {
@@ -84,11 +85,18 @@ export function useBudget({ context = 'individual', autoFetch = true, pollAlerts
     setLoading(true)
     setError(null)
     setValidationErrors(null)
+    setInitialLoadDone(true)
     try {
       const response = await budgetApi.get(month, year, ctx || context)
       setBudget({ ...response.data.budget, categories: response.data.categories, spentTotal: response.data.spentTotal, remainingTotal: response.data.remainingTotal, percentageUsed: response.data.percentageUsed })
       return response.data
     } catch (err: any) {
+      // 404 means no budget exists for this month/year - not an error, just no data
+      if (err instanceof ApiError && err.status === 404) {
+        setBudget(null)
+        setError(null) // Clear error for 404 - this is expected when no budget exists
+        return null
+      }
       const validationErrs = extractValidationErrors(err)
       if (validationErrs) setValidationErrors(validationErrs)
       setError(handleApiError(err))
@@ -217,21 +225,22 @@ export function useBudget({ context = 'individual', autoFetch = true, pollAlerts
     }
   }, [pollAlerts, alertPollInterval, checkAlerts])
 
-  return { 
-    budget, 
-    loading, 
-    error, 
-    validationErrors, 
-    alerts, 
+  return {
+    budget,
+    loading,
+    error,
+    validationErrors,
+    alerts,
+    initialLoadDone,
     categories: budget?.categories || [],
-    fetchBudget, 
-    createBudget, 
-    updateBudget, 
-    deleteBudget, 
-    calculateSpent, 
-    checkAlerts, 
-    clearBudget, 
-    handleApiError, 
-    extractValidationErrors 
+    fetchBudget,
+    createBudget,
+    updateBudget,
+    deleteBudget,
+    calculateSpent,
+    checkAlerts,
+    clearBudget,
+    handleApiError,
+    extractValidationErrors
   }
 }

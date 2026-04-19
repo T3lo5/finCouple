@@ -41,7 +41,35 @@
       "idx": 5,
       "version": "7",
       "when": 1776286335127,
-      "tag": "0005_add_credit_card_statements_table",
+      "tag": "0005_recycling_northstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1776287000000,
+      "tag": "0006_sweet_shocker",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1776288000000,
+      "tag": "0007_add_credit_card_statements_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1776370000000,
+      "tag": "0008_add_user_preferences",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1776450000000,
+      "tag": "0009_add_installment_purchases_table",
       "breakpoints": true
     }
   ]

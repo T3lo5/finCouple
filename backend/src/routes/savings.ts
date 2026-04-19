@@ -66,7 +66,7 @@ async function handleRecurringGoal(goalId: string) {
 const router = new Hono()
 router.use(requireAuth)
 
-const goalSchema = z.object({
+const baseGoalSchema = z.object({
   title:        z.string().min(1).max(120),
   targetAmount: z.number().positive(),
   context:      z.enum(['individual', 'joint']),
@@ -76,6 +76,15 @@ const goalSchema = z.object({
   isRecurring:  z.boolean().default(false),
   frequency:    z.enum(['daily', 'weekly', 'monthly', 'yearly']).optional(),
   nextTargetDate: z.string().datetime().optional(),
+})
+
+const goalSchema = baseGoalSchema.refine((data) => {
+  if (data.deadline) {
+    return new Date(data.deadline) > new Date()
+  }
+}, {
+  message: "A data de prazo não pode ser no passado",
+  path: ["deadline"]
 })
 
 const contributionSchema = z.object({
@@ -159,43 +168,9 @@ router.post('/', zValidator('json', goalSchema), async (c) => {
   return c.json({ data: goal }, 201)
 })
 
-router.post('/:id/contribute',
-  zValidator('json', z.object({ amount: z.number().positive() })),
-  async (c) => {
-    const user = c.get('user')
-    const { id } = c.req.param()
-    const { amount } = c.req.valid('json')
 
-    const [goal] = await db
-      .select()
-      .from(savingsGoals)
-      .where(eq(savingsGoals.id, id))
-      .limit(1)
-
-    if (!goal) return c.json({ error: 'Not found' }, 404)
-
-    const isOwner = goal.userId === user.id
-    const isJoint = goal.context === 'joint' && goal.coupleId === user.coupleId
-    if (!isOwner && !isJoint) return c.json({ error: 'Forbidden' }, 403)
-
-    const newAmount = Number(goal.currentAmount) + amount
-    const isCompleted = newAmount >= Number(goal.targetAmount)
-
-    const [updated] = await db
-      .update(savingsGoals)
-      .set({
-        currentAmount: String(newAmount),
-        status: isCompleted ? 'completed' : 'active',
-        updatedAt: new Date(),
-      })
-      .where(eq(savingsGoals.id, id))
-      .returning()
-
-    return c.json({ data: updated, completed: isCompleted })
-  }
-)
-
-router.patch('/:id', zValidator('json', goalSchema.partial()), async (c) => {
+const updateGoalSchema = baseGoalSchema.partial()
+router.patch('/:id', zValidator('json', updateGoalSchema), async (c) => {
   const user = c.get('user')
   const { id } = c.req.param()
   const body = c.req.valid('json')
@@ -395,6 +370,7 @@ router.post('/:id/contribute',
     // Transação para atualizar a meta e adicionar a contribuição
     const result = await db.transaction(async (tx) => {
       let updatedGoal;
+      console.log('Starting transaction for contribution...')
 
       // Se for uma meta recorrente e for completada, verificar se deve reiniciar
       if (effectiveGoal.isRecurring && isCompleted) {
@@ -432,6 +408,7 @@ router.post('/:id/contribute',
       }
 
       // Registrar a contribuição
+      console.log('Inserting contribution...', { goalId: id, userId: user.id, amount: String(amount) })
       const [contribution] = await tx
         .insert(savingsContributions)
         .values({
@@ -442,6 +419,8 @@ router.post('/:id/contribute',
           notes: notes || null,
         })
         .returning()
+
+      console.log('Contribution inserted:', contribution)
 
       return { updatedGoal, contribution }
     })

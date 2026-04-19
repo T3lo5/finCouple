@@ -136,6 +136,27 @@ export const recurringBills = pgTable('recurring_bills', {
   createdAt:   timestamp('created_at').defaultNow().notNull(),
 })
 
+// Tabela para compras parceladas
+export const installmentPurchases = pgTable('installment_purchases', {
+  id:                text('id').primaryKey().$defaultFn(() => nanoid()),
+  userId:            text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  coupleId:          text('couple_id').references(() => couples.id, { onDelete: 'set null' }),
+  accountId:         text('account_id').references(() => accounts.id, { onDelete: 'set null' }),
+  title:             text('title').notNull(),
+  totalAmount:       numeric('total_amount', { precision: 12, scale: 2 }).notNull(),
+  installmentCount:  integer('installment_count').notNull(),
+  currentInstallment: integer('current_installment').notNull().default(1),
+  installmentAmount: numeric('installment_amount', { precision: 12, scale: 2 }).notNull(),
+  startDate:         timestamp('start_date').notNull(),
+  nextDueDate:       timestamp('next_due_date').notNull(),
+  category:          categoryEnum('category').notNull().default('shopping'),
+  context:           contextEnum('context').notNull().default('individual'),
+  isActive:          boolean('is_active').notNull().default(true),
+  notes:             text('notes'),
+  createdAt:         timestamp('created_at').defaultNow().notNull(),
+  updatedAt:         timestamp('updated_at').defaultNow().notNull(),
+})
+
 export const savingsGoals = pgTable('savings_goals', {
   id:                 text('id').primaryKey().$defaultFn(() => nanoid()),
   userId:             text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
@@ -188,6 +209,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   transactions: many(transactions),
   goals:        many(savingsGoals),
   bills:        many(recurringBills),
+  installments: many(installmentPurchases),
 }))
 
 export const couplesRelations = relations(couples, ({ many }) => ({
@@ -196,6 +218,7 @@ export const couplesRelations = relations(couples, ({ many }) => ({
   transactions: many(transactions),
   goals:        many(savingsGoals),
   bills:        many(recurringBills),
+  installments: many(installmentPurchases),
 }))
 
 export const accountsRelations = relations(accounts, ({ one, many }) => ({
@@ -203,6 +226,7 @@ export const accountsRelations = relations(accounts, ({ one, many }) => ({
   couple:       one(couples, { fields: [accounts.coupleId], references: [couples.id] }),
   transactions: many(transactions),
   statements:   many(creditCardStatements),
+  installments: many(installmentPurchases),
 }))
 
 export const creditCardStatementsRelations = relations(creditCardStatements, ({ one, many }) => ({
@@ -243,6 +267,12 @@ export const savingsGoalsRelations = relations(savingsGoals, ({ one, many }) => 
 export const savingsContributionsRelations = relations(savingsContributions, ({ one }) => ({
   goal: one(savingsGoals, { fields: [savingsContributions.goalId], references: [savingsGoals.id] }),
   user: one(users, { fields: [savingsContributions.userId], references: [users.id] }),
+}))
+
+export const installmentPurchasesRelations = relations(installmentPurchases, ({ one }) => ({
+  user:    one(users, { fields: [installmentPurchases.userId], references: [users.id] }),
+  couple:  one(couples, { fields: [installmentPurchases.coupleId], references: [couples.id] }),
+  account: one(accounts, { fields: [installmentPurchases.accountId], references: [accounts.id] }),
 }))
 
 export const notificationTypeEnum = pgEnum('notification_type', [

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import {
   Wallet,
@@ -20,18 +20,23 @@ import {
   LogOut,
   Bell,
   Camera,
+  Sparkles,
+  Check,
+  Copy,
 } from 'lucide-react'
 import { useAuth } from './hooks/useAuth'
 import { useTransactions, useSavingsGoals } from './hooks/useTransactions'
 import { useSavings } from './hooks/useSavings'
 import { useNotifications } from './hooks/useNotifications'
-import { type Context, type Category, type TransactionType, type Transaction, type SavingsGoal, transactionsApi } from './lib/api'
+import { type Context, type Category, type TransactionType, type Transaction, type SavingsGoal, transactionsApi, savingsApi } from './lib/api'
 import AuthScreen from './components/screens/AuthScreen'
 import OnboardingCouple from './components/screens/OnboardingCouple'
 import ResetPasswordScreen from './components/screens/ResetPasswordScreen'
 import BudgetScreen from './components/screens/BudgetScreen'
 import AccountsScreen from './components/screens/AccountsScreen'
+import RecurringBillsScreen from './components/screens/RecurringBillsScreen'
 import { SettingsSkeleton } from './components/Skeleton'
+import { useToast } from './components/Toast'
 
 type Screen = 'dashboard' | 'accounts' | 'savings' | 'budget' | 'recurring' | 'settings'
 
@@ -102,7 +107,8 @@ const ActionModal = ({ isOpen, onClose, context, onCreated, transactionToEdit }:
   onCreated?: () => void
   transactionToEdit?: Transaction | null
 }) => {
-  const { create, edit } = useTransactions({ autoFetch: false })
+  const { create, edit, remove } = useTransactions({ autoFetch: false })
+  const toast = useToast()
   const [amount, setAmount] = useState('')
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState<Category>('other')
@@ -110,6 +116,7 @@ const ActionModal = ({ isOpen, onClose, context, onCreated, transactionToEdit }:
   const [type, setType] = useState<TransactionType>('expense')
   const [loading, setLoading] = useState(false)
   const [date, setDate] = useState('')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   // Load transaction data when editing
   React.useEffect(() => {
@@ -121,6 +128,7 @@ const ActionModal = ({ isOpen, onClose, context, onCreated, transactionToEdit }:
       setTxContext(transactionToEdit.context)
       setType(transactionToEdit.type)
       setDate(transactionToEdit.date.split('T')[0])
+      setShowDeleteConfirm(false)
     } else {
       // Reset for new transaction
       setAmount('')
@@ -129,6 +137,7 @@ const ActionModal = ({ isOpen, onClose, context, onCreated, transactionToEdit }:
       setTxContext(context)
       setType('expense')
       setDate('')
+      setShowDeleteConfirm(false)
     }
   }, [transactionToEdit, context])
 
@@ -145,6 +154,7 @@ const ActionModal = ({ isOpen, onClose, context, onCreated, transactionToEdit }:
           context: txContext,
           date: date ? new Date(date).toISOString() : undefined,
         })
+        toast.showToast('Transação atualizada com sucesso!', 'success')
       } else {
         await create({
           title,
@@ -153,13 +163,32 @@ const ActionModal = ({ isOpen, onClose, context, onCreated, transactionToEdit }:
           category,
           context: txContext,
         })
+        toast.showToast('Transação criada com sucesso!', 'success')
       }
       onCreated?.()
       onClose()
-    } catch (e) {
+    } catch (e: any) {
       console.error(e)
+      toast.showToast(e.message || 'Erro ao salvar transação', 'error')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!transactionToEdit) return
+    setLoading(true)
+    try {
+      await remove(transactionToEdit.id)
+      toast.showToast('Transação excluída com sucesso!', 'success')
+      onCreated?.()
+      onClose()
+    } catch (e: any) {
+      console.error(e)
+      toast.showToast(e.message || 'Erro ao excluir transação', 'error')
+    } finally {
+      setLoading(false)
+      setShowDeleteConfirm(false)
     }
   }
 
@@ -277,17 +306,65 @@ const ActionModal = ({ isOpen, onClose, context, onCreated, transactionToEdit }:
               </div>
             </div>
 
-            <button
-              onClick={handleConfirm}
-              disabled={!amount || !title || loading}
-              className={`w-full py-5 rounded-2xl font-medium text-lg mt-6 transition-all active:scale-95 ${
-                amount && title && !loading
-                  ? txContext === 'individual' ? 'bg-individual text-white' : 'bg-primary text-background'
-                  : 'bg-white/5 text-muted cursor-not-allowed'
-              }`}
-            >
-              {loading ? 'Salvando...' : 'Confirmar'}
-            </button>
+            {/* Delete confirmation section */}
+            {transactionToEdit && !showDeleteConfirm && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="w-full py-4 rounded-2xl font-medium text-lg mt-2 bg-negative/10 text-negative border border-negative/20 hover:bg-negative/20 transition-all active:scale-95"
+              >
+                Excluir Transação
+              </button>
+            )}
+
+            {transactionToEdit && showDeleteConfirm && (
+              <div className="p-4 bg-negative/10 border border-negative/20 rounded-2xl mt-2">
+                <p className="text-sm text-center mb-4">Tem certeza que deseja excluir esta transação?</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={loading}
+                    className="flex-1 py-3 rounded-xl font-medium bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={loading}
+                    className="flex-1 py-3 rounded-xl font-medium bg-negative text-white hover:bg-negative/80 transition-colors"
+                  >
+                    {loading ? 'Excluindo...' : 'Excluir'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!transactionToEdit && (
+              <button
+                onClick={handleConfirm}
+                disabled={!amount || !title || loading}
+                className={`w-full py-5 rounded-2xl font-medium text-lg mt-6 transition-all active:scale-95 ${
+                  amount && title && !loading
+                    ? txContext === 'individual' ? 'bg-individual text-white' : 'bg-primary text-background'
+                    : 'bg-white/5 text-muted cursor-not-allowed'
+                }`}
+              >
+                {loading ? 'Salvando...' : 'Confirmar'}
+              </button>
+            )}
+
+            {transactionToEdit && !showDeleteConfirm && (
+              <button
+                onClick={handleConfirm}
+                disabled={!amount || !title || loading}
+                className={`w-full py-5 rounded-2xl font-medium text-lg mt-2 transition-all active:scale-95 ${
+                  amount && title && !loading
+                    ? txContext === 'individual' ? 'bg-individual text-white' : 'bg-primary text-background'
+                    : 'bg-white/5 text-muted cursor-not-allowed'
+                }`}
+              >
+                {loading ? 'Salvando...' : 'Salvar Alterações'}
+              </button>
+            )}
           </motion.div>
         </>
       )}
@@ -522,11 +599,14 @@ const Dashboard = ({ context, isIndividualVisibleToPartner, openEditModal }: {
 }
 
 const SavingsScreen = ({ context }: { context: Context }) => {
-  const { goals, loading, contributeToGoal, updateGoal, deleteGoal, checkAndResetGoal, getRecurrenceInfo } = useSavings({ context })
+  const { goals, loading, createGoal, contributeToGoal, updateGoal, deleteGoal, checkAndResetGoal, getRecurrenceInfo } = useSavings({ context })
   const [editingGoal, setEditingGoal] = useState<SavingsGoal | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedGoalDetails, setSelectedGoalDetails] = useState<{ goal: SavingsGoal; contributions: any[] } | null>(null)
   const [loadingContributions, setLoadingContributions] = useState(false)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [loadingCreate, setLoadingCreate] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const accentColor = context === 'individual' ? 'var(--color-individual)' : 'var(--color-primary)'
 
   const handleEdit = (goal: SavingsGoal) => {
@@ -536,14 +616,37 @@ const SavingsScreen = ({ context }: { context: Context }) => {
 
   const handleDelete = async (goal: SavingsGoal) => {
     if (confirm(`Tem certeza que deseja excluir a meta "${goal.title}"?`)) {
-      await remove(goal.id)
+      await deleteGoal(goal.id)
+    }
+  }
+
+  const handleCreate = async (goalData: {
+    title: string
+    targetAmount: number
+    context: Context
+    emoji?: string
+    deadline?: string
+    isRecurring?: boolean
+    frequency?: 'daily' | 'weekly' | 'monthly' | 'yearly'
+    nextTargetDate?: string
+  }) => {
+    setLoadingCreate(true)
+    setError(null)
+    try {
+      await createGoal(goalData)
+      setIsCreateModalOpen(false)
+    } catch (err: any) {
+      console.error(err)
+      setError(err.message || 'Erro ao criar meta')
+    } finally {
+      setLoadingCreate(false)
     }
   }
 
   const handleViewDetails = async (goal: SavingsGoal) => {
     setLoadingContributions(true)
     try {
-      const contributionsResponse = await getContributions(goal.id)
+      const contributionsResponse = await savingsApi.getContributions(goal.id)
       setSelectedGoalDetails({ goal, contributions: contributionsResponse.data })
     } catch (error) {
       console.error('Erro ao carregar contribuições:', error)
@@ -578,9 +681,9 @@ const SavingsScreen = ({ context }: { context: Context }) => {
       ) : (
         <div className="space-y-6">
           {goals.map(goal => {
-            const current = parseFloat(goal.currentAmount)
-            const target = parseFloat(goal.targetAmount)
-            const pct = Math.min((current / target) * 100, 100)
+            const current = parseFloat(goal.currentAmount) || 0
+            const target = parseFloat(goal.targetAmount) || 1
+            const pct = target > 0 ? Math.min((current / target) * 100, 100) : 0
 
             return (
               <div key={goal.id} className="p-6 bg-surface rounded-[32px] border border-white/5 space-y-6">
@@ -592,7 +695,7 @@ const SavingsScreen = ({ context }: { context: Context }) => {
                     <div>
                       <p className="font-medium text-lg">{goal.title}</p>
                       <p className="text-xs text-muted">
-                        Meta: R${parseFloat(goal.targetAmount).toLocaleString('pt-BR')}
+                        Meta: R${(parseFloat(goal.targetAmount) || 0).toLocaleString('pt-BR')}
                         {goal.context === 'joint' && <span className="ml-1 text-primary">• conjunto</span>}
                         {goal.isRecurring && <span className="ml-1 text-positive">• recorrente</span>}
                       </p>
@@ -643,19 +746,19 @@ const SavingsScreen = ({ context }: { context: Context }) => {
                 {goal.status !== 'completed' && (
                   <div className="flex gap-2">
                     <button
-                      onClick={() => contribute(goal.id, 10)}
+                      onClick={() => contributeToGoal(goal.id, 10)}
                       className="flex-1 py-2 rounded-xl border border-white/10 text-muted text-xs hover:bg-white/5 transition-colors"
                     >
                       + R$10
                     </button>
                     <button
-                      onClick={() => contribute(goal.id, 50)}
+                      onClick={() => contributeToGoal(goal.id, 50)}
                       className="flex-1 py-2 rounded-xl border border-white/10 text-muted text-xs hover:bg-white/5 transition-colors"
                     >
                       + R$50
                     </button>
                     <button
-                      onClick={() => contribute(goal.id, 100)}
+                      onClick={() => contributeToGoal(goal.id, 100)}
                       className="flex-1 py-2 rounded-xl border border-white/10 text-muted text-xs hover:bg-white/5 transition-colors"
                     >
                       + R$100
@@ -668,7 +771,7 @@ const SavingsScreen = ({ context }: { context: Context }) => {
                     🎉 Meta concluída!
                     {goal.isRecurring && (
                       <button
-                        onClick={() => checkAndReset(goal.id)}
+                        onClick={() => checkAndResetGoal(goal.id)}
                         className="block mt-1 text-xs text-primary hover:underline"
                       >
                         Reiniciar meta
@@ -682,7 +785,10 @@ const SavingsScreen = ({ context }: { context: Context }) => {
         </div>
       )}
 
-      <button className="w-full py-6 rounded-[24px] border border-dashed border-white/10 flex flex-col items-center justify-center gap-3 text-muted hover:bg-white/5 transition-colors">
+      <button
+        onClick={() => setIsCreateModalOpen(true)}
+        className="w-full py-6 rounded-[24px] border border-dashed border-white/10 flex flex-col items-center justify-center gap-3 text-muted hover:bg-white/5 transition-colors"
+      >
         <div className="w-12 h-12 rounded-full border border-dashed border-white/20 flex items-center justify-center">
           <Plus size={24} />
         </div>
@@ -715,10 +821,45 @@ const SavingsScreen = ({ context }: { context: Context }) => {
               <EditGoalForm
                 goal={editingGoal}
                 onSave={async (data) => {
-                  await edit(editingGoal.id, data)
+                  await updateGoal(editingGoal.id, data)
                   setIsModalOpen(false)
                 }}
                 onClose={() => setIsModalOpen(false)}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Create Goal Modal */}
+      <AnimatePresence>
+        {isCreateModalOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => { setIsCreateModalOpen(false); setError(null) }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60]"
+            />
+            <motion.div
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed bottom-0 left-0 right-0 h-[85vh] bg-surface rounded-t-[32px] border-t border-white/10 z-[70] p-8 flex flex-col"
+            >
+              <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-8" />
+
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-xl sm:text-2xl font-headings font-semibold">Criar Nova Meta</h2>
+                <button onClick={() => { setIsCreateModalOpen(false); setError(null) }} className="p-2 bg-white/5 rounded-full text-muted">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <CreateGoalForm
+                context={context}
+                onSave={handleCreate}
+                onClose={() => { setIsCreateModalOpen(false); setError(null) }}
+                loading={loadingCreate}
+                error={error}
               />
             </motion.div>
           </>
@@ -771,15 +912,17 @@ const SavingsScreen = ({ context }: { context: Context }) => {
                     <div className="flex justify-between text-sm">
                       <span className="text-muted">Progresso:</span>
                       <span>
-                        R${parseFloat(selectedGoalDetails.goal.currentAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} /
-                        R${parseFloat(selectedGoalDetails.goal.targetAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        R${(parseFloat(selectedGoalDetails.goal.currentAmount) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} /
+                        R${(parseFloat(selectedGoalDetails.goal.targetAmount) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
                     <div className="relative h-2 w-full bg-white/10 rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full"
                         style={{
-                          width: `${Math.min((parseFloat(selectedGoalDetails.goal.currentAmount) / parseFloat(selectedGoalDetails.goal.targetAmount)) * 100, 100)}%`,
+                          width: `${selectedGoalDetails.goal.targetAmount && parseFloat(selectedGoalDetails.goal.targetAmount) > 0
+                            ? Math.min(((parseFloat(selectedGoalDetails.goal.currentAmount) || 0) / parseFloat(selectedGoalDetails.goal.targetAmount)) * 100, 100)
+                            : 0}%`,
                           backgroundColor: accentColor
                         }}
                       />
@@ -808,7 +951,7 @@ const SavingsScreen = ({ context }: { context: Context }) => {
                         <span className="text-muted">Valor original:</span>
                         <span>
                           R${selectedGoalDetails.goal.originalTargetAmount
-                            ? parseFloat(selectedGoalDetails.goal.originalTargetAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+                            ? (parseFloat(selectedGoalDetails.goal.originalTargetAmount) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
                             : 'N/A'}
                         </span>
                       </div>
@@ -860,6 +1003,166 @@ const SavingsScreen = ({ context }: { context: Context }) => {
         )}
       </AnimatePresence>
     </motion.div>
+  )
+}
+
+const CreateGoalForm = ({ context, onSave, onClose, loading, error }: {
+  context: Context
+  onSave: (data: {
+    title: string
+    targetAmount: number
+    context: Context
+    emoji?: string
+    deadline?: string
+    isRecurring?: boolean
+    frequency?: 'daily' | 'weekly' | 'monthly' | 'yearly'
+    nextTargetDate?: string
+  }) => void
+  onClose: () => void
+  loading: boolean
+  error: string | null
+}) => {
+  const [title, setTitle] = useState('')
+  const [targetAmount, setTargetAmount] = useState('')
+  const [emoji, setEmoji] = useState('🎯')
+  const [deadline, setDeadline] = useState('')
+  const [isRecurring, setIsRecurring] = useState(false)
+  const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly')
+
+  const titleInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (titleInputRef.current) {
+      titleInputRef.current.focus()
+    }
+  }, [])
+
+  const handleSubmit = async () => {
+    if (!title || !targetAmount) return
+    try {
+      await onSave({
+        title,
+        targetAmount: parseFloat(targetAmount),
+        context,
+        emoji,
+        deadline: deadline ? new Date(deadline).toISOString() : undefined,
+        isRecurring,
+        frequency: isRecurring ? frequency : undefined,
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto space-y-6">
+      {error && (
+        <div className="p-4 bg-negative/10 border border-negative/20 rounded-2xl">
+          <p className="text-negative text-sm">{error}</p>
+        </div>
+      )}
+
+      <div>
+        <label className="text-muted text-xs uppercase tracking-widest block mb-2">Título</label>
+        <input
+          ref={titleInputRef}
+          type="text"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="Ex: Viagem Europa"
+          className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-5 focus:outline-none focus:border-primary/30 placeholder:text-muted/40 text-sm"
+        />
+      </div>
+
+      <div>
+        <label className="text-muted text-xs uppercase tracking-widest block mb-2">Valor Alvo</label>
+        <div className="flex items-center gap-2">
+          <span className="text-xl sm:text-2xl font-headings text-muted">R$</span>
+          <input
+            type="number"
+            value={targetAmount}
+            onChange={e => setTargetAmount(e.target.value)}
+            placeholder="0,00"
+            className="bg-transparent text-2xl sm:text-3xl font-headings w-full focus:outline-none placeholder:text-white/10"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="text-muted text-xs uppercase tracking-widest block mb-2">Emoji</label>
+        <input
+          type="text"
+          value={emoji}
+          onChange={e => setEmoji(e.target.value)}
+          maxLength={4}
+          className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-5 focus:outline-none focus:border-primary/30 placeholder:text-muted/40 text-sm text-center text-2xl"
+        />
+      </div>
+
+      <div>
+        <label className="text-muted text-xs uppercase tracking-widest block mb-2">Prazo (opcional)</label>
+        <input
+          type="date"
+          value={deadline}
+          onChange={e => setDeadline(e.target.value)}
+          className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-5 focus:outline-none focus:border-primary/30 placeholder:text-muted/40 text-sm text-white"
+        />
+      </div>
+
+      {/* Recurring Goal Options */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <label className="text-muted text-xs uppercase tracking-widest">Meta Recorrente</label>
+          <button
+            onClick={() => setIsRecurring(!isRecurring)}
+            className={`w-14 h-8 rounded-full relative transition-colors duration-300 ${isRecurring ? 'bg-positive' : 'bg-white/10'}`}
+            role="switch"
+            aria-checked={isRecurring}
+          >
+            <motion.div
+              animate={{ x: isRecurring ? 24 : 4 }}
+              className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-lg"
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+
+        {isRecurring && (
+          <div className="space-y-3 p-4 bg-white/5 rounded-2xl">
+            <div>
+              <label className="text-muted text-xs uppercase tracking-widest block mb-2">Frequência</label>
+              <div className="grid grid-cols-2 gap-2">
+                {(['daily', 'weekly', 'monthly', 'yearly'] as const).map(freq => (
+                  <button
+                    key={freq}
+                    onClick={() => setFrequency(freq)}
+                    className={`py-2 rounded-xl text-xs capitalize ${
+                      frequency === freq
+                        ? 'bg-primary text-background'
+                        : 'bg-white/5 text-muted hover:bg-white/10'
+                    }`}
+                  >
+                    {freq}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <button
+        onClick={handleSubmit}
+        disabled={!title || !targetAmount || loading}
+        className={`w-full py-5 rounded-2xl font-medium text-lg transition-all active:scale-95 ${
+          title && targetAmount && !loading
+            ? context === 'individual' ? 'bg-individual text-white' : 'bg-primary text-background'
+            : 'bg-white/5 text-muted cursor-not-allowed'
+        }`}
+      >
+        {loading ? 'Criando...' : 'Criar Meta'}
+      </button>
+    </div>
   )
 }
 
@@ -1007,7 +1310,7 @@ const SettingsScreen = ({
   isIndividualVisibleToPartner: boolean
   setIsIndividualVisibleToPartner: (v: boolean) => void
 }) => {
-  const { user, loading: authLoading, logout, isInCouple, updateProfile, deleteAccount, updatePreferences } = useAuth()
+  const { user, loading: authLoading, logout, isInCouple, updateProfile, deleteAccount, updatePreferences, createCouple, joinCouple } = useAuth()
   const [isEditingName, setIsEditingName] = useState(false)
   const [isEditingEmail, setIsEditingEmail] = useState(false)
   const [isEditingAvatar, setIsEditingAvatar] = useState(false)
@@ -1021,12 +1324,21 @@ const SettingsScreen = ({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pendingEmail, setPendingEmail] = useState('')
-  
+
   // Preferences state
   const [theme, setTheme] = useState(user?.theme || 'dark')
   const [language, setLanguage] = useState(user?.language || 'pt-BR')
   const [notifications, setNotifications] = useState(user?.notifications ?? true)
   const [preferencesLoading, setPreferencesLoading] = useState(false)
+
+  // Couple management state
+  const [showCoupleModal, setShowCoupleModal] = useState<'create' | 'join' | null>(null)
+  const [coupleCode, setCoupleCode] = useState('')
+  const [joinCode, setJoinCode] = useState('')
+  const [coupleLoading, setCoupleLoading] = useState(false)
+  const [coupleError, setCoupleError] = useState<string | null>(null)
+  const [copiedCode, setCopiedCode] = useState(false)
+  const toast = useToast()
 
   // Show skeleton while user data is loading
   if (authLoading || !user) {
@@ -1113,6 +1425,49 @@ const SettingsScreen = ({
     } finally {
       setPreferencesLoading(false)
     }
+  }
+
+  const handleCreateCouple = async () => {
+    setCoupleLoading(true)
+    setCoupleError(null)
+    try {
+      const code = await createCouple()
+      setCoupleCode(code)
+      toast.showToast('Casal criado com sucesso!', 'success')
+    } catch (e: any) {
+      setCoupleError(e.message || 'Erro ao criar casal')
+    } finally {
+      setCoupleLoading(false)
+    }
+  }
+
+  const handleJoinCouple = async () => {
+    if (!joinCode.trim()) return
+    setCoupleLoading(true)
+    setCoupleError(null)
+    try {
+      await joinCouple(joinCode.trim())
+      toast.showToast('Você entrou no casal!', 'success')
+      setShowCoupleModal(null)
+      setJoinCode('')
+    } catch (e: any) {
+      setCoupleError(
+        e.message === 'Invalid invite code'
+          ? 'Código inválido. Verifique com seu parceiro(a).'
+          : e.message === 'Couple is full'
+          ? 'Este casal já está completo.'
+          : 'Erro ao entrar no casal.'
+      )
+    } finally {
+      setCoupleLoading(false)
+    }
+  }
+
+  const copyCoupleCode = () => {
+    navigator.clipboard.writeText(coupleCode)
+    setCopiedCode(true)
+    toast.showToast('Código copiado!', 'success')
+    setTimeout(() => setCopiedCode(false), 2000)
   }
 
   return (
@@ -1260,6 +1615,48 @@ const SettingsScreen = ({
         {error && (
           <div className="p-3 bg-negative/10 border border-negative/20 rounded-xl text-negative text-sm text-center" role="alert" aria-live="assertive">
             {error}
+          </div>
+        )}
+      </div>
+
+      {/* Couple Section */}
+      <div className="p-5 sm:p-6 bg-surface rounded-[32px] border border-white/5 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <Users size={20} className="text-primary" />
+          </div>
+          <div>
+            <p className="font-medium">Casal</p>
+            <p className="text-xs text-muted">
+              {isInCouple ? 'Conectado ao seu parceiro(a)' : 'Gerencie sua conexão de casal'}
+            </p>
+          </div>
+        </div>
+
+        {isInCouple ? (
+          <div className="p-3 bg-positive/10 border border-positive/20 rounded-xl">
+            <p className="text-positive text-sm font-medium">✓ Você está conectado(a)</p>
+            <p className="text-xs text-muted mt-1">Compartilhe finanças com seu parceiro(a) no modo conjunto.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-xs text-muted">
+              Conecte-se ao seu parceiro(a) para compartilhar finanças no modo conjunto.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setShowCoupleModal('create')}
+                className="py-3 px-4 bg-primary/10 border border-primary/20 rounded-xl text-sm font-medium text-white hover:bg-primary/20 transition-colors"
+              >
+                Criar Casal
+              </button>
+              <button
+                onClick={() => setShowCoupleModal('join')}
+                className="py-3 px-4 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-white hover:bg-white/10 transition-colors"
+              >
+                Entrar com Código
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -1556,6 +1953,120 @@ const SettingsScreen = ({
           </>
         )}
       </AnimatePresence>
+
+      {/* Couple Modal */}
+      <AnimatePresence>
+        {showCoupleModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => { setShowCoupleModal(null); setCoupleCode(''); setJoinCode(''); setCoupleError(null) }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60]"
+            />
+            <motion.div
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed bottom-0 left-0 right-0 h-auto max-h-[80vh] bg-surface rounded-t-[32px] border-t border-white/10 z-[70] p-8"
+            >
+              <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-6" />
+
+              {showCoupleModal === 'create' && !coupleCode ? (
+                <>
+                  <h3 className="text-xl font-headings font-semibold mb-2">Criar Casal</h3>
+                  <p className="text-muted text-sm mb-6">Crie um código para compartilhar com seu parceiro(a).</p>
+
+                  <button
+                    onClick={handleCreateCouple}
+                    disabled={coupleLoading}
+                    className="w-full py-4 bg-primary rounded-2xl font-medium text-background flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+                  >
+                    {coupleLoading ? (
+                      <div className="w-5 h-5 border-2 border-background/30 border-t-background rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <Sparkles size={18} />
+                        <span>Gerar Código</span>
+                      </>
+                    )}
+                  </button>
+                </>
+              ) : showCoupleModal === 'create' && coupleCode ? (
+                <>
+                  <h3 className="text-xl font-headings font-semibold mb-2">Casal Criado!</h3>
+                  <p className="text-muted text-sm mb-6">Compartilhe este código com seu parceiro(a).</p>
+
+                  <div className="p-6 bg-white/5 border border-white/10 rounded-2xl text-center mb-6">
+                    <p className="text-muted text-xs uppercase tracking-widest mb-2">Código de convite</p>
+                    <p className="text-3xl font-headings font-semibold tracking-widest text-primary">{coupleCode}</p>
+                  </div>
+
+                  <button
+                    onClick={copyCoupleCode}
+                    className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl font-medium flex items-center justify-center gap-2 hover:bg-white/10 transition-colors"
+                  >
+                    {copiedCode ? (
+                      <>
+                        <Check size={18} className="text-positive" />
+                        <span className="text-positive">Copiado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={18} className="text-muted" />
+                        <span>Copiar código</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => { setShowCoupleModal(null); setCoupleCode('') }}
+                    className="w-full mt-3 py-3 text-muted text-sm hover:text-white transition-colors"
+                  >
+                    Fechar
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-xl font-headings font-semibold mb-2">Entrar no Casal</h3>
+                  <p className="text-muted text-sm mb-6">Cole o código que seu parceiro(a) compartilhou.</p>
+
+                  <input
+                    type="text"
+                    placeholder="Ex: aB3xY7kLmN"
+                    value={joinCode}
+                    onChange={(e) => { setJoinCode(e.target.value); setCoupleError(null) }}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 text-white placeholder:text-muted/40 focus:outline-none focus:border-primary/30 text-center text-lg font-headings tracking-widest mb-4"
+                    autoFocus
+                  />
+
+                  {coupleError && (
+                    <p className="text-negative text-sm text-center mb-4">{coupleError}</p>
+                  )}
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => { setShowCoupleModal(null); setJoinCode(''); setCoupleError(null) }}
+                      className="flex-1 py-4 rounded-2xl font-medium bg-white/5 text-muted hover:bg-white/10 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleJoinCouple}
+                      disabled={!joinCode.trim() || coupleLoading}
+                      className="flex-1 py-4 rounded-2xl font-medium bg-primary text-background disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+                    >
+                      {coupleLoading ? (
+                        <div className="w-5 h-5 border-2 border-background/30 border-t-background rounded-full animate-spin mx-auto" />
+                      ) : (
+                        'Entrar'
+                      )}
+                    </button>
+                  </div>
+                </>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
@@ -1613,7 +2124,7 @@ export default function App() {
 
   const navItems: { screen: Screen; icon: React.ReactNode }[] = [
     { screen: 'dashboard', icon: <LayoutDashboard size={24} /> },
-    { screen: 'accounts',  icon: <CreditCard size={24} /> },
+    { screen: 'recurring', icon: <RefreshCw size={24} /> },
     { screen: 'budget',    icon: <Wallet size={24} /> },
     { screen: 'savings',   icon: <TrendingUp size={24} /> },
     { screen: 'settings',  icon: <ShieldCheck size={24} /> },
@@ -1745,14 +2256,11 @@ export default function App() {
               setIsIndividualVisibleToPartner={setIsIndividualVisibleToPartner}
             />
           )}
+          {activeScreen === 'recurring' && (
+            <RecurringBillsScreen key={`recurring-${refreshKey}`} context={context} />
+          )}
           {activeScreen === 'accounts' && (
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="pt-28 pb-28 px-4 sm:px-6 text-center text-muted"
-            >
-              <p className="text-2xl sm:text-3xl font-headings mb-4">Contas</p>
-              <p className="text-sm">Em breve — conecte suas contas bancárias.</p>
-            </motion.div>
+            <AccountsScreen key={`accounts-${refreshKey}`} />
           )}
         </AnimatePresence>
       </main>

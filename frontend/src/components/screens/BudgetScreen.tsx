@@ -44,6 +44,7 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
     fetchBudget,
     calculateSpent,
     clearBudget,
+    initialLoadDone,
   } = useBudget({ context, autoFetch: false })
   
   const [spentTotal, setSpentTotal] = useState(0)
@@ -93,8 +94,8 @@ export default function BudgetScreen({ context }: BudgetScreenProps) {
     loadBudgetData()
   }, [preferences.selectedMonth, preferences.selectedYear, context])
 
-  // Use prefsLoading for initial skeleton loading
-  const isLoading = prefsLoading || loading
+  // Use prefsLoading for initial skeleton loading, and check if initial load is done
+  const isLoading = prefsLoading || !initialLoadDone || loading
 
   const handlePrevMonth = () => {
     prevMonth()

@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const token = localStorage.getItem('session_token')
+    console.log('useAuth: Token found:', !!token)
     if (token) {
       refreshUser().finally(() => setLoading(false))
     } else {

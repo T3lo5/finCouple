@@ -65,6 +65,27 @@ const AccountsScreen = () => {
     }
   };
 
+  const handleUpdateAccount = async (id: string, formData: {
+    name: string;
+    institution: string;
+    type: AccountType;
+    balance: number;
+    currency: string;
+    lastFour: string;
+    context: 'individual' | 'joint';
+    creditLimit?: number;
+    dueDate?: string;
+    closingDate?: string;
+  }) => {
+    try {
+      const response = await accountsApi.update(id, formData);
+      setAccounts(prev => prev.map(acc => acc.id === id ? response.data : acc));
+      setIsModalOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao atualizar conta');
+    }
+  };
+
   const handleUpdateBalance = async (accountId: string) => {
     try {
       const balance = parseFloat(newBalances[accountId]);
@@ -319,7 +340,7 @@ const AccountsScreen = () => {
               setIsModalOpen(false);
               setEditingAccount(null);
             }}
-            onSubmit={editingAccount ? handleUpdateAccount : handleCreateAccount}
+            onSubmit={editingAccount ? (data) => handleUpdateAccount(editingAccount.id, data) : handleCreateAccount}
           />
         )}
       </AnimatePresence>

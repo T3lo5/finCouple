@@ -220,7 +220,11 @@ export const transactionsApi = {
     page?: number
     limit?: number
   }) => {
-    const qs = new URLSearchParams(params as any).toString()
+    // Filter out undefined values to avoid sending "undefined" as string
+    const filteredParams = Object.fromEntries(
+      Object.entries(params || {}).filter(([, v]) => v !== undefined)
+    )
+    const qs = new URLSearchParams(filteredParams as any).toString()
     return request<PaginatedResponse<Transaction>>(`/api/transactions${qs ? `?${qs}` : ''}`)
   },
 
@@ -278,7 +282,11 @@ export const transactionsApi = {
     to?: string
   }) => {
     const token = localStorage.getItem('session_token')
-    const qs = params ? new URLSearchParams(params as any).toString() : ''
+    // Filter out undefined values to avoid sending "undefined" as string
+    const filteredParams = Object.fromEntries(
+      Object.entries(params || {}).filter(([, v]) => v !== undefined)
+    )
+    const qs = Object.keys(filteredParams).length > 0 ? new URLSearchParams(filteredParams as any).toString() : ''
     const url = `${BASE_URL}/api/transactions/export${qs ? `?${qs}` : ''}`
 
     const res = await fetch(url, {
@@ -519,7 +527,11 @@ export const accountsApi = {
       month?: number
       year?: number
     }) => {
-      const qs = new URLSearchParams(params as any).toString()
+      // Filter out undefined values to avoid sending "undefined" as string
+      const filteredParams = Object.fromEntries(
+        Object.entries(params || {}).filter(([, v]) => v !== undefined)
+      )
+      const qs = Object.keys(filteredParams).length > 0 ? new URLSearchParams(filteredParams as any).toString() : ''
       return request<{ data: CreditCardStatement[] }>(`/api/credit-card-statements${qs ? `?${qs}` : ''}`)
     },
 
@@ -740,7 +752,11 @@ export const budgetApi = {
     }),
 
   history: (params?: { limit?: number; offset?: number; year?: number }) => {
-    const qs = params ? new URLSearchParams(params as any).toString() : ''
+    // Filter out undefined values to avoid sending "undefined" as string
+    const filteredParams = Object.fromEntries(
+      Object.entries(params || {}).filter(([, v]) => v !== undefined)
+    )
+    const qs = Object.keys(filteredParams).length > 0 ? new URLSearchParams(filteredParams as any).toString() : ''
     return request<{ data: Array<{ budget: Budget; categories: BudgetCategory[]; spentTotal: number; remainingTotal: number; percentageUsed: number }>; meta: { limit: number; offset: number; year?: number; total: number } }>(`/api/budget/history${qs ? `?${qs}` : ''}`)
   },
 
@@ -818,5 +834,153 @@ export const couplesApi = {
     request<{ message: string; couple: { id: string; name: string } }>('/api/couples/accept-invite', {
       method: 'POST',
       body: JSON.stringify({ token }),
+    }),
+}
+
+// API para contas recorrentes
+export interface RecurringBill {
+  id:          string
+  userId:      string
+  coupleId:    string | null
+  title:       string
+  amount:      string
+  category:    Category
+  context:     Context
+  frequency:   'daily' | 'weekly' | 'monthly' | 'yearly'
+  nextDueDate: string
+  isActive:    boolean
+  autoPay:     boolean
+  createdAt:   string
+  updatedAt:   string
+}
+
+export const recurringApi = {
+  list: (context?: Context, isActive?: boolean) => {
+    const params = new URLSearchParams()
+    if (context) params.append('context', context)
+    if (isActive !== undefined) params.append('isActive', String(isActive))
+    const qs = params.toString()
+    return request<{ data: RecurringBill[] }>(`/api/recurring${qs ? `?${qs}` : ''}`)
+  },
+
+  get: (id: string) =>
+    request<{ data: RecurringBill }>(`/api/recurring/${id}`),
+
+  create: (body: {
+    title: string
+    amount: number
+    category?: Category
+    context: Context
+    frequency?: 'daily' | 'weekly' | 'monthly' | 'yearly'
+    nextDueDate?: string
+    autoPay?: boolean
+  }) =>
+    request<{ data: RecurringBill }>('/api/recurring', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  update: (id: string, body: Partial<{
+    title: string
+    amount: number
+    category: Category
+    context: Context
+    frequency: 'daily' | 'weekly' | 'monthly' | 'yearly'
+    nextDueDate: string
+    autoPay: boolean
+  }>) =>
+    request<{ data: RecurringBill }>(`/api/recurring/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  delete: (id: string) =>
+    request<{ ok: boolean }>(`/api/recurring/${id}`, { method: 'DELETE' }),
+
+  toggleActive: (id: string) =>
+    request<{ data: RecurringBill }>(`/api/recurring/${id}/toggle-active`, {
+      method: 'PATCH',
+    }),
+}
+
+// API para compras parceladas
+export interface InstallmentPurchase {
+  id:                string
+  userId:            string
+  coupleId:          string | null
+  accountId:         string | null
+  title:             string
+  totalAmount:       string
+  installmentCount:  number
+  currentInstallment: number
+  installmentAmount: string
+  startDate:         string
+  nextDueDate:       string
+  category:          Category
+  context:           Context
+  isActive:          boolean
+  notes:             string | null
+  createdAt:         string
+  updatedAt:         string
+}
+
+export const installmentsApi = {
+  list: (context?: Context, isActive?: boolean) => {
+    const params = new URLSearchParams()
+    if (context) params.append('context', context)
+    if (isActive !== undefined) params.append('isActive', String(isActive))
+    const qs = params.toString()
+    return request<{ data: InstallmentPurchase[] }>(`/api/installments${qs ? `?${qs}` : ''}`)
+  },
+
+  get: (id: string) =>
+    request<{ data: InstallmentPurchase }>(`/api/installments/${id}`),
+
+  create: (body: {
+    title: string
+    totalAmount: number
+    installmentCount: number
+    installmentAmount: number
+    startDate: string
+    nextDueDate: string
+    category?: Category
+    context: Context
+    accountId?: string
+    notes?: string
+  }) =>
+    request<{ data: InstallmentPurchase }>('/api/installments', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  update: (id: string, body: Partial<{
+    title: string
+    totalAmount: number
+    installmentCount: number
+    installmentAmount: number
+    startDate: string
+    nextDueDate: string
+    category: Category
+    context: Context
+    accountId: string | null
+    notes: string | null
+    isActive: boolean
+  }>) =>
+    request<{ data: InstallmentPurchase }>(`/api/installments/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  delete: (id: string) =>
+    request<{ ok: boolean }>(`/api/installments/${id}`, { method: 'DELETE' }),
+
+  advance: (id: string) =>
+    request<{ data: InstallmentPurchase; completed: boolean }>(`/api/installments/${id}/advance`, {
+      method: 'PATCH',
+    }),
+
+  toggleActive: (id: string) =>
+    request<{ data: InstallmentPurchase }>(`/api/installments/${id}/toggle-active`, {
+      method: 'PATCH',
     }),
 }

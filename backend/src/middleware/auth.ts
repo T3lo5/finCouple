@@ -8,6 +8,7 @@ export type AuthUser = {
   email: string
   name: string
   coupleId: string | null
+  passwordHash: string
 }
 
 declare module 'hono' {
@@ -36,7 +37,7 @@ export const requireAuth = createMiddleware(async (c, next) => {
   }
 
   const [user] = await db
-    .select({ id: users.id, email: users.email, name: users.name, coupleId: users.coupleId })
+    .select({ id: users.id, email: users.email, name: users.name, coupleId: users.coupleId, passwordHash: users.passwordHash })
     .from(users)
     .where(eq(users.id, session.userId))
     .limit(1)

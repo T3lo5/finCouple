@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { X, Plus, Minus, AlertCircle, Check, Utensils, LayoutDashboard, Car, Receipt, ShieldCheck, Settings, CreditCard, ArrowDownLeft, TrendingUp } from 'lucide-react'
-import { type Context, type Budget, type BudgetCategory, budgetApi, type Category } from '../../lib/api'
+import { type Context, type Budget, type BudgetCategory, budgetApi, type Category } from '../lib/api'
 
 interface BudgetModalProps {
   isOpen: boolean
@@ -140,7 +140,7 @@ export default function BudgetModal({
       const categoriesData = categoryLimits
         .filter(cat => cat.enabled && cat.limitAmount && parseFloat(cat.limitAmount) > 0)
         .map(cat => ({
-          category: cat.category,
+          category: cat.category as Category,
           limitAmount: parseFloat(cat.limitAmount),
           alertThreshold: alertsEnabled ? cat.alertThreshold : undefined,
         }))

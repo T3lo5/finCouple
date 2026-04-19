@@ -10,6 +10,7 @@ import creditCardStatementsRoutes from './routes/credit-card-statements'
 import bankReconciliationRoutes from './routes/bank-reconciliation'
 import importTransactionsRoutes from './routes/import-transactions'
 import recurringRoutes from './routes/recurring'
+import installmentRoutes from './routes/installments'
 import notificationRoutes from './routes/notifications'
 import budgetRoutes from './routes/budget'
 import coupleRoutes from './routes/couples'
@@ -19,7 +20,7 @@ const app = new Hono()
 app.use('*', logger())
 app.use('*', prettyJSON())
 app.use('*', cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: '*', // Allow all origins for testing
   credentials: true,
   allowHeaders: ['Content-Type', 'Authorization'],
   allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -35,6 +36,7 @@ app.route('/api/credit-card-statements', creditCardStatementsRoutes)
 app.route('/api/bank-reconciliation', bankReconciliationRoutes)
 app.route('/api/import-transactions', importTransactionsRoutes)
 app.route('/api/recurring', recurringRoutes)
+app.route('/api/installments', installmentRoutes)
 app.route('/api/notifications', notificationRoutes)
 app.route('/api/budget', budgetRoutes)
 app.route('/api/couples', coupleRoutes)

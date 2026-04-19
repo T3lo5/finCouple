@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { db } from '../db/client'
-import { transactions, accounts } from '../db/schema'
+import { transactions, accounts, transactionTags, transactionTagMappings, transactionAttachments } from '../db/schema'
 import { eq, and, or, desc, gte, lte, sql } from 'drizzle-orm'
 import { requireAuth } from '../middleware/auth'
 import { nanoid } from 'nanoid'
@@ -246,15 +246,18 @@ router.post('/', zValidator('json', createSchema), async (c) => {
   }
 
   // Obter as tags associadas para retornar na resposta
-  const tags = await db
-    .select({
-      id: transactionTags.id,
-      name: transactionTags.name,
-      color: transactionTags.color,
-    })
-    .from(transactionTags)
-    .innerJoin(transactionTagMappings, eq(transactionTagMappings.tagId, transactionTags.id))
-    .where(eq(transactionTagMappings.transactionId, tx.id))
+  let tags: { id: string; name: string; color: string }[] = []
+  if (body.tagIds && body.tagIds.length > 0) {
+    tags = await db
+      .select({
+        id: transactionTags.id,
+        name: transactionTags.name,
+        color: transactionTags.color,
+      })
+      .from(transactionTags)
+      .innerJoin(transactionTagMappings, eq(transactionTagMappings.tagId, transactionTags.id))
+      .where(eq(transactionTagMappings.transactionId, tx.id))
+  }
 
   return c.json({ data: { ...tx, tags, attachments: [] } }, 201)
 })
@@ -796,7 +799,6 @@ router.get('/:id/tags', async (c) => {
 })
 
 // Rota para upload de anexos/comprovantes
-import { multipart } from 'hono/multipart'
 
 // Configurar pasta para armazenar anexos
 const ATTACHMENTS_DIR = './uploads/attachments'
@@ -806,7 +808,7 @@ if (!existsSync(ATTACHMENTS_DIR)) {
   mkdirSync(ATTACHMENTS_DIR, { recursive: true })
 }
 
-router.post('/:id/attachments', multipart(), async (c) => {
+router.post('/:id/attachments', async (c) => {
   const user = c.get('user')
   const { id } = c.req.param()
 
