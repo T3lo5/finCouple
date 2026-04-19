@@ -1,9 +1,0 @@
-{
-    "profile": "openai",
-    "env": {
-        "OPENAI_BASE_URL": "https://www.dialagram.me/router/claude",
-        "OPENAI_MODEL": "qwen-3.6-plus-thinking",
-        "OPENAI_API_KEY": "dgr_live_DWcqvhxJ2xc7XvmfHeRkVgtqhUkCg1kjU82yveCLY7GHZHokge"
-    },
-    "createdAt": "2026-04-08T20:09:19.795Z"
-}
